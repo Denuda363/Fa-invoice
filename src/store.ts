@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Invoice, Payment, Customer, AppData, DbMode } from "./types";
 import { v4 as uuidv4 } from "uuid";
-import { db, auth } from "./firebase";
+import { db } from "./firebase";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 
 const STORAGE_KEY = "faktur_app_data_v2";
 const LEGACY_STORAGE_KEY = "faktur_app_data";
@@ -63,35 +62,22 @@ export function useAppStore() {
   useEffect(() => {
     let unsubscribe: () => void;
     
-    let unsubscribeAuth: () => void;
-    
     if (dbMode === "FIREBASE") {
       setIsLoading(true);
       
-      const setupSnapshot = () => {
-        const docRef = doc(db, "appData", "main");
-        unsubscribe = onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const remoteData = docSnap.data() as AppData;
-            setData({
-              invoices: deduplicateInvoices(remoteData.invoices || []),
-              customers: remoteData.customers || []
-            });
-          }
-          setIsLoading(false);
-        }, (error) => {
-          console.error("Firestore sync error:", error);
-          setIsLoading(false);
-        });
-      };
-
-      unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          if (unsubscribe) unsubscribe();
-          setupSnapshot();
-        } else {
-          setIsLoading(false);
+      const docRef = doc(db, "appData", "main");
+      unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const remoteData = docSnap.data() as AppData;
+          setData({
+            invoices: deduplicateInvoices(remoteData.invoices || []),
+            customers: remoteData.customers || []
+          });
         }
+        setIsLoading(false);
+      }, (error) => {
+        console.error("Firestore sync error:", error);
+        setIsLoading(false);
       });
     } else {
       // LOCAL mode, load from localStorage is already done in useState, but if we switch modes:
@@ -106,7 +92,6 @@ export function useAppStore() {
     
     return () => {
       if (unsubscribe) unsubscribe();
-      if (unsubscribeAuth) unsubscribeAuth();
     };
   }, [dbMode]);
 
@@ -129,16 +114,6 @@ export function useAppStore() {
   };
 
   const setDbMode = async (mode: DbMode) => {
-    if (mode === "FIREBASE" && !auth.currentUser) {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Login failed", error);
-        alert("Gagal login ke Firebase. Pastikan Anda mengizinkan popup.");
-        return;
-      }
-    }
     setDbModeState(mode);
     localStorage.setItem(DB_MODE_KEY, mode);
   };
@@ -146,10 +121,6 @@ export function useAppStore() {
   const migrateLocalToFirebase = async () => {
     setIsLoading(true);
     try {
-      if (!auth.currentUser) {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      }
       const localDataStr = localStorage.getItem(STORAGE_KEY);
       const localData = localDataStr ? JSON.parse(localDataStr) : { invoices: [], customers: [] };
       await setDoc(doc(db, "appData", "main"), localData);
@@ -164,10 +135,6 @@ export function useAppStore() {
   const migrateFirebaseToLocal = async () => {
     setIsLoading(true);
     try {
-      if (!auth.currentUser) {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      }
       const docSnap = await getDoc(doc(db, "appData", "main"));
       if (docSnap.exists()) {
         const remoteData = docSnap.data();
