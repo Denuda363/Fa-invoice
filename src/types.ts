@@ -28,6 +28,4 @@ export interface AppData {
   customers: Customer[];
 }
 
-export type DbMode = "LOCAL" | "FIREBASE";
-
 export type ViewState = "DASHBOARD" | "INVOICE_HISTORY" | "BULK_INPUT_INVOICE" | "REPORTS" | "CUSTOMERS" | "SETTINGS" | "PAYMENT_HISTORY";

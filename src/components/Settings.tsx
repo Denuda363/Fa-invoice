@@ -1,15 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Download, Upload, FileSpreadsheet, Database, Cloud, RefreshCcw, Trash2, Save } from "lucide-react";
+import React, { useRef } from "react";
+import { Download, Upload, FileSpreadsheet, RefreshCcw, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
-import { DbMode } from "../types";
 
 interface SettingsProps {
   onRestore: (jsonData: string) => boolean;
   getBackupData: () => string;
-  dbMode: DbMode;
-  setDbMode: (mode: DbMode) => void;
-  migrateLocalToFirebase: () => void;
-  migrateFirebaseToLocal: () => void;
   resetData: () => void;
   resetDueDates: () => void;
 }
@@ -17,26 +12,11 @@ interface SettingsProps {
 export function Settings({ 
   onRestore, 
   getBackupData, 
-  dbMode, 
-  setDbMode, 
-  migrateLocalToFirebase, 
-  migrateFirebaseToLocal,
   resetData,
   resetDueDates
 }: SettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputExcelRef = useRef<HTMLInputElement>(null);
-  
-  const [localDbMode, setLocalDbMode] = useState<DbMode>(dbMode);
-
-  useEffect(() => {
-    setLocalDbMode(dbMode);
-  }, [dbMode]);
-
-  const handleSaveDbMode = () => {
-    setDbMode(localDbMode);
-    alert("Pengaturan database berhasil disimpan.");
-  };
 
   const handleBackup = () => {
     const data = getBackupData();
@@ -205,88 +185,7 @@ export function Settings({
     <div className="space-y-6 max-w-2xl">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
-        <p className="mt-1 text-sm text-gray-500">Kelola preferensi, database, dan data aplikasi Anda.</p>
-      </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Pengaturan Database</h3>
-        <p className="mb-6 text-sm text-gray-600">
-          Pilih lokasi penyimpanan data Anda. Mode Local menyimpan data di perangkat ini. Mode Firebase menyimpan data secara online.
-        </p>
-
-        <div className="mb-6 flex gap-4">
-          <label className={`flex-1 flex cursor-pointer items-center justify-center gap-3 rounded-xl border-2 p-4 transition-all ${localDbMode === 'LOCAL' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-            <input 
-              type="radio" 
-              name="dbMode" 
-              className="sr-only" 
-              checked={localDbMode === 'LOCAL'}
-              onChange={() => setLocalDbMode('LOCAL')}
-            />
-            <Database className={localDbMode === 'LOCAL' ? 'text-blue-600' : 'text-gray-400'} size={24} />
-            <div>
-              <p className={`font-semibold ${localDbMode === 'LOCAL' ? 'text-blue-700' : 'text-gray-700'}`}>Local Storage</p>
-              <p className="text-xs text-gray-500">Simpan di browser ini</p>
-            </div>
-          </label>
-
-          <label className={`flex-1 flex cursor-pointer items-center justify-center gap-3 rounded-xl border-2 p-4 transition-all ${localDbMode === 'FIREBASE' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-            <input 
-              type="radio" 
-              name="dbMode" 
-              className="sr-only" 
-              checked={localDbMode === 'FIREBASE'}
-              onChange={() => setLocalDbMode('FIREBASE')}
-            />
-            <Cloud className={localDbMode === 'FIREBASE' ? 'text-blue-600' : 'text-gray-400'} size={24} />
-            <div>
-              <p className={`font-semibold ${localDbMode === 'FIREBASE' ? 'text-blue-700' : 'text-gray-700'}`}>Firebase Cloud</p>
-              <p className="text-xs text-gray-500">Simpan online</p>
-            </div>
-          </label>
-        </div>
-
-        <div className="mb-8 flex justify-end">
-          <button
-            onClick={handleSaveDbMode}
-            disabled={localDbMode === dbMode}
-            className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors ${
-              localDbMode === dbMode 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
-          >
-            <Save size={18} />
-            Simpan Pengaturan
-          </button>
-        </div>
-
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">Migrasi Data</h4>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={() => {
-              if (window.confirm("Migrasi ke Firebase akan menimpa data di cloud dengan data lokal saat ini. Lanjutkan?")) {
-                migrateLocalToFirebase();
-              }
-            }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <Cloud size={16} />
-            Local ➔ Firebase
-          </button>
-          
-          <button
-            onClick={() => {
-              if (window.confirm("Migrasi ke Local akan menimpa data lokal dengan data dari cloud. Lanjutkan?")) {
-                migrateFirebaseToLocal();
-              }
-            }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <Database size={16} />
-            Firebase ➔ Local
-          </button>
-        </div>
+        <p className="mt-1 text-sm text-gray-500">Kelola preferensi dan data aplikasi Anda.</p>
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
