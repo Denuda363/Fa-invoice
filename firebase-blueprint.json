@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "AppData": {
+      "title": "AppData",
+      "description": "Main application data store containing all invoices and customers.",
+      "type": "object",
+      "properties": {
+        "invoices": {
+          "type": "array",
+          "description": "List of all invoices"
+        },
+        "customers": {
+          "type": "array",
+          "description": "List of all customers"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/appData/main": {
+      "schema": "AppData",
+      "description": "Global application state"
+    }
+  }
+}
