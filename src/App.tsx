@@ -10,6 +10,7 @@ import { Settings } from "./components/Settings";
 import { PaymentModal } from "./components/PaymentModal";
 import { PaymentHistoryModal } from "./components/PaymentHistoryModal";
 import { PaymentHistory } from "./components/PaymentHistory";
+import { PWAInstallButton } from "./components/PWAInstallButton";
 import {
   LayoutDashboard,
   FilePlus,
@@ -42,16 +43,16 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center">
-          <FileText className="text-blue-600 mr-2" size={24} />
-          <h1 className="font-bold text-lg text-gray-800 line-clamp-1">Data invoice Apt Assyifa Farma Cideres</h1>
+      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-30 shadow-sm">
+        <div className="flex items-center gap-3">
+          <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-md object-cover" />
+          <h1 className="font-bold text-lg text-gray-800 tracking-tight">AF Faktur</h1>
         </div>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 transition"
         >
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -60,7 +61,7 @@ export default function App() {
       {/* Mobile Sidebar Backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-sm md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -68,24 +69,24 @@ export default function App() {
       {/* Sidebar Navigation */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-gray-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 w-72 transform bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ease-out md:static md:translate-x-0 md:w-64",
+          isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-          <div className="flex items-center">
-            <FileText className="text-blue-600 mr-2 min-w-[24px]" size={24} />
-            <h1 className="font-bold text-sm text-gray-800 hidden md:block line-clamp-2">Data invoice Apt Assyifa Farma Cideres</h1>
-            <h1 className="font-bold text-lg text-gray-800 md:hidden">Menu</h1>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-md object-cover hidden md:block" />
+            <h1 className="font-bold text-gray-800 tracking-tight hidden md:block">AF Faktur</h1>
+            <h1 className="font-bold text-lg text-gray-800 md:hidden">Menu Utama</h1>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            className="md:hidden rounded-lg p-2 text-gray-500 hover:bg-gray-100"
           >
             <X size={20} />
           </button>
         </div>
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
           {navigation.map((item) => (
             <button
               key={item.id}
@@ -94,17 +95,21 @@ export default function App() {
                 setIsSidebarOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                 view === item.id
-                  ? "bg-blue-50 text-blue-700"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               )}
             >
-              <item.icon size={18} className={view === item.id ? "text-blue-700" : "text-gray-400"} />
+              <item.icon size={18} className={view === item.id ? "text-white" : "text-gray-400"} />
               {item.name}
             </button>
           ))}
         </nav>
+        
+        <div className="p-4 border-t border-gray-100">
+          <PWAInstallButton />
+        </div>
       </aside>
 
       {/* Main Content Area */}
