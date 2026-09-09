@@ -406,6 +406,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     };
     const overdueStyle = {
       fill: { fgColor: { rgb: "FECACA" } }, // Tailwind red-200
+      font: { color: { rgb: "DC2626" } }, // Tailwind red-600 for text
       border: borderStyle
     };
     const warningStyle = {
@@ -600,7 +601,8 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
 
     const groupedByDate: Record<string, typeof filteredInvoices> = {};
     filteredInvoices.forEach(inv => {
-      const dayStr = format(new Date(inv.date), "dd"); // Group by day of the month
+      // Group by due date (Jatuh Tempo)
+      const dayStr = format(new Date(inv.dueDate), "yyyy-MM-dd"); 
       if (!groupedByDate[dayStr]) groupedByDate[dayStr] = [];
       groupedByDate[dayStr].push(inv);
     });
@@ -614,7 +616,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     let grandSisaDate = 0;
     let grandTotalFakturDate = 0;
 
-    Object.keys(groupedByDate).sort((a, b) => parseInt(a) - parseInt(b)).forEach(dayStr => {
+    Object.keys(groupedByDate).sort().forEach(dayStr => {
       const invs = groupedByDate[dayStr];
       let subNominal = 0;
       let subBayar = 0;
@@ -648,10 +650,12 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
         ]);
       });
 
+      const displayDateStr = format(new Date(dayStr), "dd MMMM yyyy", { locale: id }).toUpperCase();
+
       dateAoa.push([
         "",
         "",
-        `TOTAL TANGGAL ${parseInt(dayStr, 10)}`,
+        `TOTAL JATUH TEMPO ${displayDateStr}`,
         `${invs.length} Faktur`,
         formatRp(subNominal),
         formatRp(subBayar),
@@ -681,22 +685,46 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     const dateWs = XLSX.utils.aoa_to_sheet(dateAoa);
     
     for (let R = 0; R < dateAoa.length; ++R) {
+      const isHeader = R === 0;
+      const isTotalRow = dateAoa[R][2] && typeof dateAoa[R][2] === 'string' && (dateAoa[R][2].startsWith("TOTAL") || dateAoa[R][2] === "GRAND TOTAL");
+      const isEmpty = dateAoa[R][0] === "";
+      const isPaid = !isHeader && !isTotalRow && !isEmpty && dateAoa[R][8] === "Lunas";
+
+      let isOverdue = false;
+      let isWarning = false;
+
+      if (!isHeader && !isTotalRow && !isEmpty && !isPaid) {
+        const invNo = dateAoa[R][3];
+        const inv = filteredInvoices.find(i => i.invoiceNumber === invNo);
+        if (inv) {
+          const dueDate = new Date(inv.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          const diffDays = differenceInDays(dueDate, today);
+          if (diffDays < 0) {
+            isOverdue = true;
+          } else if (diffDays <= 3) {
+            isWarning = true;
+          }
+        }
+      }
+
       for (let C = 0; C < dateAoa[R].length; ++C) {
         const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
         if (dateWs[cell_ref]) {
-          if (R === 0) {
+          if (isHeader) {
             dateWs[cell_ref].s = headerStyle;
-          } else if (dateAoa[R][2] && typeof dateAoa[R][2] === 'string' && dateAoa[R][2].startsWith("TOTAL")) {
+          } else if (isTotalRow) {
              dateWs[cell_ref].s = totalStyle;
-          } else if (dateAoa[R][2] === "GRAND TOTAL") {
-             dateWs[cell_ref].s = totalStyle;
-          } else if (dateAoa[R][0] === "") {
+          } else if (isEmpty) {
              // empty rows
+          } else if (isPaid) {
+             dateWs[cell_ref].s = paidStyle;
+          } else if (isOverdue) {
+             dateWs[cell_ref].s = overdueStyle;
+          } else if (isWarning) {
+             dateWs[cell_ref].s = warningStyle;
           } else {
              dateWs[cell_ref].s = regularStyle;
-             if (dateAoa[R][8] === "Lunas") {
-                dateWs[cell_ref].s = paidStyle;
-             }
           }
         }
       }

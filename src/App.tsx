@@ -43,22 +43,8 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans">
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-30 shadow-sm">
-        <div className="flex items-center gap-3">
-          <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-md object-cover" />
-          <h1 className="font-bold text-lg text-gray-800 tracking-tight">AF Faktur</h1>
-        </div>
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 transition"
-        >
-          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile Sidebar Backdrop */}
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans pb-16 md:pb-0">
+      {/* Mobile Sidebar Backdrop (Only for 'More' menu now) */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-sm md:hidden"
@@ -66,7 +52,7 @@ export default function App() {
         />
       )}
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation (Desktop) & Sliding Menu (Mobile) */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-72 transform bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ease-out md:static md:translate-x-0 md:w-64",
@@ -77,7 +63,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-md object-cover hidden md:block" />
             <h1 className="font-bold text-gray-800 tracking-tight hidden md:block">AF Faktur</h1>
-            <h1 className="font-bold text-lg text-gray-800 md:hidden">Menu Utama</h1>
+            <h1 className="font-bold text-lg text-gray-800 md:hidden">Menu Lainnya</h1>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
@@ -200,6 +186,37 @@ export default function App() {
           onDeletePayment={store.deletePayment}
         />
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-30 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        {[
+          { id: "DASHBOARD" as ViewState, icon: LayoutDashboard, label: "Home" },
+          { id: "BULK_INPUT_INVOICE" as ViewState, icon: FilePlus, label: "Input" },
+          { id: "REPORTS" as ViewState, icon: PieChart, label: "Laporan" },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setView(item.id)}
+            className={cn(
+              "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
+              view === item.id ? "text-blue-600" : "text-gray-500 hover:text-gray-900"
+            )}
+          >
+            <item.icon size={22} className={view === item.id ? "fill-blue-50/50" : ""} />
+            <span className="text-[10px] font-medium">{item.label}</span>
+          </button>
+        ))}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className={cn(
+            "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
+            isSidebarOpen ? "text-blue-600" : "text-gray-500 hover:text-gray-900"
+          )}
+        >
+          <Menu size={22} />
+          <span className="text-[10px] font-medium">Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }

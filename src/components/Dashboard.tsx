@@ -88,19 +88,19 @@ export function Dashboard({ invoices, onAddFaktur }: DashboardProps) {
       initial="hidden" 
       animate="show" 
       variants={containerVariants}
-      className="space-y-8"
+      className="space-y-6 md:space-y-8"
     >
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <motion.h2 variants={itemVariants} className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</motion.h2>
-          <motion.p variants={itemVariants} className="text-gray-500 mt-1">Ringkasan tagihan dan piutang Anda hari ini.</motion.p>
+          <motion.h2 variants={itemVariants} className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</motion.h2>
+          <motion.p variants={itemVariants} className="text-sm md:text-base text-gray-500 mt-1">Ringkasan tagihan dan piutang Anda.</motion.p>
         </div>
         <motion.button
           variants={itemVariants}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAddFaktur}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors"
         >
           <Plus size={20} />
           Faktur Baru
@@ -108,57 +108,57 @@ export function Dashboard({ invoices, onAddFaktur }: DashboardProps) {
       </div>
 
       {/* KPI Cards */}
-      <motion.div variants={containerVariants} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <motion.div variants={itemVariants} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm relative overflow-hidden group">
+      <motion.div variants={containerVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <motion.div variants={itemVariants} className="rounded-xl md:rounded-2xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full transition-transform group-hover:scale-150 duration-500 ease-out"></div>
           <div className="relative">
-            <div className="flex items-center gap-3 text-blue-600 mb-2">
-              <div className="p-2 bg-blue-100 rounded-lg"><DollarSign size={20} /></div>
-              <h3 className="font-semibold text-sm text-gray-600">Total Piutang</h3>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-blue-600 mb-2">
+              <div className="w-8 h-8 md:w-auto md:h-auto p-1.5 md:p-2 bg-blue-100 rounded-lg flex items-center justify-center"><DollarSign size={18} className="md:w-5 md:h-5" /></div>
+              <h3 className="font-semibold text-xs md:text-sm text-gray-600">Total Piutang</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPiutang)}</p>
+            <p className="text-lg md:text-2xl font-bold text-gray-900">{formatCurrency(totalPiutang)}</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm relative overflow-hidden group">
+        <motion.div variants={itemVariants} className="rounded-xl md:rounded-2xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-50 rounded-full transition-transform group-hover:scale-150 duration-500 ease-out"></div>
           <div className="relative">
-            <div className="flex items-center gap-3 text-red-600 mb-2">
-              <div className="p-2 bg-red-100 rounded-lg"><AlertCircle size={20} /></div>
-              <h3 className="font-semibold text-sm text-gray-600">Jatuh Tempo</h3>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-red-600 mb-2">
+              <div className="w-8 h-8 md:w-auto md:h-auto p-1.5 md:p-2 bg-red-100 rounded-lg flex items-center justify-center"><AlertCircle size={18} className="md:w-5 md:h-5" /></div>
+              <h3 className="font-semibold text-xs md:text-sm text-gray-600">Jatuh Tempo</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(piutangJatuhTempo)}</p>
-            <p className="text-xs text-red-500 mt-1">{fakturJatuhTempoCount} Faktur terlewat</p>
+            <p className="text-lg md:text-2xl font-bold text-gray-900">{formatCurrency(piutangJatuhTempo)}</p>
+            <p className="text-[10px] md:text-xs text-red-500 mt-1">{fakturJatuhTempoCount} Faktur terlewat</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm relative overflow-hidden group">
+        <motion.div variants={itemVariants} className="rounded-xl md:rounded-2xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full transition-transform group-hover:scale-150 duration-500 ease-out"></div>
           <div className="relative">
-            <div className="flex items-center gap-3 text-emerald-600 mb-2">
-              <div className="p-2 bg-emerald-100 rounded-lg"><TrendingUp size={20} /></div>
-              <h3 className="font-semibold text-sm text-gray-600">Pemasukan Bulan Ini</h3>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-emerald-600 mb-2">
+              <div className="w-8 h-8 md:w-auto md:h-auto p-1.5 md:p-2 bg-emerald-100 rounded-lg flex items-center justify-center"><TrendingUp size={18} className="md:w-5 md:h-5" /></div>
+              <h3 className="font-semibold text-xs md:text-sm text-gray-600 leading-tight">Pemasukan Bulan Ini</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalLunas)}</p>
+            <p className="text-lg md:text-2xl font-bold text-gray-900">{formatCurrency(totalLunas)}</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm relative overflow-hidden group">
+        <motion.div variants={itemVariants} className="rounded-xl md:rounded-2xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-50 rounded-full transition-transform group-hover:scale-150 duration-500 ease-out"></div>
           <div className="relative">
-            <div className="flex items-center gap-3 text-purple-600 mb-2">
-              <div className="p-2 bg-purple-100 rounded-lg"><CheckCircle2 size={20} /></div>
-              <h3 className="font-semibold text-sm text-gray-600">Total Faktur</h3>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-purple-600 mb-2">
+              <div className="w-8 h-8 md:w-auto md:h-auto p-1.5 md:p-2 bg-purple-100 rounded-lg flex items-center justify-center"><CheckCircle2 size={18} className="md:w-5 md:h-5" /></div>
+              <h3 className="font-semibold text-xs md:text-sm text-gray-600">Total Faktur</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{invoices.length}</p>
+            <p className="text-lg md:text-2xl font-bold text-gray-900">{invoices.length}</p>
           </div>
         </motion.div>
       </motion.div>
 
       {/* Chart Section */}
-      <motion.div variants={itemVariants} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Statistik Pemasukan vs Tagihan (6 Bulan Terakhir)</h3>
-        <div className="h-[300px] w-full">
+      <motion.div variants={itemVariants} className="rounded-xl md:rounded-2xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm">
+        <h3 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Statistik Pemasukan vs Tagihan</h3>
+        <div className="h-[200px] md:h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
