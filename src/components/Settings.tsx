@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { Download, Upload, FileSpreadsheet, RefreshCcw, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
+import { UserGuide } from "./UserGuide";
 
 interface SettingsProps {
   onRestore: (jsonData: string) => boolean;
@@ -182,11 +183,14 @@ export function Settings({
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
-        <p className="mt-1 text-sm text-gray-500">Kelola preferensi dan data aplikasi Anda.</p>
+        <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>
       </div>
+
+      {/* Panduan Lengkap Penggunaan */}
+      <UserGuide />
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h3 className="mb-4 text-lg font-semibold text-gray-800">Backup & Restore Data (JSON)</h3>
