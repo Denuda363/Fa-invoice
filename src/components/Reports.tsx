@@ -3,7 +3,7 @@ import { Invoice, Customer } from "../types";
 import { formatCurrency, cn } from "../utils";
 import { format, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload } from "lucide-react";
+import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload, Calendar, RotateCcw, X } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -20,6 +20,8 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
   const [statusFilter, setStatusFilter] = useState("UNPAID");
   const [dueDateFilter, setDueDateFilter] = useState("ALL");
   const [customAgeFilter, setCustomAgeFilter] = useState("");
+  const [invoiceStartDate, setInvoiceStartDate] = useState("");
+  const [invoiceEndDate, setInvoiceEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -43,6 +45,28 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     });
   }
 
+  // Filter Tanggal Faktur (Invoice Date)
+  if (invoiceStartDate) {
+    filteredInvoices = filteredInvoices.filter((inv) => {
+      const invDate = new Date(inv.date);
+      invDate.setHours(0, 0, 0, 0);
+      const start = new Date(invoiceStartDate);
+      start.setHours(0, 0, 0, 0);
+      return invDate >= start;
+    });
+  }
+
+  if (invoiceEndDate) {
+    filteredInvoices = filteredInvoices.filter((inv) => {
+      const invDate = new Date(inv.date);
+      invDate.setHours(0, 0, 0, 0);
+      const end = new Date(invoiceEndDate);
+      end.setHours(23, 59, 59, 999);
+      return invDate <= end;
+    });
+  }
+
+  // Filter Tanggal Jatuh Tempo (Due Date)
   if (startDate) {
     filteredInvoices = filteredInvoices.filter((inv) => {
       const dueDate = new Date(inv.dueDate);
@@ -65,7 +89,8 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
 
   if (searchTerm) {
     filteredInvoices = filteredInvoices.filter((inv) =>
-      inv.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      inv.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inv.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
 
@@ -909,6 +934,27 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     doc.save("Laporan_Jatuh_Tempo.pdf");
   };
 
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("UNPAID");
+    setInvoiceStartDate("");
+    setInvoiceEndDate("");
+    setStartDate("");
+    setEndDate("");
+    setDueDateFilter("ALL");
+    setCustomAgeFilter("");
+  };
+
+  const isFiltered = 
+    searchTerm !== "" ||
+    statusFilter !== "UNPAID" ||
+    invoiceStartDate !== "" ||
+    invoiceEndDate !== "" ||
+    startDate !== "" ||
+    endDate !== "" ||
+    dueDateFilter !== "ALL" ||
+    customAgeFilter !== "";
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -973,84 +1019,258 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
-        <div className="flex-1 min-w-[200px] flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <Search size={18} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari nama konsumen..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-transparent text-sm outline-none"
-          />
+      {/* Filter Section */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
+        {/* Row 1: Search, Status & Reset */}
+        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          <div className="flex-1 flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50/50 px-3 py-2 focus-within:border-blue-500 focus-within:bg-white transition-colors">
+            <Search size={18} className="text-gray-400 shrink-0" />
+            <input
+              type="text"
+              placeholder="Cari konsumen atau no. faktur..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-transparent text-sm outline-none"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Hapus pencarian"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider shrink-0">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent text-sm font-medium outline-none cursor-pointer text-gray-800"
+              >
+                <option value="ALL">Semua Faktur</option>
+                <option value="UNPAID">Belum Lunas</option>
+                <option value="PAID">Lunas</option>
+                <option value="OVERDUE">Lewat Jatuh Tempo</option>
+              </select>
+            </div>
+
+            {isFiltered && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors"
+                title="Reset semua filter"
+              >
+                <RotateCcw size={14} />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex-shrink-0 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <Filter size={18} className="text-gray-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-transparent text-sm outline-none cursor-pointer"
-          >
-            <option value="ALL">Semua Faktur</option>
-            <option value="UNPAID">Faktur Belum Lunas</option>
-            <option value="PAID">Faktur Lunas</option>
-            <option value="OVERDUE">Faktur Jatuh Tempo</option>
-          </select>
+
+        {/* Row 2: Date Filters Split into Two Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+          {/* Panel 1: Filter Tanggal Faktur */}
+          <div className="rounded-lg bg-blue-50/40 border border-blue-100 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 uppercase tracking-wider">
+                <Calendar size={14} className="text-blue-600" />
+                <span>Filter Tanggal Faktur</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date();
+                    const start = format(new Date(now.getFullYear(), now.getMonth(), 1), "yyyy-MM-dd");
+                    const end = format(new Date(now.getFullYear(), now.getMonth() + 1, 0), "yyyy-MM-dd");
+                    setInvoiceStartDate(start);
+                    setInvoiceEndDate(end);
+                  }}
+                  className="text-[11px] font-medium text-blue-700 hover:text-blue-800 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs hover:bg-blue-50 transition-colors"
+                >
+                  Bulan Ini
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const todayStr = format(new Date(), "yyyy-MM-dd");
+                    setInvoiceStartDate(todayStr);
+                    setInvoiceEndDate(todayStr);
+                  }}
+                  className="text-[11px] font-medium text-blue-700 hover:text-blue-800 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs hover:bg-blue-50 transition-colors"
+                >
+                  Hari Ini
+                </button>
+                {(invoiceStartDate || invoiceEndDate) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInvoiceStartDate("");
+                      setInvoiceEndDate("");
+                    }}
+                    className="text-[11px] text-red-600 hover:text-red-700 font-medium px-1.5 py-0.5"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Dari:</span>
+                <input
+                  type="date"
+                  value={invoiceStartDate}
+                  onChange={(e) => setInvoiceStartDate(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
+                  title="Tanggal faktur mulai dari"
+                />
+              </div>
+              <div className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Sampai:</span>
+                <input
+                  type="date"
+                  value={invoiceEndDate}
+                  onChange={(e) => setInvoiceEndDate(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
+                  title="Tanggal faktur sampai dengan"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Panel 2: Filter Tanggal Jatuh Tempo */}
+          <div className="rounded-lg bg-orange-50/40 border border-orange-100 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-orange-900 uppercase tracking-wider">
+                <Filter size={14} className="text-orange-600" />
+                <span>Filter Jatuh Tempo</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {(startDate || endDate || dueDateFilter !== "ALL" || customAgeFilter) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStartDate("");
+                      setEndDate("");
+                      setDueDateFilter("ALL");
+                      setCustomAgeFilter("");
+                    }}
+                    className="text-[11px] text-red-600 hover:text-red-700 font-medium px-1.5 py-0.5"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Preset:</span>
+                <select
+                  value={dueDateFilter}
+                  onChange={(e) => {
+                    setDueDateFilter(e.target.value);
+                    setCustomAgeFilter("");
+                  }}
+                  disabled={!!customAgeFilter || statusFilter === "OVERDUE"}
+                  className="w-full bg-transparent text-xs sm:text-sm outline-none cursor-pointer disabled:opacity-50 text-gray-800"
+                >
+                  <option value="ALL">Semua Jatuh Tempo</option>
+                  <option value="OVERDUE">Lewat Jatuh Tempo</option>
+                  <option value="TODAY">Hari Ini</option>
+                  <option value="7DAYS">Dalam 7 Hari</option>
+                  <option value="30DAYS">8 - 30 Hari</option>
+                  <option value="MORE30DAYS">&gt; 30 Hari</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Umur:</span>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Hari (0-N)..."
+                  value={customAgeFilter}
+                  onChange={(e) => setCustomAgeFilter(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-sm outline-none"
+                  title="Filter umur jatuh tempo dalam hari"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Dari:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
+                  title="Jatuh tempo mulai dari"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-medium shrink-0">Sampai:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
+                  title="Jatuh tempo sampai dengan"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex-shrink-0 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <Filter size={18} className="text-gray-400" />
-          <input
-            type="number"
-            min="0"
-            placeholder="Umur faktur (hari)..."
-            value={customAgeFilter}
-            onChange={(e) => setCustomAgeFilter(e.target.value)}
-            className="w-40 bg-transparent text-sm outline-none"
-          />
-        </div>
-        <div className="flex-shrink-0 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <Filter size={18} className="text-gray-400" />
-          <select
-            value={dueDateFilter}
-            onChange={(e) => {
-              setDueDateFilter(e.target.value);
-              setCustomAgeFilter(""); // reset custom age when selecting from dropdown
-            }}
-            disabled={!!customAgeFilter || statusFilter === "OVERDUE"}
-            className="w-full bg-transparent text-sm outline-none cursor-pointer disabled:opacity-50"
-          >
-            <option value="ALL">Semua Jatuh Tempo</option>
-            <option value="OVERDUE">Lewat Jatuh Tempo</option>
-            <option value="TODAY">Jatuh Tempo Hari Ini</option>
-            <option value="7DAYS">Dalam 7 Hari</option>
-            <option value="30DAYS">8 - 30 Hari</option>
-            <option value="MORE30DAYS">Lebih dari 30 Hari</option>
-          </select>
-        </div>
-        <div className="flex-shrink-0 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <span className="text-gray-400 text-sm">Dari:</span>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-transparent text-sm outline-none"
-          />
-        </div>
-        <div className="flex-shrink-0 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-          <span className="text-gray-400 text-sm">Sampai:</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-transparent text-sm outline-none"
-          />
+
+        {/* Filter Summary */}
+        <div className="flex items-center justify-between text-xs text-gray-500 pt-1 flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-gray-700">
+              Menampilkan {filteredInvoices.length} dari {invoices.length} faktur
+            </span>
+            {invoiceStartDate && invoiceEndDate && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
+                Faktur: {format(new Date(invoiceStartDate), "dd/MM/yy")} - {format(new Date(invoiceEndDate), "dd/MM/yy")}
+              </span>
+            )}
+            {invoiceStartDate && !invoiceEndDate && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
+                Faktur &ge; {format(new Date(invoiceStartDate), "dd/MM/yy")}
+              </span>
+            )}
+            {!invoiceStartDate && invoiceEndDate && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
+                Faktur &le; {format(new Date(invoiceEndDate), "dd/MM/yy")}
+              </span>
+            )}
+            {startDate && endDate && (
+              <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
+                Jth Tempo: {format(new Date(startDate), "dd/MM/yy")} - {format(new Date(endDate), "dd/MM/yy")}
+              </span>
+            )}
+          </div>
+          {filteredInvoices.length > 0 && (
+            <div className="text-gray-600 font-semibold hidden sm:block">
+              Total Tagihan: {formatCurrency(filteredInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0))}
+            </div>
+          )}
         </div>
       </div>
 
       <div className="space-y-6">
         {Object.keys(groupedInvoices).length === 0 ? (
           <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-gray-500">
-            Tidak ada faktur yang belum lunas.
+            {isFiltered
+              ? "Tidak ada faktur yang sesuai dengan kriteria filter yang dipilih."
+              : "Tidak ada faktur yang belum lunas."}
           </div>
         ) : (
           Object.entries(groupedInvoices).map(([customerName, customerInvoices]) => {
