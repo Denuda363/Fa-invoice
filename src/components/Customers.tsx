@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import { Customer } from "../types";
-import { Users, Plus, Edit2, Trash2, X, Upload, FileDown, RefreshCcw, Search } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Customer, Invoice } from "../types";
+import { Users, Plus, Edit2, Trash2, X, Upload, FileDown, RefreshCcw, Search, BarChart2, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
+import { CustomerAnalytics } from "./CustomerAnalytics";
+import { formatCurrency } from "../utils";
 
 interface CustomersProps {
   customers: Customer[];
+  invoices?: Invoice[];
   onAdd: (name: string, phone?: string, address?: string, exportSeparateSheet?: boolean) => void;
   onAddBulk?: (customers: Omit<Customer, "id">[]) => void;
   onUpdate: (id: string, name: string, phone?: string, address?: string, exportSeparateSheet?: boolean) => void;
@@ -12,12 +15,41 @@ interface CustomersProps {
   onSyncFromInvoices?: () => void;
 }
 
-export function Customers({ customers, onAdd, onAddBulk, onUpdate, onDelete, onSyncFromInvoices }: CustomersProps) {
+export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate, onDelete, onSyncFromInvoices }: CustomersProps) {
+  const [activeTab, setActiveTab] = useState<"TABLE" | "ANALYTICS">("TABLE");
+  const [analyticsCustomerId, setAnalyticsCustomerId] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState({ name: "", phone: "", address: "", exportSeparateSheet: false });
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Compute total utang and pembayaran per customer
+  const customerDebtStats = useMemo(() => {
+    const map: Record<string, { totalTagihan: number; totalPembayaran: number; sisaUtang: number; invoiceCount: number }> = {};
+    
+    invoices.forEach((inv) => {
+      const key = inv.customerName.toLowerCase().trim();
+      if (!map[key]) {
+        map[key] = { totalTagihan: 0, totalPembayaran: 0, sisaUtang: 0, invoiceCount: 0 };
+      }
+      map[key].totalTagihan += inv.totalAmount;
+      const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
+      map[key].totalPembayaran += paid;
+      map[key].invoiceCount += 1;
+    });
+
+    Object.values(map).forEach((item) => {
+      item.sisaUtang = Math.max(0, item.totalTagihan - item.totalPembayaran);
+    });
+
+    return map;
+  }, [invoices]);
+
+  const openCustomerAnalytics = (customerId: string) => {
+    setAnalyticsCustomerId(customerId);
+    setActiveTab("ANALYTICS");
+  };
 
   const filteredCustomers = customers.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -136,120 +168,205 @@ export function Customers({ customers, onAdd, onAddBulk, onUpdate, onDelete, onS
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      {/* Top Header & Tab Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Data Konsumen</h2>
-          <p className="mt-1 text-sm text-gray-500">Kelola master data pelanggan Anda.</p>
+          <p className="mt-1 text-sm text-gray-500">Kelola master data pelanggan, grafik pembayaran vs utang, serta tren MoM.</p>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 w-full sm:w-64">
-            <Search size={18} className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Cari konsumen..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent text-sm outline-none"
-            />
-          </div>
+
+        {/* View Switcher Tabs */}
+        <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs sm:text-sm font-semibold self-start sm:self-auto shadow-2xs">
           <button
-            onClick={downloadTemplate}
-            className="flex items-center gap-2 rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
+            onClick={() => setActiveTab("TABLE")}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg transition-all ${
+              activeTab === "TABLE"
+                ? "bg-white text-blue-600 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
-            <FileDown size={18} />
-            Template
+            <Users size={16} />
+            <span>Master Konsumen</span>
+            <span className="text-[11px] bg-gray-200/80 text-gray-700 px-1.5 py-0.5 rounded-full font-bold">
+              {customers.length}
+            </span>
           </button>
-          <div>
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              ref={fileInputRef}
-              onChange={handleImportExcel}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-            >
-              <Upload size={18} />
-              Import
-            </button>
-          </div>
-          {onSyncFromInvoices && (
-            <button
-              onClick={onSyncFromInvoices}
-              className="flex items-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
-            >
-              <RefreshCcw size={18} />
-              Sync dari Faktur
-            </button>
-          )}
           <button
-            onClick={() => openModal()}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            onClick={() => {
+              setActiveTab("ANALYTICS");
+              setAnalyticsCustomerId("ALL");
+            }}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg transition-all ${
+              activeTab === "ANALYTICS"
+                ? "bg-white text-blue-600 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
-            <Plus size={18} />
-            Tambah Konsumen
+            <BarChart2 size={16} />
+            <span>Grafik & Tren</span>
+            <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">
+              MoM
+            </span>
           </button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-max text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="px-4 py-3 font-medium">Nama Konsumen</th>
-                <th className="px-4 py-3 font-medium">Nomor Telepon</th>
-                <th className="px-4 py-3 font-medium">Alamat</th>
-                <th className="px-4 py-3 font-medium text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredCustomers.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-gray-500">
-                    <div className="flex flex-col items-center justify-center">
-                      <Users size={40} className="mb-3 text-gray-300" />
-                      <p>Belum ada data konsumen.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredCustomers.map((c) => (
-                  <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 font-medium text-gray-900">{c.name}</td>
-                    <td className="px-4 py-4">{c.phone || "-"}</td>
-                    <td className="px-4 py-4">{c.address || "-"}</td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openModal(c)}
-                          className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-blue-600"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm("Apakah Anda yakin ingin menghapus konsumen ini?")) {
-                              onDelete(c.id);
-                            }
-                          }}
-                          className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-red-600"
-                          title="Hapus"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+      {/* RENDER VIEW: ANALYTICS */}
+      {activeTab === "ANALYTICS" ? (
+        <CustomerAnalytics
+          customers={customers}
+          invoices={invoices}
+          initialCustomerId={analyticsCustomerId}
+          onBackToTable={() => setActiveTab("TABLE")}
+        />
+      ) : (
+        /* RENDER VIEW: TABLE & MANAGEMENT */
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 w-full sm:w-64">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari konsumen..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-transparent text-sm outline-none"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap items-center">
+              <button
+                onClick={downloadTemplate}
+                className="flex items-center gap-2 rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
+              >
+                <FileDown size={18} />
+                Template
+              </button>
+              <div>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  ref={fileInputRef}
+                  onChange={handleImportExcel}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                >
+                  <Upload size={18} />
+                  Import
+                </button>
+              </div>
+              {onSyncFromInvoices && (
+                <button
+                  onClick={onSyncFromInvoices}
+                  className="flex items-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                >
+                  <RefreshCcw size={18} />
+                  Sync dari Faktur
+                </button>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              <button
+                onClick={() => openModal()}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Plus size={18} />
+                Tambah Konsumen
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max text-left text-sm">
+                <thead className="bg-gray-50 text-gray-600">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Nama Konsumen</th>
+                    <th className="px-4 py-3 font-medium">Nomor Telepon</th>
+                    <th className="px-4 py-3 font-medium">Sisa Utang</th>
+                    <th className="px-4 py-3 font-medium">Total Pembayaran</th>
+                    <th className="px-4 py-3 font-medium">Alamat</th>
+                    <th className="px-4 py-3 font-medium text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredCustomers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-500">
+                        <div className="flex flex-col items-center justify-center">
+                          <Users size={40} className="mb-3 text-gray-300" />
+                          <p>Belum ada data konsumen.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCustomers.map((c) => {
+                      const stats = customerDebtStats[c.name.toLowerCase().trim()] || {
+                        sisaUtang: 0,
+                        totalPembayaran: 0,
+                        totalTagihan: 0,
+                      };
+
+                      return (
+                        <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-4 font-bold text-gray-900">{c.name}</td>
+                          <td className="px-4 py-4 text-gray-600">{c.phone || "-"}</td>
+                          <td className="px-4 py-4">
+                            {stats.sisaUtang > 0 ? (
+                              <span className="inline-flex items-center gap-1 font-bold text-rose-600 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-md text-xs">
+                                <AlertCircle size={12} />
+                                {formatCurrency(stats.sisaUtang)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-xs font-semibold">Rp 0 (Lunas)</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="font-semibold text-emerald-700 text-xs">
+                              {formatCurrency(stats.totalPembayaran)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-xs text-gray-500 max-w-xs truncate">{c.address || "-"}</td>
+                          <td className="px-4 py-4 text-right">
+                            <div className="flex justify-end items-center gap-1.5">
+                              <button
+                                onClick={() => openCustomerAnalytics(c.id)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                                title="Lihat Grafik Perbandingan Pembayaran vs Utang & Tren Bulan ke Bulan"
+                              >
+                                <BarChart2 size={14} />
+                                <span>Grafik & Tren</span>
+                              </button>
+                              <button
+                                onClick={() => openModal(c)}
+                                className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600"
+                                title="Edit"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm("Apakah Anda yakin ingin menghapus konsumen ini?")) {
+                                    onDelete(c.id);
+                                  }
+                                }}
+                                className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-red-600"
+                                title="Hapus"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

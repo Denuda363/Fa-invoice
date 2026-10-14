@@ -174,6 +174,11 @@ const GUIDE_DATA: GuideSection[] = [
       {
         title: "Hubungi Langsung via Telepon/WhatsApp",
         description: "Nomor telepon yang tersimpan pada data konsumen memudahkan Anda untuk langsung menghubungi atau menagih konsumen terkait faktur yang mendekati jatuh tempo.",
+      },
+      {
+        title: "Grafik Perbandingan Pembayaran vs Utang & Tren MoM",
+        description: "Di menu 'Data Konsumen', buka tab 'Grafik & Tren' atau klik tombol 'Grafik & Tren' pada baris konsumen:\n1. Grafik Bar Perbandingan: Membandingkan total pembayaran yang diterima (hijau) dengan sisa utang yang belum dibayar (merah).\n2. Grafik Area Tren MoM: Melihat grafik fluktuasi pembayaran dan tagihan baru dari bulan ke bulan.\n3. Tabel Rincian Kenaikan/Penurunan: Menampilkan selisih nominal (Rp) dan persentase (%) kenaikan/penurunan pembayaran serta tagihan baru setiap bulan.",
+        tip: "Anda dapat memfilter tampilan per 6 bulan, 12 bulan, atau seluruh riwayat pembukuan."
       }
     ]
   },

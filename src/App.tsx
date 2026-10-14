@@ -133,6 +133,7 @@ export default function App() {
           {view === "CUSTOMERS" && (
             <Customers
               customers={store.customers}
+              invoices={store.invoices}
               onAdd={store.addCustomer}
               onAddBulk={store.addCustomers}
               onUpdate={store.updateCustomer}
