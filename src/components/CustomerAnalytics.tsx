@@ -17,6 +17,9 @@ import {
   Filter,
   PieChart,
   Layers,
+  Search,
+  X,
+  RotateCcw,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -51,6 +54,8 @@ export function CustomerAnalytics({
   );
   const [timeRange, setTimeRange] = useState<"6m" | "12m" | "all">("6m");
   const [searchFilter, setSearchFilter] = useState("");
+  const [matrixSearch, setMatrixSearch] = useState("");
+  const [matrixStatusFilter, setMatrixStatusFilter] = useState<"ALL" | "DEBT" | "PAID">("ALL");
 
   // Customer options
   const selectedCustomer = useMemo(() => {
@@ -284,6 +289,24 @@ export function CustomerAnalytics({
     return customers.filter((c) => c.name.toLowerCase().includes(q));
   }, [customers, searchFilter]);
 
+  // Filtered customer matrix data with search & status
+  const filteredMatrixData = useMemo(() => {
+    let result = customerComparisonData;
+
+    if (matrixStatusFilter === "DEBT") {
+      result = result.filter((item) => item.utang > 0);
+    } else if (matrixStatusFilter === "PAID") {
+      result = result.filter((item) => item.utang === 0);
+    }
+
+    if (matrixSearch.trim()) {
+      const q = matrixSearch.toLowerCase().trim();
+      result = result.filter((item) => item.name.toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [customerComparisonData, matrixStatusFilter, matrixSearch]);
+
   // Custom Tooltip for charts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -342,20 +365,41 @@ export function CustomerAnalytics({
 
           {/* Customer Selection & Time Range */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Customer Dropdown */}
-            <div className="w-full sm:w-64">
-              <select
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="ALL">🌟 Semua Konsumen (Komparasi)</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    👤 {c.name}
-                  </option>
-                ))}
-              </select>
+            {/* Customer Search & Dropdown Filter */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+              <div className="relative w-full sm:w-48">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari konsumen..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-full pl-8 pr-7 py-2 bg-gray-50 hover:bg-white focus:bg-white border border-gray-300 rounded-xl text-xs sm:text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+                {searchFilter && (
+                  <button
+                    onClick={() => setSearchFilter("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                    title="Hapus pencarian"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              <div className="w-full sm:w-56">
+                <select
+                  value={selectedCustomerId}
+                  onChange={(e) => setSelectedCustomerId(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="ALL">🌟 Semua Konsumen ({filteredCustomerList.length})</option>
+                  {filteredCustomerList.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      👤 {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Time Range Pills */}
@@ -862,15 +906,71 @@ export function CustomerAnalytics({
       {/* Customer Quick Comparison Matrix (if ALL is selected) */}
       {selectedCustomerId === "ALL" && customerComparisonData.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+          <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <h4 className="font-bold text-gray-900 text-base flex items-center gap-2">
                 <Users size={18} className="text-blue-600" />
                 Daftar Utang & Pembayaran Per Konsumen
               </h4>
               <p className="text-xs text-gray-500 mt-0.5">
-                Klik tombol "Lihat Grafik" pada konsumen untuk fokus melihat tren individu bulan ke bulan.
+                Cari dan filter konsumen untuk melihat tren individu bulan ke bulan.
               </p>
+            </div>
+
+            {/* Matrix Search & Status Filter Controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-full sm:w-56">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari konsumen di tabel..."
+                  value={matrixSearch}
+                  onChange={(e) => setMatrixSearch(e.target.value)}
+                  className="w-full pl-8 pr-7 py-1.5 bg-gray-50 hover:bg-white focus:bg-white border border-gray-300 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+                {matrixSearch && (
+                  <button
+                    onClick={() => setMatrixSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    title="Hapus pencarian tabel"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg text-xs font-semibold">
+                <button
+                  onClick={() => setMatrixStatusFilter("ALL")}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    matrixStatusFilter === "ALL"
+                      ? "bg-white text-blue-600 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Semua
+                </button>
+                <button
+                  onClick={() => setMatrixStatusFilter("DEBT")}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    matrixStatusFilter === "DEBT"
+                      ? "bg-white text-rose-600 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Ada Utang
+                </button>
+                <button
+                  onClick={() => setMatrixStatusFilter("PAID")}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    matrixStatusFilter === "PAID"
+                      ? "bg-white text-emerald-600 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Lunas
+                </button>
+              </div>
             </div>
           </div>
 
@@ -887,12 +987,19 @@ export function CustomerAnalytics({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {customerComparisonData.map((item) => {
-                  const rasio = item.tagihan > 0 ? (item.pembayaran / item.tagihan) * 100 : 0;
-                  return (
-                    <tr key={item.name} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3.5 font-bold text-gray-900">{item.name}</td>
-                      <td className="px-4 py-3.5 text-gray-700">{formatCurrency(item.tagihan)}</td>
+                {filteredMatrixData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-gray-500">
+                      <p className="text-xs">Tidak ditemukan konsumen yang cocok di tabel.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMatrixData.map((item) => {
+                    const rasio = item.tagihan > 0 ? (item.pembayaran / item.tagihan) * 100 : 0;
+                    return (
+                      <tr key={item.name} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3.5 font-bold text-gray-900">{item.name}</td>
+                        <td className="px-4 py-3.5 text-gray-700">{formatCurrency(item.tagihan)}</td>
                       <td className="px-4 py-3.5 text-emerald-600 font-semibold">
                         {formatCurrency(item.pembayaran)}
                       </td>
@@ -931,7 +1038,7 @@ export function CustomerAnalytics({
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>

@@ -1,6 +1,25 @@
 import React, { useState, useMemo } from "react";
 import { Customer, Invoice } from "../types";
-import { Users, Plus, Edit2, Trash2, X, Upload, FileDown, RefreshCcw, Search, BarChart2, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Users,
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+  Upload,
+  FileDown,
+  RefreshCcw,
+  Search,
+  BarChart2,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Filter,
+  ArrowUpDown,
+  RotateCcw,
+  Layers,
+  FileSpreadsheet,
+} from "lucide-react";
 import * as XLSX from "xlsx-js-style";
 import { CustomerAnalytics } from "./CustomerAnalytics";
 import { formatCurrency } from "../utils";
@@ -19,6 +38,8 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
   const [activeTab, setActiveTab] = useState<"TABLE" | "ANALYTICS">("TABLE");
   const [analyticsCustomerId, setAnalyticsCustomerId] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "HAS_DEBT" | "PAID" | "SEPARATE_SHEET" | "SAME_SHEET">("ALL");
+  const [sortBy, setSortBy] = useState<"NAME_ASC" | "NAME_DESC" | "DEBT_DESC" | "DEBT_ASC" | "PAYMENT_DESC">("NAME_ASC");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState({ name: "", phone: "", address: "", exportSeparateSheet: false });
@@ -51,11 +72,104 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
     setActiveTab("ANALYTICS");
   };
 
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.phone && c.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (c.address && c.address.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Quick statistics counts for filter pills
+  const counts = useMemo(() => {
+    let hasDebt = 0;
+    let paid = 0;
+    let separateSheet = 0;
+
+    customers.forEach((c) => {
+      const stats = customerDebtStats[c.name.toLowerCase().trim()];
+      if (stats && stats.sisaUtang > 0) {
+        hasDebt++;
+      } else {
+        paid++;
+      }
+      if (c.exportSeparateSheet) {
+        separateSheet++;
+      }
+    });
+
+    return {
+      all: customers.length,
+      hasDebt,
+      paid,
+      separateSheet,
+    };
+  }, [customers, customerDebtStats]);
+
+  // Combined Search and Filter Logic
+  const filteredCustomers = useMemo(() => {
+    let result = [...customers];
+
+    // 1. Status Filter
+    if (statusFilter === "HAS_DEBT") {
+      result = result.filter((c) => {
+        const stats = customerDebtStats[c.name.toLowerCase().trim()];
+        return stats && stats.sisaUtang > 0;
+      });
+    } else if (statusFilter === "PAID") {
+      result = result.filter((c) => {
+        const stats = customerDebtStats[c.name.toLowerCase().trim()];
+        return !stats || stats.sisaUtang === 0;
+      });
+    } else if (statusFilter === "SEPARATE_SHEET") {
+      result = result.filter((c) => c.exportSeparateSheet === true);
+    } else if (statusFilter === "SAME_SHEET") {
+      result = result.filter((c) => !c.exportSeparateSheet);
+    }
+
+    // 2. Search Term Filter (Name, Phone, Address, keywords)
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      result = result.filter((c) => {
+        const nameMatch = c.name.toLowerCase().includes(q);
+        const phoneMatch = c.phone ? c.phone.toLowerCase().includes(q) : false;
+        const addressMatch = c.address ? c.address.toLowerCase().includes(q) : false;
+
+        // Also match keywords like "utang", "lunas", "sheet"
+        const stats = customerDebtStats[c.name.toLowerCase().trim()];
+        const hasDebt = stats && stats.sisaUtang > 0;
+        const debtKeywordMatch = (q === "utang" || q === "belum lunas" || q === "menunggak") && hasDebt;
+        const paidKeywordMatch = (q === "lunas" || q === "bebas utang") && !hasDebt;
+        const sheetKeywordMatch = (q === "sheet" || q === "pisah") && c.exportSeparateSheet;
+
+        return nameMatch || phoneMatch || addressMatch || debtKeywordMatch || paidKeywordMatch || sheetKeywordMatch;
+      });
+    }
+
+    // 3. Sorting
+    result.sort((a, b) => {
+      const statsA = customerDebtStats[a.name.toLowerCase().trim()] || { sisaUtang: 0, totalPembayaran: 0 };
+      const statsB = customerDebtStats[b.name.toLowerCase().trim()] || { sisaUtang: 0, totalPembayaran: 0 };
+
+      if (sortBy === "NAME_ASC") {
+        return a.name.localeCompare(b.name, "id");
+      }
+      if (sortBy === "NAME_DESC") {
+        return b.name.localeCompare(a.name, "id");
+      }
+      if (sortBy === "DEBT_DESC") {
+        return statsB.sisaUtang - statsA.sisaUtang;
+      }
+      if (sortBy === "DEBT_ASC") {
+        return statsA.sisaUtang - statsB.sisaUtang;
+      }
+      if (sortBy === "PAYMENT_DESC") {
+        return statsB.totalPembayaran - statsA.totalPembayaran;
+      }
+      return 0;
+    });
+
+    return result;
+  }, [customers, statusFilter, searchTerm, sortBy, customerDebtStats]);
+
+  const isFilterActive = searchTerm.trim() !== "" || statusFilter !== "ALL" || sortBy !== "NAME_ASC";
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setSortBy("NAME_ASC");
+  };
 
   const openModal = (customer?: Customer) => {
     if (customer) {
@@ -222,57 +336,203 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
       ) : (
         /* RENDER VIEW: TABLE & MANAGEMENT */
         <>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 w-full sm:w-64">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Cari konsumen..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-transparent text-sm outline-none"
-              />
-            </div>
-            <div className="flex gap-2 flex-wrap items-center">
-              <button
-                onClick={downloadTemplate}
-                className="flex items-center gap-2 rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
-              >
-                <FileDown size={18} />
-                Template
-              </button>
-              <div>
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  ref={fileInputRef}
-                  onChange={handleImportExcel}
-                  className="hidden"
-                />
+          {/* SEARCH, FILTER, SORT & ACTIONS TOOLBAR */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-2xs space-y-3.5">
+            {/* Top Toolbar Row */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              {/* Search & Select Filters */}
+              <div className="flex flex-wrap items-center gap-2.5 flex-1">
+                {/* Search Input with Clear Button */}
+                <div className="relative flex-1 min-w-[220px] max-w-md">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari konsumen (nama, telepon, alamat, status)..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100/70 focus:bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                      title="Hapus pencarian"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Dropdown */}
+                <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-300 rounded-xl px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-blue-500">
+                  <Filter size={15} className="text-gray-500 shrink-0" />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="bg-transparent text-xs sm:text-sm font-semibold text-gray-700 outline-none cursor-pointer pr-1"
+                  >
+                    <option value="ALL">Semua Status</option>
+                    <option value="HAS_DEBT">Ada Utang (Belum Lunas)</option>
+                    <option value="PAID">Lunas (Bebas Utang)</option>
+                    <option value="SEPARATE_SHEET">Pisah Sheet Excel</option>
+                    <option value="SAME_SHEET">Gabung Sheet Excel</option>
+                  </select>
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-300 rounded-xl px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-blue-500">
+                  <ArrowUpDown size={15} className="text-gray-500 shrink-0" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-transparent text-xs sm:text-sm font-semibold text-gray-700 outline-none cursor-pointer pr-1"
+                  >
+                    <option value="NAME_ASC">Nama (A - Z)</option>
+                    <option value="NAME_DESC">Nama (Z - A)</option>
+                    <option value="DEBT_DESC">Sisa Utang Terbesar</option>
+                    <option value="DEBT_ASC">Sisa Utang Terkecil</option>
+                    <option value="PAYMENT_DESC">Pembayaran Terbanyak</option>
+                  </select>
+                </div>
+
+                {/* Reset Filter Button if active */}
+                {isFilterActive && (
+                  <button
+                    onClick={resetFilters}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-colors"
+                    title="Reset semua filter dan pencarian"
+                  >
+                    <RotateCcw size={13} />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Action Buttons: Template, Import, Sync, Tambah */}
+              <div className="flex gap-2 flex-wrap items-center">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                  onClick={downloadTemplate}
+                  className="flex items-center gap-1.5 rounded-xl border border-emerald-600/70 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors shadow-2xs"
                 >
-                  <Upload size={18} />
-                  Import
+                  <FileDown size={16} />
+                  <span>Template</span>
+                </button>
+                <div>
+                  <input
+                    type="file"
+                    accept=".xlsx, .xls"
+                    ref={fileInputRef}
+                    onChange={handleImportExcel}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-2xs"
+                  >
+                    <Upload size={16} />
+                    <span>Import</span>
+                  </button>
+                </div>
+                {onSyncFromInvoices && (
+                  <button
+                    onClick={onSyncFromInvoices}
+                    className="flex items-center gap-1.5 rounded-xl border border-blue-600/70 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition-colors shadow-2xs"
+                  >
+                    <RefreshCcw size={16} />
+                    <span>Sync Faktur</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => openModal()}
+                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-2xs"
+                >
+                  <Plus size={16} />
+                  <span>Tambah Konsumen</span>
                 </button>
               </div>
-              {onSyncFromInvoices && (
+            </div>
+
+            {/* Quick Filter Pill Buttons Row */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-semibold text-gray-500 mr-1 flex items-center gap-1">
+                  <Filter size={12} /> Filter Cepat:
+                </span>
                 <button
-                  onClick={onSyncFromInvoices}
-                  className="flex items-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                  onClick={() => setStatusFilter("ALL")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    statusFilter === "ALL"
+                      ? "bg-blue-600 text-white shadow-2xs"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
                 >
-                  <RefreshCcw size={18} />
-                  Sync dari Faktur
+                  <span>Semua</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    statusFilter === "ALL" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-700"
+                  }`}>
+                    {counts.all}
+                  </span>
                 </button>
-              )}
-              <button
-                onClick={() => openModal()}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                <Plus size={18} />
-                Tambah Konsumen
-              </button>
+
+                <button
+                  onClick={() => setStatusFilter("HAS_DEBT")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    statusFilter === "HAS_DEBT"
+                      ? "bg-rose-600 text-white shadow-2xs"
+                      : "bg-rose-50 text-rose-700 border border-rose-200/60 hover:bg-rose-100"
+                  }`}
+                >
+                  <AlertCircle size={12} />
+                  <span>Ada Utang</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    statusFilter === "HAS_DEBT" ? "bg-white/20 text-white" : "bg-rose-200 text-rose-800"
+                  }`}>
+                    {counts.hasDebt}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setStatusFilter("PAID")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    statusFilter === "PAID"
+                      ? "bg-emerald-600 text-white shadow-2xs"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200/60 hover:bg-emerald-100"
+                  }`}
+                >
+                  <CheckCircle2 size={12} />
+                  <span>Lunas</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    statusFilter === "PAID" ? "bg-white/20 text-white" : "bg-emerald-200 text-emerald-800"
+                  }`}>
+                    {counts.paid}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setStatusFilter("SEPARATE_SHEET")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    statusFilter === "SEPARATE_SHEET"
+                      ? "bg-purple-600 text-white shadow-2xs"
+                      : "bg-purple-50 text-purple-700 border border-purple-200/60 hover:bg-purple-100"
+                  }`}
+                >
+                  <Layers size={12} />
+                  <span>Pisah Sheet Excel</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    statusFilter === "SEPARATE_SHEET" ? "bg-white/20 text-white" : "bg-purple-200 text-purple-800"
+                  }`}>
+                    {counts.separateSheet}
+                  </span>
+                </button>
+              </div>
+
+              {/* Status Text & Result Info */}
+              <div className="text-xs text-gray-500 font-medium">
+                Menampilkan <strong className="text-gray-900">{filteredCustomers.length}</strong> dari <strong className="text-gray-900">{customers.length}</strong> konsumen
+                {isFilterActive && (
+                  <span className="ml-1 text-blue-600 font-semibold">(Filter Aktif)</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -292,10 +552,28 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                 <tbody className="divide-y divide-gray-100">
                   {filteredCustomers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-500">
-                        <div className="flex flex-col items-center justify-center">
-                          <Users size={40} className="mb-3 text-gray-300" />
-                          <p>Belum ada data konsumen.</p>
+                      <td colSpan={6} className="py-12 text-center text-gray-500">
+                        <div className="flex flex-col items-center justify-center space-y-2">
+                          <Users size={44} className="text-gray-300" />
+                          <p className="font-semibold text-gray-700 text-base">
+                            {customers.length === 0
+                              ? "Belum ada data konsumen."
+                              : "Tidak ditemukan konsumen yang cocok."}
+                          </p>
+                          {isFilterActive && (
+                            <p className="text-xs text-gray-400 max-w-sm">
+                              Coba ubah kata kunci pencarian atau reset filter untuk menampilkan data konsumen lainnya.
+                            </p>
+                          )}
+                          {isFilterActive && (
+                            <button
+                              onClick={resetFilters}
+                              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                            >
+                              <RotateCcw size={13} />
+                              <span>Reset Pencarian & Filter</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -309,7 +587,20 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
 
                       return (
                         <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-4 font-bold text-gray-900">{c.name}</td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-gray-900">{c.name}</span>
+                              {c.exportSeparateSheet && (
+                                <span
+                                  className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200/70 px-1.5 py-0.5 rounded"
+                                  title="Konsumen ini otomatis dibuatkan sheet terpisah saat export Excel"
+                                >
+                                  <Layers size={10} />
+                                  Pisah Sheet
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-4 py-4 text-gray-600">{c.phone || "-"}</td>
                           <td className="px-4 py-4">
                             {stats.sisaUtang > 0 ? (

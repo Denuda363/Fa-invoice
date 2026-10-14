@@ -176,6 +176,11 @@ const GUIDE_DATA: GuideSection[] = [
         description: "Nomor telepon yang tersimpan pada data konsumen memudahkan Anda untuk langsung menghubungi atau menagih konsumen terkait faktur yang mendekati jatuh tempo.",
       },
       {
+        title: "Pencarian & Filter Cepat Data Konsumen",
+        description: "Pada menu 'Data Konsumen', Anda dapat memfilter dan mencari pelanggan secara fleksibel:\n1. Kotak Pencarian: Cari konsumen berdasarkan nama toko, nomor telepon, alamat, hingga kata kunci status seperti 'utang', 'lunas', atau 'sheet'.\n2. Tombol Filter Cepat & Dropdown: Filter instan berdasarkan status (Semua, Ada Utang, Lunas, Pisah Sheet Excel) lengkap dengan badge jumlah konsumen.\n3. Pengurutan Data: Urutkan berdasarkan Sisa Utang Terbesar, Nama (A-Z/Z-A), atau Total Pembayaran Terbanyak.\n4. Pencarian di Grafik & Tren: Pada tab 'Grafik & Tren', tersedia kolom pencarian untuk memilih konsumen grafik dengan cepat serta mencari langsung di tabel matriks utang-pembayaran.",
+        tip: "Pencarian dan filter status dapat digabungkan secara bersamaan. Gunakan tombol 'Reset' untuk mengembalikan tampilan ke awal."
+      },
+      {
         title: "Grafik Perbandingan Pembayaran vs Utang & Tren MoM",
         description: "Di menu 'Data Konsumen', buka tab 'Grafik & Tren' atau klik tombol 'Grafik & Tren' pada baris konsumen:\n1. Grafik Bar Perbandingan: Membandingkan total pembayaran yang diterima (hijau) dengan sisa utang yang belum dibayar (merah).\n2. Grafik Area Tren MoM: Melihat grafik fluktuasi pembayaran dan tagihan baru dari bulan ke bulan.\n3. Tabel Rincian Kenaikan/Penurunan: Menampilkan selisih nominal (Rp) dan persentase (%) kenaikan/penurunan pembayaran serta tagihan baru setiap bulan.",
         tip: "Anda dapat memfilter tampilan per 6 bulan, 12 bulan, atau seluruh riwayat pembukuan."
