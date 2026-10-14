@@ -181,9 +181,9 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Pencarian dan filter status dapat digabungkan secara bersamaan. Gunakan tombol 'Reset' untuk mengembalikan tampilan ke awal."
       },
       {
-        title: "Grafik Perbandingan Pembayaran vs Utang & Tren MoM",
-        description: "Di menu 'Data Konsumen', buka tab 'Grafik & Tren' atau klik tombol 'Grafik & Tren' pada baris konsumen:\n1. Grafik Bar Perbandingan: Membandingkan total pembayaran yang diterima (hijau) dengan sisa utang yang belum dibayar (merah).\n2. Grafik Area Tren MoM: Melihat grafik fluktuasi pembayaran dan tagihan baru dari bulan ke bulan.\n3. Tabel Rincian Kenaikan/Penurunan: Menampilkan selisih nominal (Rp) dan persentase (%) kenaikan/penurunan pembayaran serta tagihan baru setiap bulan.",
-        tip: "Anda dapat memfilter tampilan per 6 bulan, 12 bulan, atau seluruh riwayat pembukuan."
+        title: "Grafik Perbandingan Pembayaran, Faktur & Utang Per Bulan (MoM)",
+        description: "Di menu 'Data Konsumen', buka tab 'Grafik & Tren' atau klik tombol 'Grafik & Tren' pada baris konsumen. Grafik secara otomatis mengakumulasi data transaksi per bulannya:\n\n• Contoh Perhitungan Bulanan:\n  - Bulan Januari: Total nominal faktur Rp 5.000.000, Total pembayaran Rp 3.000.000 -> Sisa utang timbul Rp 2.000.000.\n  - Bulan Februari: Total nominal faktur Rp 6.000.000, Total pembayaran Rp 4.000.000 -> Sisa utang timbul Rp 2.000.000.\n\n• Fitur Grafik & Analisis:\n1. Grafik Bar Bulanan: Menampilkan diagram batang per bulan untuk Total Nominal Faktur (biru), Total Pembayaran (hijau), dan Sisa Utang (merah). Anda dapat memfilter indikator (Semua, Faktur vs Bayar, atau Bayar vs Utang).\n2. Mode Konsolidasi & Per Konsumen: Menampilkan data bulanan gabungan seluruh konsumen atau khusus konsumen tertentu yang dipilih.\n3. Grafik Area Tren MoM: Memantau kurva kenaikan dan penurunan penerimaan pembayaran vs nilai faktur baru.\n4. Tabel Rincian MoM: Tabel detail angka nominal per bulan, selisih pertumbuhan (Rp), persentase kenaikan/penurunan (%), dan tingkat pelunasan.",
+        tip: "Anda dapat memfilter rentang waktu (6 Bulan, 12 Bulan, atau Semua) serta menggunakan kotak pencarian konsumen untuk beralih data toko secara instan."
       }
     ]
   },

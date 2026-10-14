@@ -53,6 +53,8 @@ export function CustomerAnalytics({
     initialCustomerId || "ALL"
   );
   const [timeRange, setTimeRange] = useState<"6m" | "12m" | "all">("6m");
+  const [chartMetricView, setChartMetricView] = useState<"ALL" | "FAKTUR_VS_BAYAR" | "BAYAR_VS_UTANG">("ALL");
+  const [allCustomerGraphMode, setAllCustomerGraphMode] = useState<"monthly" | "by_customer">("monthly");
   const [searchFilter, setSearchFilter] = useState("");
   const [matrixSearch, setMatrixSearch] = useState("");
   const [matrixStatusFilter, setMatrixStatusFilter] = useState<"ALL" | "DEBT" | "PAID">("ALL");
@@ -98,72 +100,144 @@ export function CustomerAnalytics({
     };
   }, [filteredInvoices]);
 
+  // Helper to extract "yyyy-MM" safely
+  const getMonthKey = (dateStr?: string) => {
+    if (!dateStr) return "";
+    const trimmed = dateStr.trim();
+    if (trimmed.length >= 7 && /^\d{4}-\d{2}/.test(trimmed)) {
+      return trimmed.slice(0, 7);
+    }
+    try {
+      const d = parseISO(trimmed);
+      if (!isNaN(d.getTime())) {
+        return format(d, "yyyy-MM");
+      }
+    } catch {}
+    return "";
+  };
+
   // Month-by-month analysis (MoM)
+  // Perhitungan grafik bulanan dari data:
+  // - Total nominal faktur per bulan (contoh: Jan Rp 5.000.000, Feb Rp 6.000.000)
+  // - Total pembayaran per bulan (contoh: Jan Rp 3.000.000, Feb Rp 4.000.000)
+  // - Sisa utang timbul pada bulan tersebut (Tagihan - Pembayaran)
   const monthlyData = useMemo(() => {
+    // 1. Kumpulkan semua bulan yang ada transaksi faktur atau pembayaran
+    const discoveredMonths = new Set<string>();
+
+    filteredInvoices.forEach((inv) => {
+      const invMonth = getMonthKey(inv.date);
+      if (invMonth) discoveredMonths.add(invMonth);
+
+      inv.payments.forEach((p) => {
+        const pMonth = getMonthKey(p.date) || invMonth;
+        if (pMonth) discoveredMonths.add(pMonth);
+      });
+    });
+
     const today = new Date();
-    const monthsCount = timeRange === "6m" ? 6 : timeRange === "12m" ? 12 : 24;
+    const currentMonthKey = format(today, "yyyy-MM");
+    discoveredMonths.add(currentMonthKey);
 
-    // Build ordered list of month keys (oldest to newest)
-    const monthKeys: string[] = [];
-    const monthLabels: Record<string, string> = {};
-
-    for (let i = monthsCount - 1; i >= 0; i--) {
+    // Tambahkan bulan-bulan bergulir standar (rolling calendar)
+    const rollingCount = timeRange === "6m" ? 6 : timeRange === "12m" ? 12 : 24;
+    for (let i = 0; i < rollingCount; i++) {
       const d = subMonths(today, i);
-      const key = format(d, "yyyy-MM");
-      const label = format(d, "MMM yyyy", { locale: id });
-      monthKeys.push(key);
-      monthLabels[key] = label;
+      discoveredMonths.add(format(d, "yyyy-MM"));
     }
 
-    // Accumulators per month
+    // Urutkan bulan secara kronologis (dari bulan lama ke bulan terbaru)
+    const allSortedKeys = Array.from(discoveredMonths).sort();
+
+    // Tentukan bulan yang akan ditampilkan di grafik
+    let monthKeys: string[] = [];
+
+    if (timeRange === "all") {
+      monthKeys = allSortedKeys;
+    } else {
+      // Cari bulan yang benar-benar memiliki data faktur atau pembayaran
+      const activeMonthsWithData = allSortedKeys.filter((m) => {
+        return filteredInvoices.some((inv) => {
+          const invM = getMonthKey(inv.date);
+          if (invM === m) return true;
+          return inv.payments.some((p) => (getMonthKey(p.date) || invM) === m);
+        });
+      });
+
+      const maxWindow = timeRange === "6m" ? 6 : 12;
+
+      // Jika data aktif ada dan muat dalam window waktu, tampilkan data aktif tersebut
+      if (activeMonthsWithData.length > 0 && activeMonthsWithData.length <= maxWindow) {
+        const earliest = activeMonthsWithData[0];
+        const startIdx = allSortedKeys.indexOf(earliest);
+        const candidateSlice = allSortedKeys.slice(Math.max(0, startIdx));
+        if (candidateSlice.length <= maxWindow) {
+          monthKeys = candidateSlice;
+        } else {
+          monthKeys = candidateSlice.slice(0, maxWindow);
+        }
+      } else {
+        monthKeys = allSortedKeys.slice(-maxWindow);
+      }
+    }
+
+    if (monthKeys.length === 0) {
+      monthKeys = [currentMonthKey];
+    }
+
+    // Accumulators per bulan
     const agg: Record<
       string,
       {
         monthKey: string;
         monthLabel: string;
-        tagihan: number;
-        pembayaran: number;
+        tagihan: number; // Total nominal faktur
+        pembayaran: number; // Total pembayaran
         fakturCount: number;
       }
     > = {};
 
     monthKeys.forEach((key) => {
+      const [year, month] = key.split("-").map(Number);
+      const d = new Date(year, (month || 1) - 1, 1);
+      const label = format(d, "MMM yyyy", { locale: id });
       agg[key] = {
         monthKey: key,
-        monthLabel: monthLabels[key],
+        monthLabel: label,
         tagihan: 0,
         pembayaran: 0,
         fakturCount: 0,
       };
     });
 
-    // Populate invoices
+    // Agregasi Faktur dan Pembayaran ke masing-masing bulan
     filteredInvoices.forEach((inv) => {
-      const invKey = inv.date ? inv.date.slice(0, 7) : "";
+      const invKey = getMonthKey(inv.date);
       if (agg[invKey]) {
         agg[invKey].tagihan += inv.totalAmount;
         agg[invKey].fakturCount += 1;
       }
 
-      // Populate payments
+      // Agregasi pembayaran
       inv.payments.forEach((p) => {
-        const pKey = p.date ? p.date.slice(0, 7) : "";
+        const pKey = getMonthKey(p.date) || invKey;
         if (agg[pKey]) {
           agg[pKey].pembayaran += p.amount;
         }
       });
     });
 
-    // Calculate MoM (Month over Month) deltas
+    // Hitung sisa utang dan MoM (Month over Month deltas)
     const rawList = monthKeys.map((k) => agg[k]);
     const result: Array<{
       monthKey: string;
       monthLabel: string;
-      tagihan: number;
-      pembayaran: number;
-      sisaUtangBulan: number;
+      tagihan: number; // Total nominal faktur
+      pembayaran: number; // Total pembayaran
+      sisaUtangBulan: number; // Sisa utang di bulan tersebut (Tagihan - Pembayaran)
+      rasioLunasBulan: number;
       fakturCount: number;
-      // MoM Tagihan / Utang
+      // MoM Tagihan
       tagihanDiff: number;
       tagihanPercent: number;
       // MoM Pembayaran
@@ -176,6 +250,12 @@ export function CustomerAnalytics({
       const prev = i > 0 ? rawList[i - 1] : null;
 
       const sisaUtangBulan = Math.max(0, current.tagihan - current.pembayaran);
+      const rasioLunasBulan =
+        current.tagihan > 0
+          ? (current.pembayaran / current.tagihan) * 100
+          : current.pembayaran > 0
+          ? 100
+          : 0;
 
       let tagihanDiff = 0;
       let tagihanPercent = 0;
@@ -201,6 +281,7 @@ export function CustomerAnalytics({
       result.push({
         ...current,
         sisaUtangBulan,
+        rasioLunasBulan,
         tagihanDiff,
         tagihanPercent,
         pembayaranDiff,
@@ -310,31 +391,56 @@ export function CustomerAnalytics({
   // Custom Tooltip for charts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3.5 border border-gray-200 rounded-xl shadow-lg text-xs space-y-1.5 min-w-[200px]">
-          <p className="font-bold text-gray-900 border-b border-gray-100 pb-1.5">
-            {label}
-          </p>
-          {payload.map((item: any, idx: number) => {
-            const isBayar = item.dataKey === "pembayaran";
-            const isTagihan = item.dataKey === "tagihan";
-            const isUtang = item.dataKey === "utang" || item.dataKey === "sisaUtangBulan";
+      const monthItem = monthlyData.find(
+        (m) => m.monthLabel === label || m.monthKey === label
+      );
 
-            return (
-              <div key={idx} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-1.5 font-medium" style={{ color: item.color }}>
-                  <span
-                    className="w-2.5 h-2.5 rounded-full inline-block"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  {item.name}:
-                </span>
-                <span className="font-bold text-gray-800">
-                  {formatCurrency(item.value)}
+      return (
+        <div className="bg-white p-3.5 border border-gray-200 rounded-xl shadow-lg text-xs space-y-2 min-w-[220px]">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-1.5">
+            <span className="font-bold text-gray-900 text-sm">{label}</span>
+            {monthItem && monthItem.fakturCount > 0 && (
+              <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                {monthItem.fakturCount} Faktur
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            {payload.map((item: any, idx: number) => {
+              return (
+                <div key={idx} className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-1.5 font-medium" style={{ color: item.color }}>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full inline-block"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    {item.name}:
+                  </span>
+                  <span className="font-bold text-gray-800">
+                    {formatCurrency(item.value)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {monthItem && (
+            <div className="pt-2 border-t border-gray-100 space-y-1 text-[11px] text-gray-500">
+              <div className="flex items-center justify-between">
+                <span>Sisa Utang Bulan Ini:</span>
+                <span className={`font-bold ${monthItem.sisaUtangBulan > 0 ? "text-rose-600" : "text-emerald-600"}`}>
+                  {formatCurrency(monthItem.sisaUtangBulan)}
                 </span>
               </div>
-            );
-          })}
+              <div className="flex items-center justify-between">
+                <span>Tingkat Pelunasan:</span>
+                <span className={`font-bold ${monthItem.rasioLunasBulan >= 100 ? "text-emerald-600" : "text-amber-600"}`}>
+                  {monthItem.rasioLunasBulan.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -603,34 +709,114 @@ export function CustomerAnalytics({
 
       {/* Main Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* CHART 1: Grafik Perbandingan Pembayaran vs Utang */}
+        {/* CHART 1: Grafik Perbandingan Faktur, Pembayaran & Utang Per Bulan */}
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h4 className="font-bold text-gray-900 text-base flex items-center gap-2">
                 <BarChart2 size={18} className="text-blue-600" />
-                Perbandingan Pembayaran vs Utang
+                {selectedCustomer
+                  ? `Grafik Bulanan: ${selectedCustomer.name}`
+                  : allCustomerGraphMode === "monthly"
+                  ? "Grafik Bulanan: Konsolidasi Seluruh Konsumen"
+                  : "Perbandingan Utang Antar Konsumen"}
               </h4>
               <p className="text-xs text-gray-500 mt-0.5">
                 {selectedCustomer
-                  ? `Grafik bulanan pelunasan tagihan untuk ${selectedCustomer.name}`
-                  : "Perbandingan sisa utang dan pembayaran antar konsumen"}
+                  ? "Data per bulan: total nominal faktur, pembayaran, dan sisa utang"
+                  : allCustomerGraphMode === "monthly"
+                  ? "Data per bulan: akumulasi total nominal faktur terbit vs pembayaran"
+                  : "Ranking 8 konsumen dengan sisa utang terbesar"}
               </p>
             </div>
+
+            {/* Toggle Mode for All Customers: Per Bulan vs Antar Konsumen */}
+            {!selectedCustomer && (
+              <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-semibold self-start sm:self-auto">
+                <button
+                  onClick={() => setAllCustomerGraphMode("monthly")}
+                  className={`px-2.5 py-1 rounded-lg transition-colors ${
+                    allCustomerGraphMode === "monthly"
+                      ? "bg-white text-blue-600 shadow-xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Per Bulan
+                </button>
+                <button
+                  onClick={() => setAllCustomerGraphMode("by_customer")}
+                  className={`px-2.5 py-1 rounded-lg transition-colors ${
+                    allCustomerGraphMode === "by_customer"
+                      ? "bg-white text-blue-600 shadow-xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Antar Konsumen
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Metric Selector Pills & Legend */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-100 text-xs">
+            {/* Metric Filter Tabs */}
+            <div className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-lg border border-gray-200/60">
+              <button
+                onClick={() => setChartMetricView("ALL")}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                  chartMetricView === "ALL"
+                    ? "bg-blue-600 text-white shadow-2xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Semua Indikator
+              </button>
+              <button
+                onClick={() => setChartMetricView("FAKTUR_VS_BAYAR")}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                  chartMetricView === "FAKTUR_VS_BAYAR"
+                    ? "bg-blue-600 text-white shadow-2xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Faktur vs Pembayaran
+              </button>
+              <button
+                onClick={() => setChartMetricView("BAYAR_VS_UTANG")}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                  chartMetricView === "BAYAR_VS_UTANG"
+                    ? "bg-blue-600 text-white shadow-2xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Pembayaran vs Utang
+              </button>
+            </div>
+
+            {/* Badges */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1 font-semibold text-emerald-600">
-                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Pembayaran
-              </span>
-              <span className="flex items-center gap-1 font-semibold text-rose-600">
-                <span className="w-2.5 h-2.5 rounded-sm bg-rose-500" /> Utang
-              </span>
+              {(chartMetricView === "ALL" || chartMetricView === "FAKTUR_VS_BAYAR") && (
+                <span className="flex items-center gap-1 font-semibold text-blue-600">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" /> Total Faktur
+                </span>
+              )}
+              {(chartMetricView === "ALL" || chartMetricView === "FAKTUR_VS_BAYAR" || chartMetricView === "BAYAR_VS_UTANG") && (
+                <span className="flex items-center gap-1 font-semibold text-emerald-600">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Pembayaran
+                </span>
+              )}
+              {(chartMetricView === "ALL" || chartMetricView === "BAYAR_VS_UTANG") && (
+                <span className="flex items-center gap-1 font-semibold text-rose-600">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-rose-500" /> Sisa Utang
+                </span>
+              )}
             </div>
           </div>
 
           <div className="h-72 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              {selectedCustomer ? (
-                // Single Customer Monthly Comparison
+              {selectedCustomer || allCustomerGraphMode === "monthly" ? (
+                // Monthly Data Chart (both for Single Customer and All Customers consolidated)
                 <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis
@@ -646,23 +832,36 @@ export function CustomerAnalytics({
                     tickLine={false}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="pembayaran"
-                    name="Pembayaran"
-                    fill="#10b981"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={32}
-                  />
-                  <Bar
-                    dataKey="sisaUtangBulan"
-                    name="Sisa Utang Bulan Ini"
-                    fill="#ef4444"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={32}
-                  />
+                  {(chartMetricView === "ALL" || chartMetricView === "FAKTUR_VS_BAYAR") && (
+                    <Bar
+                      dataKey="tagihan"
+                      name="Total Nominal Faktur"
+                      fill="#3b82f6"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={30}
+                    />
+                  )}
+                  {(chartMetricView === "ALL" || chartMetricView === "FAKTUR_VS_BAYAR" || chartMetricView === "BAYAR_VS_UTANG") && (
+                    <Bar
+                      dataKey="pembayaran"
+                      name="Total Pembayaran"
+                      fill="#10b981"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={30}
+                    />
+                  )}
+                  {(chartMetricView === "ALL" || chartMetricView === "BAYAR_VS_UTANG") && (
+                    <Bar
+                      dataKey="sisaUtangBulan"
+                      name="Sisa Utang Bulan Ini"
+                      fill="#ef4444"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={30}
+                    />
+                  )}
                 </BarChart>
               ) : (
-                // Multi-Customer Comparison (Top 8 customers by debt)
+                // Multi-Customer Comparison (Ranking top customers by debt)
                 <BarChart
                   data={customerComparisonData.slice(0, 8)}
                   margin={{ top: 10, right: 10, left: -10, bottom: 25 }}
@@ -716,15 +915,15 @@ export function CustomerAnalytics({
                 Tren Kenaikan & Penurunan (MoM)
               </h4>
               <p className="text-xs text-gray-500 mt-0.5">
-                Fluktuasi penerimaan pembayaran vs tagihan baru per bulan
+                Fluktuasi penerimaan pembayaran vs total nominal faktur baru per bulan
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1 font-semibold text-blue-600">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Total Faktur
+              </span>
               <span className="flex items-center gap-1 font-semibold text-emerald-600">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Pembayaran
-              </span>
-              <span className="flex items-center gap-1 font-semibold text-blue-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Tagihan/Utang Baru
               </span>
             </div>
           </div>
@@ -758,19 +957,8 @@ export function CustomerAnalytics({
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
-                  dataKey="pembayaran"
-                  name="Pembayaran"
-                  stroke="#10b981"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorPembayaran)"
-                  dot={{ r: 4, fill: "#10b981", strokeWidth: 1, stroke: "#fff" }}
-                  activeDot={{ r: 6 }}
-                />
-                <Area
-                  type="monotone"
                   dataKey="tagihan"
-                  name="Tagihan Baru"
+                  name="Total Nominal Faktur"
                   stroke="#3b82f6"
                   strokeWidth={2.5}
                   fillOpacity={1}
@@ -778,11 +966,22 @@ export function CustomerAnalytics({
                   dot={{ r: 4, fill: "#3b82f6", strokeWidth: 1, stroke: "#fff" }}
                   activeDot={{ r: 6 }}
                 />
+                <Area
+                  type="monotone"
+                  dataKey="pembayaran"
+                  name="Total Pembayaran"
+                  stroke="#10b981"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorPembayaran)"
+                  dot={{ r: 4, fill: "#10b981", strokeWidth: 1, stroke: "#fff" }}
+                  activeDot={{ r: 6 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
           <div className="text-[11px] text-gray-400 text-center italic">
-            * Menampilkan dinamika kenaikan/penurunan arus kas dan tagihan
+            * Menampilkan tren fluktuasi nominal faktur dan penerimaan pembayaran per bulannya
           </div>
         </div>
       </div>
@@ -796,11 +995,11 @@ export function CustomerAnalytics({
               Tabel Rincian Kenaikan & Penurunan Dari Bulan ke Bulan
             </h4>
             <p className="text-xs text-gray-500 mt-0.5">
-              Detail angka nominal, selisih pertumbuhan (MoM), dan persentase perubahan tiap bulan.
+              Detail data per bulannya: total nominal faktur, total pembayaran, sisa utang, serta selisih kenaikan/penurunan (MoM).
             </p>
           </div>
           <div className="text-xs text-gray-500">
-            Menampilkan data <strong>{monthlyData.length} bulan</strong> terakhir
+            Menampilkan data <strong>{monthlyData.length} bulan</strong>
           </div>
         </div>
 
@@ -809,11 +1008,12 @@ export function CustomerAnalytics({
             <thead className="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold tracking-wider">
               <tr>
                 <th className="px-4 py-3.5">Periode Bulan</th>
-                <th className="px-4 py-3.5">Tagihan Baru (Utang)</th>
-                <th className="px-4 py-3.5">Kenaikan / Penurunan Utang (MoM)</th>
-                <th className="px-4 py-3.5">Pembayaran Diterima</th>
+                <th className="px-4 py-3.5">Total Nominal Faktur</th>
+                <th className="px-4 py-3.5">Kenaikan / Penurunan Faktur (MoM)</th>
+                <th className="px-4 py-3.5">Total Pembayaran</th>
                 <th className="px-4 py-3.5">Kenaikan / Penurunan Pembayaran (MoM)</th>
-                <th className="px-4 py-3.5">Sisa Bersih Bulan Ini</th>
+                <th className="px-4 py-3.5">Sisa Utang Bulan Ini</th>
+                <th className="px-4 py-3.5 text-center">Tingkat Pelunasan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium">
@@ -837,8 +1037,8 @@ export function CustomerAnalytics({
                       )}
                     </td>
 
-                    {/* Tagihan Baru */}
-                    <td className="px-4 py-3.5 text-gray-800">
+                    {/* Total Nominal Faktur */}
+                    <td className="px-4 py-3.5 text-blue-900 font-semibold">
                       {formatCurrency(row.tagihan)}
                     </td>
 
@@ -885,7 +1085,7 @@ export function CustomerAnalytics({
                       )}
                     </td>
 
-                    {/* Sisa Bersih */}
+                    {/* Sisa Utang Bulan Ini */}
                     <td className="px-4 py-3.5">
                       <span
                         className={`font-semibold ${
@@ -893,6 +1093,21 @@ export function CustomerAnalytics({
                         }`}
                       >
                         {formatCurrency(row.sisaUtangBulan)}
+                      </span>
+                    </td>
+
+                    {/* Tingkat Pelunasan */}
+                    <td className="px-4 py-3.5 text-center">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
+                          row.rasioLunasBulan >= 100
+                            ? "bg-emerald-100 text-emerald-700"
+                            : row.rasioLunasBulan > 0
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {row.rasioLunasBulan.toFixed(1)}%
                       </span>
                     </td>
                   </tr>
