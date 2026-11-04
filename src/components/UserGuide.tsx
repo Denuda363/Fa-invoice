@@ -158,6 +158,11 @@ const GUIDE_DATA: GuideSection[] = [
         title: "Perhitungan Otomatis Total Sisa Tagihan yang Diceklis",
         description: "Pada tabel rekap jatuh tempo, centang satu atau beberapa faktur yang ingin Anda rekap atau lunasi. Aplikasi secara otomatis menghitung secara real-time:\n1. Total Sisa Tagihan Ceklis (Rp) sebagai perhitungan utama yang wajib ditagih/dilunasi.\n2. Total Nominal Faktur awal & rincian pembayaran yang telah masuk.\n3. Jumlah faktur yang terpilih.\n4. Akumulasi sisa tagihan per konsumen pada header masing-masing toko.\nInformasi total sisa tagihan ini disorot di bagian atas tabel, kartu ringkasan ceklis, dan floating bar di bawah layar (dilengkapi tombol 'Bayar Terpilih' untuk pembayaran massal cepat).",
         tip: "Perhitungan sisa tagihan otomatis mengurangi cicilan/pembayaran yang sudah dicicil sebelumnya sehingga angka yang muncul adalah murni sisa utang yang belum lunas."
+      },
+      {
+        title: "Pengaturan Jumlah Baris Data per Halaman (Paginasi)",
+        description: "Pada setiap halaman data (Riwayat Faktur, Riwayat Pembayaran, Data Konsumen, dan Rekap Laporan), Anda dapat mengatur jumlah data yang ingin ditampilkan per halaman: 10 baris, 20 baris, 50 baris, 100 baris, atau Semua data sekaligus. Gunakan tombol navigasi halaman (<, >, atau nomor halaman) untuk berpindah halaman dengan cepat dan mulus.",
+        tip: "Memilih 10 atau 20 baris sangat direkomendasikan pada smartphone/HP agar scrolling terasa ringan dan nyaman."
       }
     ]
   },

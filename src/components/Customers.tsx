@@ -23,6 +23,7 @@ import {
 import * as XLSX from "xlsx-js-style";
 import { CustomerAnalytics } from "./CustomerAnalytics";
 import { formatCurrency } from "../utils";
+import { Pagination } from "./Pagination";
 
 interface CustomersProps {
   customers: Customer[];
@@ -40,6 +41,8 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "HAS_DEBT" | "PAID" | "SEPARATE_SHEET" | "SAME_SHEET">("ALL");
   const [sortBy, setSortBy] = useState<"NAME_ASC" | "NAME_DESC" | "DEBT_DESC" | "DEBT_ASC" | "PAYMENT_DESC">("NAME_ASC");
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState({ name: "", phone: "", address: "", exportSeparateSheet: false });
@@ -164,11 +167,20 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
     return result;
   }, [customers, statusFilter, searchTerm, sortBy, customerDebtStats]);
 
+  const totalPages = pageSize > 0 ? Math.ceil(filteredCustomers.length / pageSize) : 1;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+
+  const paginatedCustomers =
+    pageSize === 0
+      ? filteredCustomers
+      : filteredCustomers.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize);
+
   const isFilterActive = searchTerm.trim() !== "" || statusFilter !== "ALL" || sortBy !== "NAME_ASC";
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("ALL");
     setSortBy("NAME_ASC");
+    setCurrentPage(1);
   };
 
   const openModal = (customer?: Customer) => {
@@ -349,12 +361,18 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                     type="text"
                     placeholder="Cari konsumen (nama, telepon, alamat, status)..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="w-full pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100/70 focus:bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                   {searchTerm && (
                     <button
-                      onClick={() => setSearchTerm("")}
+                      onClick={() => {
+                        setSearchTerm("");
+                        setCurrentPage(1);
+                      }}
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200"
                       title="Hapus pencarian"
                     >
@@ -368,7 +386,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                   <Filter size={15} className="text-gray-500 shrink-0" />
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as any);
+                      setCurrentPage(1);
+                    }}
                     className="bg-transparent text-xs sm:text-sm font-semibold text-gray-700 outline-none cursor-pointer pr-1"
                   >
                     <option value="ALL">Semua Status</option>
@@ -384,7 +405,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                   <ArrowUpDown size={15} className="text-gray-500 shrink-0" />
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
+                    onChange={(e) => {
+                      setSortBy(e.target.value as any);
+                      setCurrentPage(1);
+                    }}
                     className="bg-transparent text-xs sm:text-sm font-semibold text-gray-700 outline-none cursor-pointer pr-1"
                   >
                     <option value="NAME_ASC">Nama (A - Z)</option>
@@ -459,7 +483,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                   <Filter size={12} /> Filter Cepat:
                 </span>
                 <button
-                  onClick={() => setStatusFilter("ALL")}
+                  onClick={() => {
+                    setStatusFilter("ALL");
+                    setCurrentPage(1);
+                  }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     statusFilter === "ALL"
                       ? "bg-blue-600 text-white shadow-2xs"
@@ -475,7 +502,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                 </button>
 
                 <button
-                  onClick={() => setStatusFilter("HAS_DEBT")}
+                  onClick={() => {
+                    setStatusFilter("HAS_DEBT");
+                    setCurrentPage(1);
+                  }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     statusFilter === "HAS_DEBT"
                       ? "bg-rose-600 text-white shadow-2xs"
@@ -492,7 +522,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                 </button>
 
                 <button
-                  onClick={() => setStatusFilter("PAID")}
+                  onClick={() => {
+                    setStatusFilter("PAID");
+                    setCurrentPage(1);
+                  }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     statusFilter === "PAID"
                       ? "bg-emerald-600 text-white shadow-2xs"
@@ -509,7 +542,10 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                 </button>
 
                 <button
-                  onClick={() => setStatusFilter("SEPARATE_SHEET")}
+                  onClick={() => {
+                    setStatusFilter("SEPARATE_SHEET");
+                    setCurrentPage(1);
+                  }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     statusFilter === "SEPARATE_SHEET"
                       ? "bg-purple-600 text-white shadow-2xs"
@@ -554,7 +590,7 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                 )}
               </div>
             ) : (
-              filteredCustomers.map((c) => {
+              paginatedCustomers.map((c) => {
                 const stats = customerDebtStats[c.name.toLowerCase().trim()] || {
                   sisaUtang: 0,
                   totalPembayaran: 0,
@@ -687,7 +723,7 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                       </td>
                     </tr>
                   ) : (
-                    filteredCustomers.map((c) => {
+                    paginatedCustomers.map((c) => {
                       const stats = customerDebtStats[c.name.toLowerCase().trim()] || {
                         sisaUtang: 0,
                         totalPembayaran: 0,
@@ -763,6 +799,21 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="mt-4">
+              <Pagination
+                currentPage={safeCurrentPage}
+                totalItems={filteredCustomers.length}
+                pageSize={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+                onPageSizeChange={(newSize) => {
+                  setPageSize(newSize);
+                  setCurrentPage(1);
+                }}
+                itemName="konsumen"
+              />
             </div>
           </div>
         </>

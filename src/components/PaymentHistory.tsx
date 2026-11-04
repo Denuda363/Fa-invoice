@@ -4,6 +4,7 @@ import { Search, FileDown, Calendar, Edit2, Trash2, X, Check } from "lucide-reac
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import * as XLSX from "xlsx";
+import { Pagination } from "./Pagination";
 
 interface PaymentHistoryProps {
   invoices: Invoice[];
@@ -15,6 +16,8 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
   const [editDate, setEditDate] = useState("");
@@ -54,6 +57,14 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
 
     return true;
   });
+
+  const totalPages = pageSize > 0 ? Math.ceil(filteredPayments.length / pageSize) : 1;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+
+  const paginatedPayments =
+    pageSize === 0
+      ? filteredPayments
+      : filteredPayments.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize);
 
   const handleEditClick = (paymentId: string, date: string, amount: number) => {
     setEditingPaymentId(paymentId);
@@ -200,7 +211,10 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
             type="text"
             placeholder="Cari faktur / konsumen..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-transparent text-sm outline-none"
           />
         </div>
@@ -209,14 +223,20 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
           <input
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value);
+              setCurrentPage(1);
+            }}
             className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none w-full sm:w-auto"
           />
           <span className="text-gray-500">-</span>
           <input
             type="date"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => {
+              setEndDate(e.target.value);
+              setCurrentPage(1);
+            }}
             className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none w-full sm:w-auto"
           />
         </div>
@@ -229,7 +249,7 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
             Tidak ada data pembayaran yang ditemukan.
           </div>
         ) : (
-          filteredPayments.map(({ payment, invoice }) => {
+          paginatedPayments.map(({ payment, invoice }) => {
             const isEditing = editingPaymentId === payment.id;
 
             if (isEditing) {
@@ -346,7 +366,7 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
                   </td>
                 </tr>
               ) : (
-                filteredPayments.map(({ payment, invoice }) => (
+                paginatedPayments.map(({ payment, invoice }) => (
                   editingPaymentId === payment.id ? (
                     <tr key={payment.id} className="bg-blue-50/50">
                       <td className="px-4 py-2 align-top">
@@ -442,6 +462,19 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      <Pagination
+        currentPage={safeCurrentPage}
+        totalItems={filteredPayments.length}
+        pageSize={pageSize}
+        onPageChange={(page) => setCurrentPage(page)}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setCurrentPage(1);
+        }}
+        itemName="pembayaran"
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { formatCurrency } from "../utils";
 import { Search, Edit2, Trash2, X, Check, Eye, List } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { CustomerSelect } from "./CustomerSelect";
+import { Pagination } from "./Pagination";
 
 interface InvoiceHistoryProps {
   invoices: Invoice[];
@@ -29,6 +30,8 @@ export function InvoiceHistory({
 }: InvoiceHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   // Edit state
   const [editInvoiceNumber, setEditInvoiceNumber] = useState("");
@@ -44,6 +47,14 @@ export function InvoiceHistory({
         inv.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const totalPages = pageSize > 0 ? Math.ceil(filteredInvoices.length / pageSize) : 1;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+
+  const paginatedInvoices =
+    pageSize === 0
+      ? filteredInvoices
+      : filteredInvoices.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize);
 
   const handleEditClick = (inv: Invoice) => {
     setEditingId(inv.id);
@@ -108,7 +119,10 @@ export function InvoiceHistory({
             type="text"
             placeholder="Cari faktur / konsumen..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-transparent text-sm outline-none"
           />
         </div>
@@ -121,7 +135,7 @@ export function InvoiceHistory({
             Tidak ada faktur yang ditemukan.
           </div>
         ) : (
-          filteredInvoices.map((inv) => {
+          paginatedInvoices.map((inv) => {
             const isEditing = editingId === inv.id;
             const diffDays = differenceInDays(new Date(inv.dueDate), new Date());
             const isOverdue = diffDays < 0 && inv.status !== "PAID";
@@ -299,7 +313,7 @@ export function InvoiceHistory({
                   </td>
                 </tr>
               ) : (
-                filteredInvoices.map((inv) => {
+                paginatedInvoices.map((inv) => {
                   const isEditing = editingId === inv.id;
                   
                   return (
@@ -449,6 +463,19 @@ export function InvoiceHistory({
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      <Pagination
+        currentPage={safeCurrentPage}
+        totalItems={filteredInvoices.length}
+        pageSize={pageSize}
+        onPageChange={(page) => setCurrentPage(page)}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setCurrentPage(1);
+        }}
+        itemName="faktur"
+      />
     </div>
   );
 }

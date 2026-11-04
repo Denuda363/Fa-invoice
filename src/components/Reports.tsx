@@ -7,6 +7,7 @@ import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload, Calendar,
 import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { Pagination } from "./Pagination";
 
 interface ReportsProps {
   invoices: Invoice[];
@@ -24,6 +25,8 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
   const [invoiceEndDate, setInvoiceEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -141,6 +144,15 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     acc[inv.customerName].push(inv);
     return acc;
   }, {} as Record<string, Invoice[]>);
+
+  const customerEntries = Object.entries(groupedInvoices);
+  const totalPages = pageSize > 0 ? Math.ceil(customerEntries.length / pageSize) : 1;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+
+  const paginatedGroups =
+    pageSize === 0
+      ? customerEntries
+      : customerEntries.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize);
 
   const handleToggleSelect = (invoiceId: string) => {
     const newSet = new Set(selectedIds);
@@ -973,6 +985,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     setEndDate("");
     setDueDateFilter("ALL");
     setCustomAgeFilter("");
+    setCurrentPage(1);
   };
 
   const isFiltered = 
@@ -1065,13 +1078,19 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
               type="text"
               placeholder="Cari konsumen atau no. faktur..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full bg-transparent text-sm outline-none"
             />
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
                 title="Hapus pencarian"
               >
@@ -1085,7 +1104,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider shrink-0">Status:</span>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="bg-transparent text-sm font-medium outline-none cursor-pointer text-gray-800"
               >
                 <option value="ALL">Semua Faktur</option>
@@ -1127,6 +1149,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                     const end = format(new Date(now.getFullYear(), now.getMonth() + 1, 0), "yyyy-MM-dd");
                     setInvoiceStartDate(start);
                     setInvoiceEndDate(end);
+                    setCurrentPage(1);
                   }}
                   className="text-[11px] font-medium text-blue-700 hover:text-blue-800 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs hover:bg-blue-50 transition-colors"
                 >
@@ -1138,6 +1161,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                     const todayStr = format(new Date(), "yyyy-MM-dd");
                     setInvoiceStartDate(todayStr);
                     setInvoiceEndDate(todayStr);
+                    setCurrentPage(1);
                   }}
                   className="text-[11px] font-medium text-blue-700 hover:text-blue-800 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs hover:bg-blue-50 transition-colors"
                 >
@@ -1149,6 +1173,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                     onClick={() => {
                       setInvoiceStartDate("");
                       setInvoiceEndDate("");
+                      setCurrentPage(1);
                     }}
                     className="text-[11px] text-red-600 hover:text-red-700 font-medium px-1.5 py-0.5"
                   >
@@ -1164,7 +1189,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 <input
                   type="date"
                   value={invoiceStartDate}
-                  onChange={(e) => setInvoiceStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setInvoiceStartDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
                   title="Tanggal faktur mulai dari"
                 />
@@ -1174,7 +1202,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 <input
                   type="date"
                   value={invoiceEndDate}
-                  onChange={(e) => setInvoiceEndDate(e.target.value)}
+                  onChange={(e) => {
+                    setInvoiceEndDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
                   title="Tanggal faktur sampai dengan"
                 />
@@ -1198,6 +1229,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                       setEndDate("");
                       setDueDateFilter("ALL");
                       setCustomAgeFilter("");
+                      setCurrentPage(1);
                     }}
                     className="text-[11px] text-red-600 hover:text-red-700 font-medium px-1.5 py-0.5"
                   >
@@ -1215,6 +1247,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                   onChange={(e) => {
                     setDueDateFilter(e.target.value);
                     setCustomAgeFilter("");
+                    setCurrentPage(1);
                   }}
                   disabled={!!customAgeFilter || statusFilter === "OVERDUE"}
                   className="w-full bg-transparent text-xs sm:text-sm outline-none cursor-pointer disabled:opacity-50 text-gray-800"
@@ -1235,7 +1268,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                   min="0"
                   placeholder="Hari (0-N)..."
                   value={customAgeFilter}
-                  onChange={(e) => setCustomAgeFilter(e.target.value)}
+                  onChange={(e) => {
+                    setCustomAgeFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full bg-transparent text-xs sm:text-sm outline-none"
                   title="Filter umur jatuh tempo dalam hari"
                 />
@@ -1246,7 +1282,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
                   title="Jatuh tempo mulai dari"
                 />
@@ -1257,7 +1296,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full bg-transparent text-xs sm:text-sm text-gray-800 outline-none"
                   title="Jatuh tempo sampai dengan"
                 />
@@ -1403,14 +1445,14 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
       )}
 
       <div className="space-y-6">
-        {Object.keys(groupedInvoices).length === 0 ? (
+        {customerEntries.length === 0 ? (
           <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-gray-500">
             {isFiltered
               ? "Tidak ada faktur yang sesuai dengan kriteria filter yang dipilih."
               : "Tidak ada faktur yang belum lunas."}
           </div>
         ) : (
-          Object.entries(groupedInvoices).map(([customerName, customerInvoices]) => {
+          paginatedGroups.map(([customerName, customerInvoices]) => {
             const groupTotal = customerInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
             const groupRemaining = customerInvoices.reduce((sum, inv) => sum + (inv.totalAmount - inv.payments.reduce((s, p) => s + p.amount, 0)), 0);
             const groupSelectedInvoices = customerInvoices.filter((inv) => selectedIds.has(inv.id));
@@ -1631,6 +1673,19 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
         })
         )}
       </div>
+
+      {/* Pagination Controls */}
+      <Pagination
+        currentPage={safeCurrentPage}
+        totalItems={customerEntries.length}
+        pageSize={pageSize}
+        onPageChange={(page) => setCurrentPage(page)}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setCurrentPage(1);
+        }}
+        itemName="konsumen"
+      />
 
       {/* Sticky Floating Bar when items are checked */}
       {selectedCount > 0 && (
