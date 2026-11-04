@@ -994,9 +994,9 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
         </div>
         <div className="flex gap-2 flex-wrap items-center">
           {selectedCount > 0 && (
-            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg text-sm shadow-2xs">
-              <span className="text-xs font-semibold text-blue-900">Total Nominal Ceklis ({selectedCount}):</span>
-              <span className="font-extrabold text-blue-700">{formatCurrency(selectedTotalNominal)}</span>
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg text-sm shadow-2xs">
+              <span className="text-xs font-semibold text-red-900">Total Sisa Tagihan Ceklis ({selectedCount}):</span>
+              <span className="font-extrabold text-red-700">{formatCurrency(selectedTotalRemaining)}</span>
             </div>
           )}
           <button
@@ -1326,8 +1326,8 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
           </div>
           <div className="flex items-center gap-2.5 flex-wrap">
             {selectedCount > 0 && (
-              <span className="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow-xs">
-                Total Ceklis: {formatCurrency(selectedTotalNominal)} ({selectedCount} faktur)
+              <span className="bg-red-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow-xs">
+                Total Sisa Ceklis: {formatCurrency(selectedTotalRemaining)} ({selectedCount} faktur)
               </span>
             )}
             {filteredInvoices.length > 0 && (
@@ -1341,41 +1341,41 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
 
       {/* Prominent Selection Summary Card when items are checked */}
       {selectedCount > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border-2 border-blue-200 rounded-xl p-4 shadow-sm animate-in fade-in duration-200">
+        <div className="bg-gradient-to-r from-red-50 via-amber-50 to-blue-50 border-2 border-red-200 rounded-xl p-4 shadow-sm animate-in fade-in duration-200">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <div className="w-11 h-11 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md">
                 <CheckSquare size={22} />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-gray-900 text-base">Faktur yang Diceklis ({selectedCount})</h4>
-                  <span className="bg-blue-600 text-white text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                  <span className="bg-red-600 text-white text-xs px-2.5 py-0.5 rounded-full font-semibold">
                     {selectedCount} faktur terpilih
                   </span>
                 </div>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  Total nominal akumulasi dan sisa tagihan dari faktur yang sedang dicentang di tabel rekap.
+                  Perhitungan total akumulasi sisa tagihan yang harus dilunasi dari faktur yang sedang dicentang.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white/95 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-blue-100 shadow-2xs">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white/95 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-red-100 shadow-2xs">
               <div>
-                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total Nominal Faktur</div>
-                <div className="text-base sm:text-lg font-extrabold text-blue-700">{formatCurrency(selectedTotalNominal)}</div>
+                <div className="text-[11px] font-bold text-red-700 uppercase tracking-wider">Total Sisa Tagihan (Ceklis)</div>
+                <div className="text-base sm:text-xl font-black text-red-600">{formatCurrency(selectedTotalRemaining)}</div>
               </div>
               <div className="w-px h-8 bg-gray-200 hidden sm:block" />
               <div>
-                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total Sisa Tagihan</div>
-                <div className="text-base sm:text-lg font-extrabold text-red-600">{formatCurrency(selectedTotalRemaining)}</div>
+                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total Nominal Faktur</div>
+                <div className="text-sm sm:text-base font-bold text-gray-700">{formatCurrency(selectedTotalNominal)}</div>
               </div>
               {selectedTotalPaid > 0 && (
                 <>
                   <div className="w-px h-8 bg-gray-200 hidden sm:block" />
                   <div>
                     <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Sudah Terbayar</div>
-                    <div className="text-base sm:text-lg font-extrabold text-emerald-600">{formatCurrency(selectedTotalPaid)}</div>
+                    <div className="text-sm sm:text-base font-bold text-emerald-600">{formatCurrency(selectedTotalPaid)}</div>
                   </div>
                 </>
               )}
@@ -1426,10 +1426,10 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-gray-800">{customerName}</h3>
                   {groupSelectedInvoices.length > 0 && (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-bold border border-blue-200">
-                      ✓ {groupSelectedInvoices.length} diceklis: {formatCurrency(groupSelectedNominal)}
+                    <span className="bg-red-50 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-bold border border-red-200">
+                      ✓ {groupSelectedInvoices.length} diceklis: Sisa {formatCurrency(groupSelectedRemaining)}
                       {groupSelectedRemaining !== groupSelectedNominal && (
-                        <span className="text-red-700 ml-1 font-medium">(Sisa: {formatCurrency(groupSelectedRemaining)})</span>
+                        <span className="text-gray-500 ml-1 font-normal text-[11px]">(Nominal: {formatCurrency(groupSelectedNominal)})</span>
                       )}
                     </span>
                   )}
@@ -1561,12 +1561,12 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 </span>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
-                <span className="text-xs text-gray-300">
-                  Total Nominal: <span className="font-extrabold text-blue-400 text-sm sm:text-base">{formatCurrency(selectedTotalNominal)}</span>
+                <span className="text-xs text-gray-200">
+                  Total Sisa Tagihan: <span className="font-black text-amber-400 text-sm sm:text-lg">{formatCurrency(selectedTotalRemaining)}</span>
                 </span>
                 <span className="text-gray-500">|</span>
-                <span className="text-xs text-gray-300">
-                  Sisa Tagihan: <span className="font-extrabold text-amber-400 text-sm sm:text-base">{formatCurrency(selectedTotalRemaining)}</span>
+                <span className="text-xs text-gray-400">
+                  Total Nominal: <span className="font-bold text-gray-300 text-xs sm:text-sm">{formatCurrency(selectedTotalNominal)}</span>
                 </span>
               </div>
             </div>

@@ -155,9 +155,9 @@ const GUIDE_DATA: GuideSection[] = [
         description: "Klik tombol 'Export Pembayaran' untuk mendapatkan file Excel rincian seluruh pembayaran per faktur. Atau klik 'Export PDF' untuk mencetak laporan ringkas siap cetak/kirim ke manajemen.",
       },
       {
-        title: "Perhitungan Otomatis Total Nominal Faktur yang Diceklis",
-        description: "Pada tabel rekap jatuh tempo, centang satu atau beberapa faktur yang ingin Anda rekap atau lunasi. Aplikasi akan langsung menghitung secara real-time:\n1. Total Nominal Faktur yang diceklis (Rp).\n2. Total Sisa Tagihan dari faktur-faktur yang diceklis (Rp).\n3. Jumlah akumulasi faktur yang terpilih.\n4. Total nominal per konsumen pada header tabel masing-masing toko.\nInformasi total ini ditampilkan di bagian atas tabel dan pada floating bar di bawah layar (dilengkapi tombol 'Bayar Terpilih' dan tombol pintas 'Pilih Semua Faktur').",
-        tip: "Sangat praktis saat ingin mengetahui berapa total tagihan yang akan ditagihkan atau dibayar sekaligus hari ini."
+        title: "Perhitungan Otomatis Total Sisa Tagihan yang Diceklis",
+        description: "Pada tabel rekap jatuh tempo, centang satu atau beberapa faktur yang ingin Anda rekap atau lunasi. Aplikasi secara otomatis menghitung secara real-time:\n1. Total Sisa Tagihan Ceklis (Rp) sebagai perhitungan utama yang wajib ditagih/dilunasi.\n2. Total Nominal Faktur awal & rincian pembayaran yang telah masuk.\n3. Jumlah faktur yang terpilih.\n4. Akumulasi sisa tagihan per konsumen pada header masing-masing toko.\nInformasi total sisa tagihan ini disorot di bagian atas tabel, kartu ringkasan ceklis, dan floating bar di bawah layar (dilengkapi tombol 'Bayar Terpilih' untuk pembayaran massal cepat).",
+        tip: "Perhitungan sisa tagihan otomatis mengurangi cicilan/pembayaran yang sudah dicicil sebelumnya sehingga angka yang muncul adalah murni sisa utang yang belum lunas."
       }
     ]
   },
