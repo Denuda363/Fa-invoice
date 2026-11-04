@@ -174,6 +174,36 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
     }
   };
 
+  const selectableInvoices = filteredInvoices.filter((inv) => inv.status !== "PAID");
+  const isAllFilteredSelected =
+    selectableInvoices.length > 0 && selectableInvoices.every((inv) => selectedIds.has(inv.id));
+
+  const handleSelectAllFiltered = () => {
+    if (isAllFilteredSelected) {
+      const newSet = new Set(selectedIds);
+      selectableInvoices.forEach((inv) => newSet.delete(inv.id));
+      setSelectedIds(newSet);
+    } else {
+      const newSet = new Set(selectedIds);
+      selectableInvoices.forEach((inv) => newSet.add(inv.id));
+      setSelectedIds(newSet);
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  // Metrics for checked/selected invoices
+  const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
+  const selectedCount = selectedInvoices.length;
+  const selectedTotalNominal = selectedInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+  const selectedTotalPaid = selectedInvoices.reduce(
+    (sum, inv) => sum + inv.payments.reduce((pSum, p) => pSum + p.amount, 0),
+    0
+  );
+  const selectedTotalRemaining = selectedTotalNominal - selectedTotalPaid;
+
   const downloadPaymentTemplate = () => {
     const aoa: any[][] = [
       ["NO FAKTUR", "NOMINAL BAYAR", "TANGGAL BAYAR"],
@@ -962,7 +992,13 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
           <h2 className="text-2xl font-bold text-gray-900">Rekap Faktur Jatuh Tempo</h2>
           <p className="text-sm text-gray-500 mt-1">Dikelompokkan berdasarkan konsumen</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          {selectedCount > 0 && (
+            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg text-sm shadow-2xs">
+              <span className="text-xs font-semibold text-blue-900">Total Nominal Ceklis ({selectedCount}):</span>
+              <span className="font-extrabold text-blue-700">{formatCurrency(selectedTotalNominal)}</span>
+            </div>
+          )}
           <button
             onClick={exportExcel}
             className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -1007,13 +1043,13 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
               Import Pembayaran
             </button>
           </div>
-          {selectedIds.size > 0 && (
+          {selectedCount > 0 && (
             <button
               onClick={handleBulkPayClick}
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 shadow-sm"
             >
               <Check size={18} />
-              Bayar Terpilih ({selectedIds.size})
+              Bayar Terpilih ({selectedCount})
             </button>
           )}
         </div>
@@ -1256,14 +1292,115 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                 Jth Tempo: {format(new Date(startDate), "dd/MM/yy")} - {format(new Date(endDate), "dd/MM/yy")}
               </span>
             )}
+            {selectableInvoices.length > 0 && (
+              <button
+                type="button"
+                onClick={handleSelectAllFiltered}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors ml-1 shadow-2xs"
+                title={isAllFilteredSelected ? "Batalkan pilihan semua faktur" : "Pilih semua faktur yang belum lunas"}
+              >
+                {isAllFilteredSelected ? (
+                  <>
+                    <CheckSquare size={13} className="text-blue-600" />
+                    <span>Batal Pilih Semua</span>
+                  </>
+                ) : (
+                  <>
+                    <Square size={13} className="text-gray-400" />
+                    <span>Pilih Semua Faktur ({selectableInvoices.length})</span>
+                  </>
+                )}
+              </button>
+            )}
+            {selectedCount > 0 && (
+              <button
+                type="button"
+                onClick={handleClearSelection}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                title="Hapus semua centang"
+              >
+                <X size={13} />
+                <span>Kosongkan Ceklis</span>
+              </button>
+            )}
           </div>
-          {filteredInvoices.length > 0 && (
-            <div className="text-gray-600 font-semibold hidden sm:block">
-              Total Tagihan: {formatCurrency(filteredInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0))}
-            </div>
-          )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {selectedCount > 0 && (
+              <span className="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow-xs">
+                Total Ceklis: {formatCurrency(selectedTotalNominal)} ({selectedCount} faktur)
+              </span>
+            )}
+            {filteredInvoices.length > 0 && (
+              <div className="text-gray-600 font-semibold hidden sm:block">
+                Total Tagihan: {formatCurrency(filteredInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Prominent Selection Summary Card when items are checked */}
+      {selectedCount > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border-2 border-blue-200 rounded-xl p-4 shadow-sm animate-in fade-in duration-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                <CheckSquare size={22} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-bold text-gray-900 text-base">Faktur yang Diceklis ({selectedCount})</h4>
+                  <span className="bg-blue-600 text-white text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                    {selectedCount} faktur terpilih
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Total nominal akumulasi dan sisa tagihan dari faktur yang sedang dicentang di tabel rekap.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white/95 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-blue-100 shadow-2xs">
+              <div>
+                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total Nominal Faktur</div>
+                <div className="text-base sm:text-lg font-extrabold text-blue-700">{formatCurrency(selectedTotalNominal)}</div>
+              </div>
+              <div className="w-px h-8 bg-gray-200 hidden sm:block" />
+              <div>
+                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total Sisa Tagihan</div>
+                <div className="text-base sm:text-lg font-extrabold text-red-600">{formatCurrency(selectedTotalRemaining)}</div>
+              </div>
+              {selectedTotalPaid > 0 && (
+                <>
+                  <div className="w-px h-8 bg-gray-200 hidden sm:block" />
+                  <div>
+                    <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Sudah Terbayar</div>
+                    <div className="text-base sm:text-lg font-extrabold text-emerald-600">{formatCurrency(selectedTotalPaid)}</div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 self-end lg:self-center">
+              <button
+                onClick={handleBulkPayClick}
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 active:scale-95 transition-all"
+              >
+                <Check size={16} />
+                <span>Bayar Terpilih ({selectedCount})</span>
+              </button>
+              <button
+                onClick={handleClearSelection}
+                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 active:scale-95 transition-all"
+                title="Hapus semua centang"
+              >
+                <X size={15} />
+                <span>Batal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         {Object.keys(groupedInvoices).length === 0 ? (
@@ -1276,10 +1413,27 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
           Object.entries(groupedInvoices).map(([customerName, customerInvoices]) => {
             const groupTotal = customerInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
             const groupRemaining = customerInvoices.reduce((sum, inv) => sum + (inv.totalAmount - inv.payments.reduce((s, p) => s + p.amount, 0)), 0);
+            const groupSelectedInvoices = customerInvoices.filter((inv) => selectedIds.has(inv.id));
+            const groupSelectedNominal = groupSelectedInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+            const groupSelectedRemaining = groupSelectedInvoices.reduce(
+              (sum, inv) => sum + (inv.totalAmount - inv.payments.reduce((s, p) => s + p.amount, 0)),
+              0
+            );
+
             return (
             <div key={customerName} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 px-4 py-3 border-b border-gray-200 gap-2">
-                <h3 className="font-semibold text-gray-800">{customerName}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-gray-800">{customerName}</h3>
+                  {groupSelectedInvoices.length > 0 && (
+                    <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-bold border border-blue-200">
+                      ✓ {groupSelectedInvoices.length} diceklis: {formatCurrency(groupSelectedNominal)}
+                      {groupSelectedRemaining !== groupSelectedNominal && (
+                        <span className="text-red-700 ml-1 font-medium">(Sisa: {formatCurrency(groupSelectedRemaining)})</span>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <div className="text-sm font-semibold text-gray-700">
                   Total Tagihan: {formatCurrency(groupTotal)} <span className="mx-2 text-gray-300">|</span> Sisa: <span className="text-blue-700">{formatCurrency(groupRemaining)}</span>
                 </div>
@@ -1391,6 +1545,52 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
         })
         )}
       </div>
+
+      {/* Sticky Floating Bar when items are checked */}
+      {selectedCount > 0 && (
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl bg-gray-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-gray-700/80 p-3.5 sm:px-6 sm:py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
+              <CheckSquare size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-gray-300">Faktur Diceklis:</span>
+                <span className="bg-blue-500/30 text-blue-300 text-xs px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
+                  {selectedCount} faktur
+                </span>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
+                <span className="text-xs text-gray-300">
+                  Total Nominal: <span className="font-extrabold text-blue-400 text-sm sm:text-base">{formatCurrency(selectedTotalNominal)}</span>
+                </span>
+                <span className="text-gray-500">|</span>
+                <span className="text-xs text-gray-300">
+                  Sisa Tagihan: <span className="font-extrabold text-amber-400 text-sm sm:text-base">{formatCurrency(selectedTotalRemaining)}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={handleBulkPayClick}
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-md transition-all"
+            >
+              <Check size={16} />
+              <span>Bayar Terpilih ({selectedCount})</span>
+            </button>
+            <button
+              onClick={handleClearSelection}
+              className="flex items-center gap-1 rounded-xl bg-gray-800 hover:bg-gray-700 active:scale-95 px-3 py-2 text-xs sm:text-sm font-medium text-gray-300 border border-gray-700 transition-all"
+              title="Batalkan semua centang"
+            >
+              <X size={15} />
+              <span>Batal</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

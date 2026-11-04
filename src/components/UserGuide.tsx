@@ -153,6 +153,11 @@ const GUIDE_DATA: GuideSection[] = [
       {
         title: "Export Pembayaran & Export PDF",
         description: "Klik tombol 'Export Pembayaran' untuk mendapatkan file Excel rincian seluruh pembayaran per faktur. Atau klik 'Export PDF' untuk mencetak laporan ringkas siap cetak/kirim ke manajemen.",
+      },
+      {
+        title: "Perhitungan Otomatis Total Nominal Faktur yang Diceklis",
+        description: "Pada tabel rekap jatuh tempo, centang satu atau beberapa faktur yang ingin Anda rekap atau lunasi. Aplikasi akan langsung menghitung secara real-time:\n1. Total Nominal Faktur yang diceklis (Rp).\n2. Total Sisa Tagihan dari faktur-faktur yang diceklis (Rp).\n3. Jumlah akumulasi faktur yang terpilih.\n4. Total nominal per konsumen pada header tabel masing-masing toko.\nInformasi total ini ditampilkan di bagian atas tabel dan pada floating bar di bawah layar (dilengkapi tombol 'Bayar Terpilih' dan tombol pintas 'Pilih Semua Faktur').",
+        tip: "Sangat praktis saat ingin mengetahui berapa total tagihan yang akan ditagihkan atau dibayar sekaligus hari ini."
       }
     ]
   },
