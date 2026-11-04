@@ -1003,7 +1003,92 @@ export function CustomerAnalytics({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-gray-100 p-3 space-y-3">
+          {[...monthlyData].reverse().map((row, idx) => {
+            const isLatest = idx === 0;
+
+            return (
+              <div
+                key={row.monthKey}
+                className={`rounded-xl border border-gray-200 bg-white p-4 shadow-2xs space-y-2.5 ${
+                  isLatest ? "border-blue-300 bg-blue-50/20" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-gray-900 text-sm">{row.monthLabel}</span>
+                    {isLatest && (
+                      <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                        Bulan Ini
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                      row.rasioLunasBulan >= 100
+                        ? "bg-emerald-100 text-emerald-700"
+                        : row.rasioLunasBulan > 0
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    Lunas {row.rasioLunasBulan.toFixed(0)}%
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Total Faktur:</span>
+                    <span className="font-bold text-blue-900 text-sm">
+                      {formatCurrency(row.tagihan)}
+                    </span>
+                    {row.tagihanDiff !== 0 && (
+                      <span
+                        className={`inline-flex items-center text-[10px] font-semibold mt-0.5 ${
+                          row.tagihanDiff > 0 ? "text-amber-600" : "text-emerald-600"
+                        }`}
+                      >
+                        {row.tagihanDiff > 0 ? "▲ +" : "▼ "}
+                        {formatCurrency(row.tagihanDiff)} ({row.tagihanPercent.toFixed(1)}%)
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-gray-400 block text-[11px]">Pembayaran:</span>
+                    <span className="font-bold text-emerald-700 text-sm">
+                      {formatCurrency(row.pembayaran)}
+                    </span>
+                    {row.pembayaranDiff !== 0 && (
+                      <span
+                        className={`inline-flex items-center text-[10px] font-semibold mt-0.5 justify-end ${
+                          row.pembayaranDiff > 0 ? "text-emerald-600" : "text-rose-600"
+                        }`}
+                      >
+                        {row.pembayaranDiff > 0 ? "▲ +" : "▼ "}
+                        {formatCurrency(row.pembayaranDiff)} ({row.pembayaranPercent.toFixed(1)}%)
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                  <span className="text-gray-500">Sisa Utang Bulan Ini:</span>
+                  <span
+                    className={`font-black text-sm ${
+                      row.sisaUtangBulan > 0 ? "text-rose-600" : "text-emerald-600"
+                    }`}
+                  >
+                    {formatCurrency(row.sisaUtangBulan)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop/Tablet View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold tracking-wider">
               <tr>

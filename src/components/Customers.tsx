@@ -536,7 +536,116 @@ export function Customers({ customers, invoices = [], onAdd, onAddBulk, onUpdate
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          {/* Mobile View: Cards */}
+          <div className="space-y-3 block md:hidden">
+            {filteredCustomers.length === 0 ? (
+              <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+                <Users size={36} className="text-gray-300 mx-auto mb-2" />
+                <p className="font-semibold text-gray-700 text-sm">
+                  {customers.length === 0 ? "Belum ada data konsumen." : "Tidak ditemukan konsumen yang cocok."}
+                </p>
+                {isFilterActive && (
+                  <button
+                    onClick={resetFilters}
+                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg"
+                  >
+                    <RotateCcw size={13} /> Reset Filter
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredCustomers.map((c) => {
+                const stats = customerDebtStats[c.name.toLowerCase().trim()] || {
+                  sisaUtang: 0,
+                  totalPembayaran: 0,
+                  totalTagihan: 0,
+                };
+
+                return (
+                  <div key={c.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-base">{c.name}</h4>
+                        {c.exportSeparateSheet && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded mt-1">
+                            <Layers size={10} /> Pisah Sheet Excel
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => openCustomerAnalytics(c.id)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100"
+                        title="Lihat Grafik"
+                      >
+                        <BarChart2 size={14} />
+                        <span>Grafik</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-gray-100">
+                      <div>
+                        <span className="text-gray-400 block text-[11px]">Sisa Utang:</span>
+                        {stats.sisaUtang > 0 ? (
+                          <span className="font-bold text-rose-600 text-sm">
+                            {formatCurrency(stats.sisaUtang)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 font-medium">Rp 0 (Lunas)</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block text-[11px]">Total Bayar:</span>
+                        <span className="font-bold text-emerald-700 text-sm">
+                          {formatCurrency(stats.totalPembayaran)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {(c.phone || c.address) && (
+                      <div className="text-xs text-gray-600 bg-gray-50/80 p-2.5 rounded-lg space-y-1">
+                        {c.phone && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-gray-400">Telp:</span>
+                            <a href={`tel:${c.phone}`} className="text-blue-600 font-medium hover:underline">
+                              {c.phone}
+                            </a>
+                          </div>
+                        )}
+                        {c.address && (
+                          <div className="flex items-start gap-1.5">
+                            <span className="text-gray-400 shrink-0">Alamat:</span>
+                            <span className="line-clamp-2">{c.address}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                      <button
+                        onClick={() => openModal(c)}
+                        className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                      >
+                        <Edit2 size={13} /> Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm("Apakah Anda yakin ingin menghapus konsumen ini?")) {
+                            onDelete(c.id);
+                          }
+                        }}
+                        className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100"
+                      >
+                        <Trash2 size={13} /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop/Tablet View: Table */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full min-w-max text-left text-sm">
                 <thead className="bg-gray-50 text-gray-600">

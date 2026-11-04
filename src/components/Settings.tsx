@@ -183,7 +183,7 @@ export function Settings({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl w-full">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
         <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>

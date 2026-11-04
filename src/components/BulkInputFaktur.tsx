@@ -375,7 +375,88 @@ export function BulkInputFaktur({ customers, existingInvoiceNumbers, onSave, onC
                 )}
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile View: Card-based inputs */}
+              <div className="space-y-3.5 block md:hidden">
+                {group.rows.map((row, rowIndex) => (
+                  <div key={row.id} className="rounded-xl border border-gray-200 bg-white p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <span className="text-xs font-bold text-gray-700">Faktur #{rowIndex + 1}</span>
+                      {group.rows.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRowFromGroup(group.id, row.id)}
+                          className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-medium"
+                        >
+                          <Trash2 size={14} />
+                          <span>Hapus Baris</span>
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">No. Faktur *</label>
+                      <input
+                        type="text"
+                        required={groupIndex === 0 && rowIndex === 0}
+                        value={row.invoiceNumber}
+                        onChange={(e) => updateRow(group.id, row.id, "invoiceNumber", e.target.value)}
+                        placeholder="INV-..."
+                        className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Tgl Faktur *</label>
+                        <input
+                          type="date"
+                          required={groupIndex === 0 && rowIndex === 0}
+                          value={row.date}
+                          onChange={(e) => updateRow(group.id, row.id, "date", e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Termin (Hari)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={row.termDays}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+                            updateRow(group.id, row.id, "termDays", val);
+                          }}
+                          placeholder="30"
+                          className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Jatuh Tempo *</label>
+                      <input
+                        type="date"
+                        required={groupIndex === 0 && rowIndex === 0}
+                        value={row.dueDate}
+                        onChange={(e) => updateRow(group.id, row.id, "dueDate", e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Total Tagihan (Rp) *</label>
+                      <input
+                        type="number"
+                        min="1"
+                        required={groupIndex === 0 && rowIndex === 0}
+                        value={row.totalAmount}
+                        onChange={(e) => updateRow(group.id, row.id, "totalAmount", e.target.value)}
+                        placeholder="Contoh: 1500000"
+                        className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop/Tablet View: Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full min-w-[700px] text-left text-sm bg-white rounded-lg overflow-hidden border border-gray-200">
                   <thead className="bg-gray-100 text-gray-600 border-b border-gray-200">
                     <tr>

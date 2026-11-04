@@ -42,8 +42,10 @@ export default function App() {
     { name: "Pengaturan", id: "SETTINGS" as ViewState, icon: SettingsIcon },
   ];
 
+  const currentTitle = navigation.find((n) => n.id === view)?.name || "AF Faktur";
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans pb-16 md:pb-0">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans pb-24 md:pb-6">
       {/* Mobile Sidebar Backdrop (Only for 'More' menu now) */}
       {isSidebarOpen && (
         <div
@@ -51,6 +53,24 @@ export default function App() {
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
+
+      {/* Mobile Top Header */}
+      <header className="md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <img src="/icon.jpg" alt="Logo" className="w-7 h-7 rounded-md object-cover shadow-2xs" />
+          <div>
+            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">AF Faktur</h1>
+            <p className="text-[10px] font-medium text-blue-600 leading-none">{currentTitle}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          aria-label="Buka Menu"
+        >
+          <Menu size={22} />
+        </button>
+      </header>
 
       {/* Sidebar Navigation (Desktop) & Sliding Menu (Mobile) */}
       <aside
@@ -99,8 +119,8 @@ export default function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full">
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
+      <main className="flex-1 overflow-y-auto w-full min-w-0">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-5 md:py-6">
           {view === "DASHBOARD" && (
             <Dashboard
               invoices={store.invoices}
@@ -189,33 +209,43 @@ export default function App() {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-30 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-1">
         {[
           { id: "DASHBOARD" as ViewState, icon: LayoutDashboard, label: "Home" },
           { id: "BULK_INPUT_INVOICE" as ViewState, icon: FilePlus, label: "Input" },
+          { id: "INVOICE_HISTORY" as ViewState, icon: Files, label: "Faktur" },
           { id: "REPORTS" as ViewState, icon: PieChart, label: "Laporan" },
         ].map((item) => (
           <button
             key={item.id}
-            onClick={() => setView(item.id)}
+            onClick={() => {
+              setView(item.id);
+              setIsSidebarOpen(false);
+            }}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
-              view === item.id ? "text-blue-600" : "text-gray-500 hover:text-gray-900"
+              "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
+              view === item.id ? "text-blue-600 font-semibold" : "text-gray-500 hover:text-gray-900 font-normal"
             )}
           >
-            <item.icon size={22} className={view === item.id ? "fill-blue-50/50" : ""} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <item.icon size={20} className={view === item.id ? "stroke-[2.5]" : "stroke-[1.8]"} />
+            <span className="text-[10px] mt-0.5">{item.label}</span>
+            {view === item.id && (
+              <span className="absolute bottom-1 w-6 h-0.5 bg-blue-600 rounded-full" />
+            )}
           </button>
         ))}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className={cn(
-            "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
-            isSidebarOpen ? "text-blue-600" : "text-gray-500 hover:text-gray-900"
+            "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
+            isSidebarOpen ? "text-blue-600 font-semibold" : "text-gray-500 hover:text-gray-900 font-normal"
           )}
         >
-          <Menu size={22} />
-          <span className="text-[10px] font-medium">Menu</span>
+          <Menu size={20} className={isSidebarOpen ? "stroke-[2.5]" : "stroke-[1.8]"} />
+          <span className="text-[10px] mt-0.5">Menu</span>
+          {isSidebarOpen && (
+            <span className="absolute bottom-1 w-6 h-0.5 bg-blue-600 rounded-full" />
+          )}
         </button>
       </nav>
     </div>

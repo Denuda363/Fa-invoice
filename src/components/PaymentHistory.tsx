@@ -222,7 +222,110 @@ export function PaymentHistory({ invoices, onEditPayment, onDeletePayment }: Pay
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      {/* Mobile View: Cards */}
+      <div className="space-y-3 block md:hidden">
+        {filteredPayments.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500 text-sm">
+            Tidak ada data pembayaran yang ditemukan.
+          </div>
+        ) : (
+          filteredPayments.map(({ payment, invoice }) => {
+            const isEditing = editingPaymentId === payment.id;
+
+            if (isEditing) {
+              return (
+                <div key={payment.id} className="rounded-xl border-2 border-blue-400 bg-white p-4 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span className="text-xs font-bold text-blue-700">Edit Pembayaran</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleSaveEdit(invoice.id, payment.id)}
+                        className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700"
+                      >
+                        <Check size={14} /> Simpan
+                      </button>
+                      <button
+                        onClick={() => setEditingPaymentId(null)}
+                        className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                      >
+                        <X size={14} /> Batal
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500 font-medium">Konsumen & Faktur:</span>
+                    <p className="text-sm font-bold text-gray-900">{invoice.customerName} ({invoice.invoiceNumber})</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Tanggal Bayar</label>
+                    <input
+                      type="date"
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 p-2 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Nominal Bayar (Rp)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editAmount}
+                      onChange={(e) => setEditAmount(e.target.value ? Number(e.target.value) : "")}
+                      className="w-full rounded-lg border border-gray-300 p-2 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={payment.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm">{invoice.customerName}</h4>
+                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 mt-1">
+                      {invoice.invoiceNumber}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-gray-500 block">Nominal Bayar</span>
+                    <span className="font-extrabold text-emerald-600 text-sm sm:text-base">
+                      {formatRp(payment.amount)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={13} className="text-gray-400" />
+                    <span>{format(new Date(payment.date), "dd MMM yyyy", { locale: id })}</span>
+                  </div>
+                  <span className="text-gray-400">Total Faktur: {formatRp(invoice.totalAmount)}</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => handleEditClick(payment.id, payment.date, payment.amount)}
+                    className="flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                  >
+                    <Edit2 size={13} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(invoice.id, payment.id)}
+                    className="flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100"
+                  >
+                    <Trash2 size={13} /> Hapus
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop/Tablet View: Table */}
+      <div className="hidden md:block rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-max text-left text-sm">
             <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">

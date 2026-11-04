@@ -1438,7 +1438,93 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
                   Total Tagihan: {formatCurrency(groupTotal)} <span className="mx-2 text-gray-300">|</span> Sisa: <span className="text-blue-700">{formatCurrency(groupRemaining)}</span>
                 </div>
               </div>
-              <div className="overflow-x-auto">
+              {/* Mobile View: Cards */}
+              <div className="block md:hidden divide-y divide-gray-100 p-3 space-y-3">
+                {customerInvoices.map((inv) => {
+                  const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
+                  const remaining = inv.totalAmount - totalPaid;
+                  const today = new Date();
+                  const dueDate = new Date(inv.dueDate);
+                  const diffDays = differenceInDays(dueDate, today);
+                  const isSelected = selectedIds.has(inv.id);
+
+                  return (
+                    <div
+                      key={inv.id}
+                      className={cn(
+                        "rounded-xl border border-gray-200 bg-white p-3.5 shadow-2xs space-y-2.5 transition-colors",
+                        isSelected && "border-blue-300 bg-blue-50/40"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <button
+                            disabled={inv.status === "PAID"}
+                            onClick={() => handleToggleSelect(inv.id)}
+                            className={cn(
+                              "p-1 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed",
+                              isSelected && "text-blue-600"
+                            )}
+                            aria-label={`Pilih faktur ${inv.invoiceNumber}`}
+                          >
+                            {isSelected ? <CheckSquare size={20} className="text-blue-600" /> : <Square size={20} />}
+                          </button>
+                          <div>
+                            <span className="font-extrabold text-gray-900 text-sm block">{inv.invoiceNumber}</span>
+                            <span className="text-[11px] text-gray-500">Tgl: {format(new Date(inv.date), "dd/MM/yyyy")}</span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={cn(
+                            "inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0",
+                            diffDays < 0
+                              ? "bg-red-100 text-red-700"
+                              : diffDays <= 7
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-green-100 text-green-700"
+                          )}
+                        >
+                          {diffDays < 0
+                            ? `Lewat ${Math.abs(diffDays)} hr`
+                            : `${diffDays} hr lagi`}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-gray-100">
+                        <div>
+                          <span className="text-gray-400 block text-[11px]">Total Tagihan:</span>
+                          <span className="font-bold text-gray-700 text-xs sm:text-sm">
+                            {formatCurrency(inv.totalAmount)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-gray-400 block text-[11px]">Sisa Tagihan:</span>
+                          <span className="font-extrabold text-red-600 text-sm">
+                            {formatCurrency(remaining)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                        <span className="text-emerald-700 font-medium">
+                          Terbayar: {formatCurrency(totalPaid)}
+                        </span>
+                        <button
+                          disabled={inv.status === "PAID"}
+                          onClick={() => onPayFaktur && onPayFaktur(inv)}
+                          className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Bayar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop/Tablet View: Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full min-w-max text-left text-sm">
                   <thead className="text-gray-500">
                     <tr>
