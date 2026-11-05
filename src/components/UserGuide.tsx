@@ -243,6 +243,32 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Aplikasi berjalan sangat cepat dan ringan tanpa membebani memori ponsel Anda."
       }
     ]
+  },
+  {
+    id: "gaya-navbar",
+    category: "mobile",
+    title: "8. Kustomisasi Gaya & Ukuran Navbar (Minimize)",
+    summary: "Mengubah tema warna navbar (8 pilihan gaya), mengecilkan navbar ke mode ikon ringkas, dan memilih tata letak.",
+    steps: [
+      {
+        title: "Memilih Tema & Warna Navbar (8 Gaya Pilihan)",
+        description: "Buka menu 'Pengaturan' > pada panel 'Tampilan & Gaya Navbar', pilih dari 8 tema warna pilihan: Modern Clean (Putih Minimalis), Midnight Slate (Gelap Elegan), Deep Navy (Biru Korporat), Emerald Forest (Hijau Bisnis), Royal Purple (Ungu Mewah), Sunset Crimson (Merah Marun), Graphite Minimal (Hitam Arang), atau Soft Sky (Pastel Sejuk).",
+        tip: "Perubahan gaya langsung aktif secara instan dengan pratinjau live dan otomatis tersimpan di perangkat Anda."
+      },
+      {
+        title: "Mode Minimize / Kecilkan Navbar",
+        description: "Anda dapat mengecilkan navbar samping menjadi mode ikon ringkas (80px) untuk memaksimalkan ruang kerja tabel faktur dan laporan:\n1. Klik ikon tombol minimize di sudut kanan atas sidebar desktop.\n2. Atau aktifkan tombol 'Minimize Navbar' di halaman Pengaturan.\nSaat dalam mode minimize, teks disembunyikan dan tooltip nama halaman akan muncul saat ikon disentuh/disorot kursor.",
+        tip: "Sangat berguna untuk layar laptop beresolusi sedang agar tabel faktur tidak terpotong ke samping."
+      },
+      {
+        title: "Tata Letak Navbar (Sidebar vs Navbar Atas)",
+        description: "Anda juga dapat memilih tata letak 'Sidebar Kiri' standar ataupun 'Navbar Atas' (horizontal) untuk tampilan layar penuh 100% tanpa sidebar samping.",
+      },
+      {
+        title: "Bentuk Tombol Menu",
+        description: "Pilih bentuk tombol menu yang diinginkan: Rounded Modern, Kapsul (Pill), atau Klasik Kotak.",
+      }
+    ]
   }
 ];
 

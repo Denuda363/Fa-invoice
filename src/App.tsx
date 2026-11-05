@@ -11,22 +11,26 @@ import { PaymentModal } from "./components/PaymentModal";
 import { PaymentHistoryModal } from "./components/PaymentHistoryModal";
 import { PaymentHistory } from "./components/PaymentHistory";
 import { PWAInstallButton } from "./components/PWAInstallButton";
+import { NavbarProvider, useNavbar } from "./context/NavbarContext";
 import {
   LayoutDashboard,
   FilePlus,
   Files,
   PieChart,
-  FileText,
   Menu,
   X,
   Users,
   Settings as SettingsIcon,
   Receipt,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Layout,
 } from "lucide-react";
 import { cn } from "./utils";
 
-export default function App() {
+function AppContent() {
   const store = useAppStore();
+  const { settings, activeTheme, toggleMinimized, setLayout } = useNavbar();
   const [view, setView] = useState<ViewState>("DASHBOARD");
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null);
   const [historyInvoice, setHistoryInvoice] = useState<Invoice | null>(null);
@@ -43,83 +47,245 @@ export default function App() {
   ];
 
   const currentTitle = navigation.find((n) => n.id === view)?.name || "AF Faktur";
+  const isTopbarMode = settings.layout === "topbar";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col md:flex-row font-sans pb-24 md:pb-6">
-      {/* Mobile Sidebar Backdrop (Only for 'More' menu now) */}
+    <div
+      className={cn(
+        "min-h-screen bg-gray-50 text-gray-900 flex font-sans pb-24 md:pb-6 transition-colors",
+        isTopbarMode ? "flex-col" : "flex-col md:flex-row"
+      )}
+    >
+      {/* Mobile Sidebar Backdrop (Drawer) */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-xs md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Top Header */}
-      <header className="md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-2xs">
+      {/* Mobile Top Header (Matches Selected Theme) */}
+      <header
+        className={cn(
+          "md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b shadow-2xs transition-colors",
+          activeTheme.headerBg,
+          activeTheme.headerBorder
+        )}
+      >
         <div className="flex items-center gap-2.5">
           <img src="/icon.jpg" alt="Logo" className="w-7 h-7 rounded-md object-cover shadow-2xs" />
           <div>
-            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">AF Faktur</h1>
-            <p className="text-[10px] font-medium text-blue-600 leading-none">{currentTitle}</p>
+            <h1 className={cn("text-sm font-extrabold leading-tight", activeTheme.textLogo)}>AF Faktur</h1>
+            <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>{currentTitle}</p>
           </div>
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          className={cn("p-1.5 rounded-lg transition-colors", activeTheme.toggleBtnHover)}
           aria-label="Buka Menu"
         >
           <Menu size={22} />
         </button>
       </header>
 
-      {/* Sidebar Navigation (Desktop) & Sliding Menu (Mobile) */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 transform bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ease-out md:static md:translate-x-0 md:w-64",
-          isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
-        )}
-      >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-md object-cover hidden md:block" />
-            <h1 className="font-bold text-gray-800 tracking-tight hidden md:block">AF Faktur</h1>
-            <h1 className="font-bold text-lg text-gray-800 md:hidden">Menu Lainnya</h1>
-          </div>
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden rounded-lg p-2 text-gray-500 hover:bg-gray-100"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          {navigation.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setView(item.id);
-                setIsSidebarOpen(false);
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                view === item.id
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              )}
-            >
-              <item.icon size={18} className={view === item.id ? "text-white" : "text-gray-400"} />
-              {item.name}
-            </button>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-gray-100">
-          <PWAInstallButton />
-        </div>
-      </aside>
+      {/* DESKTOP TOPBAR LAYOUT (If user selects "Navbar Atas" in Settings) */}
+      {isTopbarMode && (
+        <header
+          className={cn(
+            "hidden md:flex sticky top-0 z-40 items-center justify-between px-6 py-2.5 border-b shadow-sm transition-colors",
+            activeTheme.headerBg,
+            activeTheme.headerBorder
+          )}
+        >
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setView("DASHBOARD")}>
+              <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover shadow-2xs" />
+              <div>
+                <h1 className={cn("font-bold text-sm leading-tight tracking-tight", activeTheme.textLogo)}>AF Faktur</h1>
+                <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>Manajemen Faktur</p>
+              </div>
+            </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full min-w-0">
+            {/* Horizontal Nav Links */}
+            <nav className="flex items-center gap-1">
+              {navigation.map((item) => {
+                const isActive = view === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setView(item.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-200",
+                      settings.buttonShape,
+                      isActive ? activeTheme.navItemActive : activeTheme.navItemInactive
+                    )}
+                  >
+                    <item.icon
+                      size={15}
+                      className={cn("shrink-0", isActive ? activeTheme.navIconActive : activeTheme.navIconInactive)}
+                    />
+                    <span>{item.name}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLayout("sidebar")}
+              className={cn("inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors", activeTheme.toggleBtnHover, activeTheme.sidebarBorder)}
+              title="Kembalikan ke mode Sidebar Kiri"
+            >
+              <Layout size={14} />
+              <span>Ganti Sidebar</span>
+            </button>
+            <PWAInstallButton />
+          </div>
+        </header>
+      )}
+
+      {/* DESKTOP SIDEBAR & MOBILE SLIDING DRAWER */}
+      {(!isTopbarMode || isSidebarOpen) && (
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 transform border-r flex flex-col transition-all duration-300 ease-in-out md:static md:translate-x-0 shadow-lg md:shadow-none",
+            isSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full",
+            isTopbarMode ? "md:hidden" : "",
+            !isTopbarMode && (settings.isMinimized ? "md:w-20" : "md:w-64"),
+            activeTheme.sidebarBg,
+            activeTheme.sidebarBorder
+          )}
+        >
+          {/* Sidebar Brand Header */}
+          <div
+            className={cn(
+              "h-16 flex items-center border-b px-4 transition-colors",
+              activeTheme.sidebarBorder,
+              settings.isMinimized && !isSidebarOpen ? "justify-center" : "justify-between"
+            )}
+          >
+            <div className="flex items-center gap-3 overflow-hidden">
+              <img
+                src="/icon.jpg"
+                alt="Logo"
+                className="w-8 h-8 rounded-lg object-cover hidden md:block shrink-0 shadow-2xs"
+              />
+              {(!settings.isMinimized || isSidebarOpen) && (
+                <div className="hidden md:block truncate">
+                  <h1 className={cn("font-bold text-sm leading-tight tracking-tight", activeTheme.textLogo)}>
+                    AF Faktur
+                  </h1>
+                  <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>
+                    Manajemen Faktur
+                  </p>
+                </div>
+              )}
+              <h1 className={cn("font-bold text-lg md:hidden", activeTheme.textLogo)}>Menu Navigasi</h1>
+            </div>
+
+            {/* Quick Minimize / Expand Toggle Button for Desktop */}
+            <button
+              onClick={toggleMinimized}
+              className={cn(
+                "hidden md:flex items-center justify-center p-2 rounded-lg transition-all",
+                activeTheme.toggleBtnHover
+              )}
+              title={settings.isMinimized ? "Perbesar Navbar (Expand)" : "Kecilkan Navbar (Minimize)"}
+              aria-label={settings.isMinimized ? "Perbesar Navbar" : "Kecilkan Navbar"}
+            >
+              {settings.isMinimized ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+
+            {/* Close button for Mobile sliding drawer */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden rounded-lg p-2 text-gray-400 hover:text-gray-100 hover:bg-white/10"
+              aria-label="Tutup Menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden">
+            {navigation.map((item) => {
+              const isActive = view === item.id;
+              const isMinimizedDesktop = settings.isMinimized && !isSidebarOpen;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setView(item.id);
+                    setIsSidebarOpen(false);
+                  }}
+                  title={isMinimizedDesktop ? item.name : undefined}
+                  className={cn(
+                    "w-full flex items-center transition-all duration-200 group relative",
+                    settings.buttonShape,
+                    isMinimizedDesktop
+                      ? "justify-center p-3"
+                      : "gap-3 px-3 py-2.5 text-sm font-medium",
+                    isActive ? activeTheme.navItemActive : activeTheme.navItemInactive
+                  )}
+                >
+                  <item.icon
+                    size={isMinimizedDesktop ? 20 : 18}
+                    className={cn(
+                      "shrink-0 transition-transform group-hover:scale-105",
+                      isActive ? activeTheme.navIconActive : activeTheme.navIconInactive
+                    )}
+                  />
+                  {(!settings.isMinimized || isSidebarOpen) && (
+                    <span className="truncate text-left">{item.name}</span>
+                  )}
+
+                  {/* Floating Hover Tooltip when Minimized on Desktop */}
+                  {isMinimizedDesktop && (
+                    <div className="hidden group-hover:md:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold whitespace-nowrap shadow-xl z-50 pointer-events-none items-center gap-1.5 animate-in fade-in duration-150 border border-gray-700">
+                      <span>{item.name}</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className={cn("p-3 border-t transition-colors", activeTheme.sidebarBorder)}>
+            {!settings.isMinimized || isSidebarOpen ? (
+              <div className="space-y-2">
+                <PWAInstallButton />
+                <div className="hidden md:flex items-center justify-between px-1 text-[10px] text-gray-400">
+                  <span>Tema: {activeTheme.name.split(" ")[0]}</span>
+                  <button
+                    onClick={() => setView("SETTINGS")}
+                    className="hover:underline text-blue-500 font-semibold"
+                  >
+                    Ubah Gaya
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={toggleMinimized}
+                className={cn(
+                  "w-full flex items-center justify-center p-2 rounded-lg transition-colors",
+                  activeTheme.toggleBtnHover
+                )}
+                title="Perbesar Navbar (Expand)"
+                aria-label="Perbesar Navbar"
+              >
+                <PanelLeftOpen size={18} />
+              </button>
+            )}
+          </div>
+        </aside>
+      )}
+
+      {/* Main Content Area (Automatically Expands when Sidebar is Minimized) */}
+      <main className="flex-1 overflow-y-auto w-full min-w-0 transition-all">
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-5 md:py-6">
           {view === "DASHBOARD" && (
             <Dashboard
@@ -141,7 +307,7 @@ export default function App() {
           {view === "BULK_INPUT_INVOICE" && (
             <BulkInputFaktur
               customers={store.customers}
-              existingInvoiceNumbers={store.invoices.map(i => i.invoiceNumber.toLowerCase())}
+              existingInvoiceNumbers={store.invoices.map((i) => i.invoiceNumber.toLowerCase())}
               onSave={(invoices) => {
                 store.addInvoices(invoices);
                 setView("DASHBOARD");
@@ -198,56 +364,83 @@ export default function App() {
           onSave={store.addPayment}
         />
       )}
-      
+
       {historyInvoice && (
         <PaymentHistoryModal
-          invoice={store.invoices.find(i => i.id === historyInvoice.id) || null}
+          invoice={store.invoices.find((i) => i.id === historyInvoice.id) || null}
           onClose={() => setHistoryInvoice(null)}
           onEditPayment={store.editPayment}
           onDeletePayment={store.deletePayment}
         />
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-1">
+      {/* Mobile Bottom Navigation (Styled with Chosen Theme) */}
+      <nav
+        className={cn(
+          "md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center h-16 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-1 transition-colors",
+          activeTheme.mobileBottomBg,
+          activeTheme.mobileBottomBorder
+        )}
+      >
         {[
           { id: "DASHBOARD" as ViewState, icon: LayoutDashboard, label: "Home" },
           { id: "BULK_INPUT_INVOICE" as ViewState, icon: FilePlus, label: "Input" },
           { id: "INVOICE_HISTORY" as ViewState, icon: Files, label: "Faktur" },
           { id: "REPORTS" as ViewState, icon: PieChart, label: "Laporan" },
-        ].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              setView(item.id);
-              setIsSidebarOpen(false);
-            }}
-            className={cn(
-              "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
-              view === item.id ? "text-blue-600 font-semibold" : "text-gray-500 hover:text-gray-900 font-normal"
-            )}
-          >
-            <item.icon size={20} className={view === item.id ? "stroke-[2.5]" : "stroke-[1.8]"} />
-            <span className="text-[10px] mt-0.5">{item.label}</span>
-            {view === item.id && (
-              <span className="absolute bottom-1 w-6 h-0.5 bg-blue-600 rounded-full" />
-            )}
-          </button>
-        ))}
+        ].map((item) => {
+          const isActive = view === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setView(item.id);
+                setIsSidebarOpen(false);
+              }}
+              className={cn(
+                "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
+                isActive ? activeTheme.mobileActiveText : activeTheme.mobileInactiveText
+              )}
+            >
+              <item.icon size={20} className={isActive ? "stroke-[2.5]" : "stroke-[1.8]"} />
+              <span className="text-[10px] mt-0.5">{item.label}</span>
+              {isActive && (
+                <span
+                  className={cn(
+                    "absolute bottom-1 w-6 h-0.5 rounded-full",
+                    activeTheme.mobileActiveIndicator
+                  )}
+                />
+              )}
+            </button>
+          );
+        })}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className={cn(
             "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
-            isSidebarOpen ? "text-blue-600 font-semibold" : "text-gray-500 hover:text-gray-900 font-normal"
+            isSidebarOpen ? activeTheme.mobileActiveText : activeTheme.mobileInactiveText
           )}
         >
           <Menu size={20} className={isSidebarOpen ? "stroke-[2.5]" : "stroke-[1.8]"} />
           <span className="text-[10px] mt-0.5">Menu</span>
           {isSidebarOpen && (
-            <span className="absolute bottom-1 w-6 h-0.5 bg-blue-600 rounded-full" />
+            <span
+              className={cn(
+                "absolute bottom-1 w-6 h-0.5 rounded-full",
+                activeTheme.mobileActiveIndicator
+              )}
+            />
           )}
         </button>
       </nav>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <NavbarProvider>
+      <AppContent />
+    </NavbarProvider>
   );
 }

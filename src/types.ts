@@ -29,3 +29,23 @@ export interface AppData {
 }
 
 export type ViewState = "DASHBOARD" | "INVOICE_HISTORY" | "BULK_INPUT_INVOICE" | "REPORTS" | "CUSTOMERS" | "SETTINGS" | "PAYMENT_HISTORY";
+
+export type NavbarThemeId =
+  | "modern-light"
+  | "midnight-dark"
+  | "deep-navy"
+  | "emerald-luxury"
+  | "royal-purple"
+  | "sunset-crimson"
+  | "graphite-dark"
+  | "soft-pastel";
+
+export type NavbarLayoutMode = "sidebar" | "topbar";
+export type NavbarButtonShape = "rounded-lg" | "rounded-full" | "rounded-md";
+
+export interface NavbarSettings {
+  theme: NavbarThemeId;
+  layout: NavbarLayoutMode;
+  isMinimized: boolean;
+  buttonShape: NavbarButtonShape;
+}

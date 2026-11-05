@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { Download, Upload, FileSpreadsheet, RefreshCcw, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
 import { UserGuide } from "./UserGuide";
+import { NavbarSettingsPanel } from "./NavbarSettingsPanel";
 
 interface SettingsProps {
   onRestore: (jsonData: string) => boolean;
@@ -186,8 +187,11 @@ export function Settings({
     <div className="space-y-6 max-w-5xl w-full">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
-        <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>
+        <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, tema & gaya navbar, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>
       </div>
+
+      {/* Kustomisasi Gaya & Ukuran Navbar */}
+      <NavbarSettingsPanel />
 
       {/* Panduan Lengkap Penggunaan */}
       <UserGuide />
