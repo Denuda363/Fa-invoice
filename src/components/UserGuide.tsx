@@ -92,6 +92,11 @@ const GUIDE_DATA: GuideSection[] = [
         title: "Import Faktur dari File Excel",
         description: "1. Pada halaman Input Faktur, klik tombol 'Import Excel'.\n2. Unduh template Excel yang telah disediakan untuk melihat struktur kolom yang benar (No Faktur, Nama Konsumen, Tgl Faktur, Jatuh Tempo, Total).\n3. Masukkan data faktur Anda ke file Excel tersebut lalu simpan.\n4. Upload kembali file Excel. Aplikasi akan membaca dan menyimpan seluruh faktur secara instan.",
         tip: "Pastikan format tanggal di Excel adalah tahun-bulan-hari (YYYY-MM-DD) atau format tanggal standar Excel."
+      },
+      {
+        title: "Riwayat Faktur, Total Tagihan Tiap Konsumen & Filter Rentang Tanggal",
+        description: "Buka menu 'Riwayat Faktur' untuk meninjau dan mengelola seluruh faktur penjualan:\n1. Total Tagihan Tiap Konsumen: Pada setiap baris faktur tercantum tag 'Total Tagihan' yang mengakumulasikan total nominal faktur dari toko tersebut. Anda juga dapat beralih ke tab 'Total Tagihan per Konsumen' untuk melihat rekap peringkat nilai penjualan, jumlah faktur, total pembayaran yang telah masuk, sisa utang berjalan, dan kontribusi persentase tiap toko.\n2. Filter Rentang Tanggal: Saring data berdasarkan Tanggal Faktur atau Tanggal Jatuh Tempo dengan memilih tanggal 'Dari' dan 'Sampai', atau menggunakan tombol pintas 'Hari Ini', 'Bulan Ini', 'Bulan Lalu', dan 'Semua Waktu'.\n3. Filter Dropdown Konsumen & Status: Pilih toko tertentu dari dropdown untuk langsung melihat seluruh fakturnya beserta akumulasi tagihannya.\n4. Export Excel 2 Sheet Lengkap: Unduh lembar kerja Excel yang otomatis berisi Sheet 'Daftar Faktur' dan Sheet 'Total Tagihan per Konsumen'.",
+        tip: "Klik badge 'Total Tagihan' pada nama konsumen di tabel faktur untuk langsung menyaring semua transaksi milik konsumen tersebut."
       }
     ],
     faq: [
