@@ -125,8 +125,9 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Hanya hapus riwayat pembayaran jika terjadi kekeliruan input."
       },
       {
-        title: "Menu Terpusat: Riwayat Pembayaran",
-        description: "Gunakan menu navigasi 'Riwayat Pembayaran' untuk melihat rekapitulasi semua penerimaan kas yang masuk dari berbagai faktur dalam rentang waktu tertentu.",
+        title: "Menu Terpusat: Riwayat Pembayaran & Total Pembayaran Setiap Konsumen",
+        description: "Gunakan menu navigasi 'Riwayat Pembayaran' untuk mengawasi seluruh arus kas masuk. Kini dilengkapi fitur pemantauan total pembayaran setiap konsumen yang dapat disaring berdasarkan rentang tanggal:\n\n1. Tab 'Riwayat Transaksi': Menampilkan daftar setiap kali konsumen menyetor dana dengan info 'Total Disetor' pada tiap baris transaksi.\n2. Tab 'Total per Konsumen': Rekapitulasi total pembayaran per masing-masing pelanggan. Anda dapat menyaring data berdasarkan rentang tanggal tertentu (Dari & Sampai Tanggal), atau menggunakan tombol pintas cepat seperti 'Hari Ini', 'Bulan Ini', 'Bulan Lalu', atau 'Semua Waktu'.\n3. Perhitungan Akurat Berdasarkan Rentang Tanggal: Saat rentang tanggal disaring, kolom Total Pembayaran dan frekuensi setoran otomatis menghitung murni dana yang dibayarkan konsumen pada rentang tanggal tersebut. Teks 'All-time' tetap disertakan untuk perbandingan.\n4. Opsi 'Hanya yang Membayar di Rentang Ini': Menyaring daftar agar hanya menampilkan konsumen yang memang menyetorkan pembayaran pada periode terpilih.\n5. Filter Konsumen & Pencarian: Cari konsumen berdasarkan nama atau pilih langsung dari dropdown konsumen.\n6. Export Excel 2 Sheet Lengkap: Hasil ekspor Excel otomatis menyesuaikan dengan rentang tanggal yang dipilih, lengkap dengan judul periode dan lembar kerja 'Riwayat Transaksi' serta 'Total per Konsumen'.",
+        tip: "Gunakan pintasan 'Bulan Ini' pada tab Total per Konsumen untuk langsung mengecek performa setoran toko pelanggan pada bulan berjalan."
       }
     ]
   },
