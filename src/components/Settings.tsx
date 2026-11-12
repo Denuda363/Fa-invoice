@@ -3,6 +3,7 @@ import { Download, Upload, FileSpreadsheet, RefreshCcw, Trash2 } from "lucide-re
 import * as XLSX from "xlsx-js-style";
 import { UserGuide } from "./UserGuide";
 import { NavbarSettingsPanel } from "./NavbarSettingsPanel";
+import { AboutApp } from "./AboutApp";
 
 interface SettingsProps {
   onRestore: (jsonData: string) => boolean;
@@ -189,6 +190,9 @@ export function Settings({
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
         <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, tema & gaya navbar, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>
       </div>
+
+      {/* Tentang Aplikasi, Hak Cipta & Developer Denuda */}
+      <AboutApp />
 
       {/* Kustomisasi Gaya & Ukuran Navbar */}
       <NavbarSettingsPanel />

@@ -266,6 +266,10 @@ function AppContent() {
                     Ubah Gaya
                   </button>
                 </div>
+                <div className="px-1 text-[10px] text-gray-400/80 flex items-center justify-between border-t border-gray-200/40 pt-1.5">
+                  <span>© 2026 Denuda</span>
+                  <span className="font-medium text-gray-500">v2.5 Pro</span>
+                </div>
               </div>
             ) : (
               <button

@@ -275,6 +275,37 @@ const GUIDE_DATA: GuideSection[] = [
         description: "Pilih bentuk tombol menu yang diinginkan: Rounded Modern, Kapsul (Pill), atau Klasik Kotak.",
       }
     ]
+  },
+  {
+    id: "tentang-developer",
+    category: "alur",
+    title: "9. Tentang Aplikasi, Hak Cipta & Developer Denuda",
+    summary: "Informasi resmi mengenai aplikasi, hak cipta yang dilindungi, serta profil Denuda sebagai pembuat dan pengembang aplikasi.",
+    steps: [
+      {
+        title: "Developer Aplikasi: Denuda",
+        description: "Aplikasi ini dirancang, dibuat, dan dikembangkan secara penuh oleh Denuda sebagai solusi pencatatan dan manajemen faktur, penagihan, dan monitoring piutang toko yang cepat, andal, dan responsif.",
+        tip: "Dibuat dengan dedikasi penuh untuk memudahkan operasional pembukuan bisnis harian."
+      },
+      {
+        title: "Hak Cipta Aplikasi",
+        description: "Hak Cipta © 2026 Denuda. Seluruh hak cipta dilindungi undang-undang (All Rights Reserved). Seluruh tata letak antarmuka, arsitektur data, formula kalkulasi, dan fitur-fitur di dalam aplikasi ini dilindungi hak cipta resmi.",
+      },
+      {
+        title: "Teknologi & Keamanan Data",
+        description: "Dibangun dengan arsitektur modern (React 19, TypeScript, Tailwind CSS, PWA). Seluruh data transaksi tersimpan aman di perangkat lokal pengguna dan dapat dibackup atau dipulihkan dalam format JSON maupun Excel multi-sheet kapan saja tanpa risiko kebocoran data.",
+      }
+    ],
+    faq: [
+      {
+        q: "Siapa developer yang membuat aplikasi ini?",
+        a: "Aplikasi ini dibuat dan dikembangkan oleh Denuda."
+      },
+      {
+        q: "Apakah data transaksi saya aman?",
+        a: "Ya, seluruh data tersimpan secara lokal di perangkat Anda dan Anda dapat melakukan backup berkala ke file JSON maupun spreadsheet Excel."
+      }
+    ]
   }
 ];
 
