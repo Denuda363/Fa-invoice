@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Invoice, Customer } from "../types";
+import { Invoice, Customer, CompanyProfile } from "../types";
 import { formatCurrency, cn } from "../utils";
 import { format, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
@@ -12,11 +12,12 @@ import { Pagination } from "./Pagination";
 interface ReportsProps {
   invoices: Invoice[];
   customers?: Customer[];
+  companyProfile?: CompanyProfile;
   onPayFaktur?: (invoice: Invoice) => void;
   onBulkPay?: (payments: {invoiceId: string, amount: number, date: string}[]) => void;
 }
 
-export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: ReportsProps) {
+export function Reports({ invoices, customers = [], companyProfile, onPayFaktur, onBulkPay }: ReportsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("UNPAID");
   const [dueDateFilter, setDueDateFilter] = useState("ALL");
@@ -941,10 +942,51 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
 
   const exportPDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Laporan Rekap Faktur Jatuh Tempo", 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`, 14, 22);
+    const cName = companyProfile?.name || "AF Faktur";
+    const cAddress = companyProfile?.address || "";
+    const cPhone = companyProfile?.phone || "";
+    const cEmail = companyProfile?.email || "";
+    let textStartX = 14;
+    let startTableY = 30;
+
+    // Optional uploaded company icon in PDF header
+    if (companyProfile?.iconUrl && companyProfile.iconUrl.startsWith("data:image/")) {
+      try {
+        const formatType = companyProfile.iconUrl.includes("image/png")
+          ? "PNG"
+          : companyProfile.iconUrl.includes("image/webp")
+          ? "WEBP"
+          : "JPEG";
+        doc.addImage(companyProfile.iconUrl, formatType, 14, 10, 14, 14);
+        textStartX = 32;
+      } catch {
+        // Fallback smoothly if jsPDF rejects unsupported format like SVG
+      }
+    }
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(cName, textStartX, 15);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const contactLine = [cPhone, cEmail, cAddress].filter(Boolean).join(" · ");
+    if (contactLine) {
+      doc.text(contactLine.slice(0, 95), textStartX, 20.5);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Laporan Rekap Faktur Jatuh Tempo", 14, 30);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`, 14, 35.5);
+      startTableY = 41;
+    } else {
+      doc.setFontSize(12);
+      doc.text("Laporan Rekap Faktur Jatuh Tempo", textStartX, 21);
+      doc.setFontSize(9);
+      doc.text(`Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`, textStartX, 26.5);
+      startTableY = 32;
+    }
 
     const body = filteredInvoices.map((inv) => {
       const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
@@ -966,7 +1008,7 @@ export function Reports({ invoices, customers = [], onPayFaktur, onBulkPay }: Re
 
     // @ts-ignore - jspdf-autotable extends jsPDF but types might complain
     doc.autoTable({
-      startY: 28,
+      startY: startTableY,
       head: [["Konsumen", "No. Faktur", "Jatuh Tempo", "Umur Faktur", "Sisa Tagihan"]],
       body: body,
       theme: "striped",

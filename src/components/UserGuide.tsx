@@ -253,13 +253,18 @@ const GUIDE_DATA: GuideSection[] = [
   {
     id: "gaya-navbar",
     category: "mobile",
-    title: "8. Kustomisasi Gaya & Ukuran Navbar (Minimize)",
-    summary: "Mengubah tema warna navbar (8 pilihan gaya), mengecilkan navbar ke mode ikon ringkas, dan memilih tata letak.",
+    title: "8. Tema 3D, Profil Perusahaan & Kustomisasi Navbar",
+    summary: "Mengubah seluruh tema menjadi gaya 3D, mengedit profil & icon logo perusahaan, serta mengecilkan navbar (minimize).",
     steps: [
       {
-        title: "Memilih Tema & Warna Navbar (8 Gaya Pilihan)",
-        description: "Buka menu 'Pengaturan' > pada panel 'Tampilan & Gaya Navbar', pilih dari 8 tema warna pilihan: Modern Clean (Putih Minimalis), Midnight Slate (Gelap Elegan), Deep Navy (Biru Korporat), Emerald Forest (Hijau Bisnis), Royal Purple (Ungu Mewah), Sunset Crimson (Merah Marun), Graphite Minimal (Hitam Arang), atau Soft Sky (Pastel Sejuk).",
-        tip: "Perubahan gaya langsung aktif secara instan dengan pratinjau live dan otomatis tersimpan di perangkat Anda."
+        title: "Memilih Tema 3D (8 Pilihan Gaya Berdimensi)",
+        description: "Buka menu 'Pengaturan' > pada panel 'Tampilan & Tema 3D Navbar', pilih dari 8 tema 3D berdimensi lengkap dengan sudut bevel timbul dan highlight arah cahaya: Modern Clean 3D, Midnight Slate 3D, Deep Navy 3D, Emerald Forest 3D, Royal Purple 3D, Sunset Crimson 3D, Graphite Minimal 3D, atau Soft Sky 3D.",
+        tip: "Seluruh kartu, tombol aksi, dan navigasi aplikasi otomatis mengikuti gaya 3D dari tema yang Anda pilih."
+      },
+      {
+        title: "Edit Profil Perusahaan & Upload Icon Perusahaan",
+        description: "Di menu 'Pengaturan', gunakan panel 'Profil & Icon Perusahaan':\n1. Upload Icon Logo: Seret & lepas atau pilih file gambar (PNG, JPG, WEBP, atau SVG). Gambar otomatis dikompresi agar ringan dan langsung tampil di navbar, header mobile, favicon browser, dan laporan PDF.\n2. Edit Data Perusahaan: Isi Nama Perusahaan/Toko, Tagline, Nomor Telepon/WA, Email, Nama Penanggung Jawab, NPWP, serta Alamat Lengkap.\n3. Klik 'Simpan Profil Perusahaan' untuk menerapkan perubahan ke seluruh aplikasi.",
+        tip: "Gunakan tombol 'Pakai Default' kapan saja untuk mengembalikan logo standar."
       },
       {
         title: "Mode Minimize / Kecilkan Navbar",
@@ -267,12 +272,8 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Sangat berguna untuk layar laptop beresolusi sedang agar tabel faktur tidak terpotong ke samping."
       },
       {
-        title: "Tata Letak Navbar (Sidebar vs Navbar Atas)",
-        description: "Anda juga dapat memilih tata letak 'Sidebar Kiri' standar ataupun 'Navbar Atas' (horizontal) untuk tampilan layar penuh 100% tanpa sidebar samping.",
-      },
-      {
-        title: "Bentuk Tombol Menu",
-        description: "Pilih bentuk tombol menu yang diinginkan: Rounded Modern, Kapsul (Pill), atau Klasik Kotak.",
+        title: "Tata Letak Navbar & Bentuk Tombol 3D",
+        description: "Anda dapat memilih tata letak 'Sidebar Kiri 3D' atau 'Navbar Atas 3D' untuk lebar penuh 100%, serta memilih bentuk tombol 3D (Rounded 3D, Kapsul 3D, atau Kotak 3D)."
       }
     ]
   },

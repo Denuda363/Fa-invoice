@@ -1,22 +1,30 @@
 import React, { useRef } from "react";
 import { Download, Upload, FileSpreadsheet, RefreshCcw, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
+import { CompanyProfile } from "../types";
 import { UserGuide } from "./UserGuide";
 import { NavbarSettingsPanel } from "./NavbarSettingsPanel";
+import { CompanyProfilePanel } from "./CompanyProfilePanel";
 import { AboutApp } from "./AboutApp";
 
 interface SettingsProps {
+  companyProfile: CompanyProfile;
+  onUpdateCompanyProfile: (profile: CompanyProfile) => void;
+  onResetCompanyProfile: () => void;
   onRestore: (jsonData: string) => boolean;
   getBackupData: () => string;
   resetData: () => void;
   resetDueDates: () => void;
 }
 
-export function Settings({ 
-  onRestore, 
-  getBackupData, 
+export function Settings({
+  companyProfile,
+  onUpdateCompanyProfile,
+  onResetCompanyProfile,
+  onRestore,
+  getBackupData,
   resetData,
-  resetDueDates
+  resetDueDates,
 }: SettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputExcelRef = useRef<HTMLInputElement>(null);
@@ -42,35 +50,70 @@ export function Settings({
 
       const customersAoa = [["id", "name", "phone", "address", "exportSeparateSheet"]];
       (data.customers || []).forEach((c: any) => {
-        customersAoa.push([c.id, c.name, c.phone || "", c.address || "", c.exportSeparateSheet ? "true" : "false"]);
+        customersAoa.push([
+          c.id,
+          c.name,
+          c.phone || "",
+          c.address || "",
+          c.exportSeparateSheet ? "true" : "false",
+        ]);
       });
-      
-      const invoicesAoa = [["id", "invoiceNumber", "customerName", "date", "dueDate", "totalAmount", "status"]];
+
+      const invoicesAoa = [
+        ["id", "invoiceNumber", "customerName", "date", "dueDate", "totalAmount", "status"],
+      ];
       const paymentsAoa = [["id", "invoiceId", "date", "amount"]];
-      
+
       (data.invoices || []).forEach((inv: any) => {
-        invoicesAoa.push([inv.id, inv.invoiceNumber, inv.customerName, inv.date, inv.dueDate, inv.totalAmount, inv.status]);
+        invoicesAoa.push([
+          inv.id,
+          inv.invoiceNumber,
+          inv.customerName,
+          inv.date,
+          inv.dueDate,
+          inv.totalAmount,
+          inv.status,
+        ]);
         (inv.payments || []).forEach((p: any) => {
           paymentsAoa.push([p.id, inv.id, p.date, p.amount]);
         });
       });
-      
+
       const wsCustomers = XLSX.utils.aoa_to_sheet(customersAoa);
       const wsInvoices = XLSX.utils.aoa_to_sheet(invoicesAoa);
       const wsPayments = XLSX.utils.aoa_to_sheet(paymentsAoa);
-      
+
       const styleSheet = (ws: any, cols: any[]) => {
         ws["!cols"] = cols;
       };
 
-      styleSheet(wsCustomers, [{ wch: 36 }, { wch: 25 }, { wch: 15 }, { wch: 30 }, { wch: 10 }]);
-      styleSheet(wsInvoices, [{ wch: 36 }, { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 10 }]);
-      styleSheet(wsPayments, [{ wch: 36 }, { wch: 36 }, { wch: 12 }, { wch: 15 }]);
-      
+      styleSheet(wsCustomers, [
+        { wch: 36 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 30 },
+        { wch: 10 },
+      ]);
+      styleSheet(wsInvoices, [
+        { wch: 36 },
+        { wch: 15 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 10 },
+      ]);
+      styleSheet(wsPayments, [
+        { wch: 36 },
+        { wch: 36 },
+        { wch: 12 },
+        { wch: 15 },
+      ]);
+
       XLSX.utils.book_append_sheet(wb, wsCustomers, "Customers");
       XLSX.utils.book_append_sheet(wb, wsInvoices, "Invoices");
       XLSX.utils.book_append_sheet(wb, wsPayments, "Payments");
-      
+
       XLSX.writeFile(wb, `backup_faktur_app_${new Date().toISOString().split("T")[0]}.xlsx`);
     } catch (err) {
       console.error(err);
@@ -111,40 +154,43 @@ export function Settings({
       try {
         const data = new Uint8Array(event.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
-        
+
         const wsCustomers = wb.Sheets["Customers"];
         const wsInvoices = wb.Sheets["Invoices"];
         const wsPayments = wb.Sheets["Payments"];
-        
+
         if (!wsCustomers || !wsInvoices) {
-          alert("Format file Excel tidak valid. Sheet Customers atau Invoices tidak ditemukan.");
+          alert(
+            "Format file Excel tidak valid. Sheet Customers atau Invoices tidak ditemukan."
+          );
           return;
         }
-        
+
         const customersRaw: any[] = XLSX.utils.sheet_to_json(wsCustomers);
         const invoicesRaw: any[] = XLSX.utils.sheet_to_json(wsInvoices);
         const paymentsRaw: any[] = wsPayments ? XLSX.utils.sheet_to_json(wsPayments) : [];
-        
-        const customers = customersRaw.map(c => ({
+
+        const customers = customersRaw.map((c) => ({
           id: String(c.id),
           name: String(c.name),
           phone: c.phone && c.phone !== "undefined" ? String(c.phone) : "",
           address: c.address && c.address !== "undefined" ? String(c.address) : "",
-          exportSeparateSheet: c.exportSeparateSheet === "true" || c.exportSeparateSheet === true
+          exportSeparateSheet:
+            c.exportSeparateSheet === "true" || c.exportSeparateSheet === true,
         }));
-        
+
         const paymentsMap: Record<string, any[]> = {};
-        paymentsRaw.forEach(p => {
+        paymentsRaw.forEach((p) => {
           const invId = String(p.invoiceId);
           if (!paymentsMap[invId]) paymentsMap[invId] = [];
           paymentsMap[invId].push({
             id: String(p.id),
             date: String(p.date),
-            amount: Number(p.amount)
+            amount: Number(p.amount),
           });
         });
-        
-        const invoices = invoicesRaw.map(inv => ({
+
+        const invoices = invoicesRaw.map((inv) => ({
           id: String(inv.id),
           invoiceNumber: String(inv.invoiceNumber),
           customerName: String(inv.customerName),
@@ -152,11 +198,11 @@ export function Settings({
           dueDate: String(inv.dueDate),
           totalAmount: Number(inv.totalAmount),
           status: String(inv.status),
-          payments: paymentsMap[String(inv.id)] || []
+          payments: paymentsMap[String(inv.id)] || [],
         }));
-        
+
         const appData = { customers, invoices };
-        
+
         if (window.confirm("Restore data dari Excel akan menimpa data saat ini. Lanjutkan?")) {
           const success = onRestore(JSON.stringify(appData));
           if (success) {
@@ -169,7 +215,7 @@ export function Settings({
         console.error(err);
         alert("Terjadi kesalahan saat membaca file Excel.");
       }
-      
+
       if (fileInputExcelRef.current) {
         fileInputExcelRef.current.value = "";
       }
@@ -178,7 +224,11 @@ export function Settings({
   };
 
   const handleResetData = () => {
-    if (window.confirm("PERINGATAN: Semua data faktur, pembayaran, dan konsumen akan dihapus permanen. Lanjutkan?")) {
+    if (
+      window.confirm(
+        "PERINGATAN: Semua data faktur, pembayaran, dan konsumen akan dihapus permanen. Lanjutkan?"
+      )
+    ) {
       resetData();
       alert("Data berhasil direset.");
     }
@@ -188,14 +238,23 @@ export function Settings({
     <div className="space-y-6 max-w-5xl w-full">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
-        <p className="mt-1 text-sm text-gray-500">Kelola preferensi data, tema & gaya navbar, backup, pemeliharaan, serta panduan lengkap cara penggunaan aplikasi.</p>
+        <p className="mt-1 text-sm text-gray-500">
+          Kelola profil & icon perusahaan, tema 3D navbar, panduan penggunaan, backup, dan pemeliharaan data.
+        </p>
       </div>
+
+      {/* Edit Profil Perusahaan & Upload Icon Perusahaan */}
+      <CompanyProfilePanel
+        profile={companyProfile}
+        onSave={onUpdateCompanyProfile}
+        onReset={onResetCompanyProfile}
+      />
+
+      {/* Kustomisasi Gaya 3D & Ukuran Navbar */}
+      <NavbarSettingsPanel companyProfile={companyProfile} />
 
       {/* Tentang Aplikasi, Hak Cipta & Developer Denuda */}
       <AboutApp />
-
-      {/* Kustomisasi Gaya & Ukuran Navbar */}
-      <NavbarSettingsPanel />
 
       {/* Panduan Lengkap Penggunaan */}
       <UserGuide />
@@ -275,7 +334,11 @@ export function Settings({
         </p>
         <button
           onClick={() => {
-            if (window.confirm("Apakah Anda yakin ingin mengatur ulang semua tanggal jatuh tempo faktur menjadi 30 hari setelah tanggal faktur?")) {
+            if (
+              window.confirm(
+                "Apakah Anda yakin ingin mengatur ulang semua tanggal jatuh tempo faktur menjadi 30 hari setelah tanggal faktur?"
+              )
+            ) {
               resetDueDates();
               alert("Tanggal jatuh tempo berhasil diatur ulang.");
             }
@@ -300,7 +363,6 @@ export function Settings({
           Reset Semua Data
         </button>
       </div>
-
     </div>
   );
 }

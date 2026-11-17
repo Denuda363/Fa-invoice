@@ -23,12 +23,31 @@ export interface Invoice {
   status: "UNPAID" | "PARTIAL" | "PAID";
 }
 
+export interface CompanyProfile {
+  name: string;
+  tagline: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  npwp?: string;
+  ownerName?: string;
+  iconUrl?: string;
+}
+
 export interface AppData {
   invoices: Invoice[];
   customers: Customer[];
+  companyProfile?: CompanyProfile;
 }
 
-export type ViewState = "DASHBOARD" | "INVOICE_HISTORY" | "BULK_INPUT_INVOICE" | "REPORTS" | "CUSTOMERS" | "SETTINGS" | "PAYMENT_HISTORY";
+export type ViewState =
+  | "DASHBOARD"
+  | "INVOICE_HISTORY"
+  | "BULK_INPUT_INVOICE"
+  | "REPORTS"
+  | "CUSTOMERS"
+  | "SETTINGS"
+  | "PAYMENT_HISTORY";
 
 export type NavbarThemeId =
   | "modern-light"

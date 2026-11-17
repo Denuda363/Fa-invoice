@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppStore } from "./store";
 import { ViewState, Invoice } from "./types";
 import { Dashboard } from "./components/Dashboard";
@@ -11,6 +11,7 @@ import { PaymentModal } from "./components/PaymentModal";
 import { PaymentHistoryModal } from "./components/PaymentHistoryModal";
 import { PaymentHistory } from "./components/PaymentHistory";
 import { PWAInstallButton } from "./components/PWAInstallButton";
+import { CompanyLogo } from "./components/CompanyLogo";
 import { NavbarProvider, useNavbar } from "./context/NavbarContext";
 import {
   LayoutDashboard,
@@ -36,6 +37,22 @@ function AppContent() {
   const [historyInvoice, setHistoryInvoice] = useState<Invoice | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const companyName = store.companyProfile?.name || "AF Faktur";
+  const companyTagline = store.companyProfile?.tagline || "Manajemen Faktur";
+  const companyIcon = store.companyProfile?.iconUrl || "";
+
+  // Dynamically sync browser title & favicon with Company Profile & uploaded icon
+  useEffect(() => {
+    document.title = `${companyName} — ${companyTagline}`;
+    const iconHref = companyIcon.trim() || "/icon.jpg";
+
+    const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (favicon) favicon.href = iconHref;
+
+    const appleIcon = document.querySelector("link[rel='apple-touch-icon']") as HTMLLinkElement | null;
+    if (appleIcon) appleIcon.href = iconHref;
+  }, [companyName, companyTagline, companyIcon]);
+
   const navigation = [
     { name: "Dashboard", id: "DASHBOARD" as ViewState, icon: LayoutDashboard },
     { name: "Input Faktur", id: "BULK_INPUT_INVOICE" as ViewState, icon: FilePlus },
@@ -46,13 +63,15 @@ function AppContent() {
     { name: "Pengaturan", id: "SETTINGS" as ViewState, icon: SettingsIcon },
   ];
 
-  const currentTitle = navigation.find((n) => n.id === view)?.name || "AF Faktur";
+  const currentTitle = navigation.find((n) => n.id === view)?.name || companyName;
   const isTopbarMode = settings.layout === "topbar";
 
   return (
     <div
+      data-theme={activeTheme.id}
       className={cn(
-        "min-h-screen bg-gray-50 text-gray-900 flex font-sans pb-24 md:pb-6 transition-colors",
+        "app-3d-shell min-h-screen text-gray-900 flex font-sans pb-24 md:pb-6 transition-colors duration-300",
+        activeTheme.appBg,
         isTopbarMode ? "flex-col" : "flex-col md:flex-row"
       )}
     >
@@ -64,50 +83,71 @@ function AppContent() {
         />
       )}
 
-      {/* Mobile Top Header (Matches Selected Theme) */}
+      {/* Mobile Top Header (3D Theme Matched) */}
       <header
         className={cn(
-          "md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b shadow-2xs transition-colors",
+          "md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b transition-all",
           activeTheme.headerBg,
           activeTheme.headerBorder
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <img src="/icon.jpg" alt="Logo" className="w-7 h-7 rounded-md object-cover shadow-2xs" />
-          <div>
-            <h1 className={cn("text-sm font-extrabold leading-tight", activeTheme.textLogo)}>AF Faktur</h1>
-            <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>{currentTitle}</p>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <CompanyLogo
+            iconUrl={companyIcon}
+            companyName={companyName}
+            className="w-8 h-8 rounded-lg"
+            alt={companyName}
+          />
+          <div className="min-w-0">
+            <h1 className={cn("text-sm font-extrabold leading-tight truncate", activeTheme.textLogo)}>
+              {companyName}
+            </h1>
+            <p className={cn("text-[10px] font-medium leading-none truncate", activeTheme.textSub)}>
+              {currentTitle}
+            </p>
           </div>
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className={cn("p-1.5 rounded-lg transition-colors", activeTheme.toggleBtnHover)}
+          className={cn("p-2 rounded-xl transition-all shrink-0", activeTheme.toggleBtnHover)}
           aria-label="Buka Menu"
         >
           <Menu size={22} />
         </button>
       </header>
 
-      {/* DESKTOP TOPBAR LAYOUT (If user selects "Navbar Atas" in Settings) */}
+      {/* DESKTOP TOPBAR LAYOUT (3D Topbar Mode) */}
       {isTopbarMode && (
         <header
           className={cn(
-            "hidden md:flex sticky top-0 z-40 items-center justify-between px-6 py-2.5 border-b shadow-sm transition-colors",
+            "hidden md:flex sticky top-0 z-40 items-center justify-between px-6 py-2.5 border-b transition-all",
             activeTheme.headerBg,
             activeTheme.headerBorder
           )}
         >
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setView("DASHBOARD")}>
-              <img src="/icon.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover shadow-2xs" />
-              <div>
-                <h1 className={cn("font-bold text-sm leading-tight tracking-tight", activeTheme.textLogo)}>AF Faktur</h1>
-                <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>Manajemen Faktur</p>
+          <div className="flex items-center gap-6 min-w-0">
+            <div
+              className="flex items-center gap-2.5 cursor-pointer shrink-0"
+              onClick={() => setView("DASHBOARD")}
+            >
+              <CompanyLogo
+                iconUrl={companyIcon}
+                companyName={companyName}
+                className="w-9 h-9 rounded-xl"
+                alt={companyName}
+              />
+              <div className="max-w-[160px]">
+                <h1 className={cn("font-extrabold text-sm leading-tight tracking-tight truncate", activeTheme.textLogo)}>
+                  {companyName}
+                </h1>
+                <p className={cn("text-[10px] font-medium leading-none truncate", activeTheme.textSub)}>
+                  {companyTagline}
+                </p>
               </div>
             </div>
 
-            {/* Horizontal Nav Links */}
-            <nav className="flex items-center gap-1">
+            {/* Horizontal 3D Nav Links */}
+            <nav className="flex items-center gap-1.5 overflow-x-auto py-0.5">
               {navigation.map((item) => {
                 const isActive = view === item.id;
                 return (
@@ -115,14 +155,17 @@ function AppContent() {
                     key={item.id}
                     onClick={() => setView(item.id)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-200",
+                      "flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-200 whitespace-nowrap shrink-0",
                       settings.buttonShape,
                       isActive ? activeTheme.navItemActive : activeTheme.navItemInactive
                     )}
                   >
                     <item.icon
                       size={15}
-                      className={cn("shrink-0", isActive ? activeTheme.navIconActive : activeTheme.navIconInactive)}
+                      className={cn(
+                        "shrink-0",
+                        isActive ? activeTheme.navIconActive : activeTheme.navIconInactive
+                      )}
                     />
                     <span>{item.name}</span>
                   </button>
@@ -131,10 +174,14 @@ function AppContent() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setLayout("sidebar")}
-              className={cn("inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors", activeTheme.toggleBtnHover, activeTheme.sidebarBorder)}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap",
+                activeTheme.toggleBtnHover,
+                activeTheme.sidebarBorder
+              )}
               title="Kembalikan ke mode Sidebar Kiri"
             >
               <Layout size={14} />
@@ -145,11 +192,11 @@ function AppContent() {
         </header>
       )}
 
-      {/* DESKTOP SIDEBAR & MOBILE SLIDING DRAWER */}
+      {/* DESKTOP 3D SIDEBAR & MOBILE SLIDING DRAWER */}
       {(!isTopbarMode || isSidebarOpen) && (
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 transform border-r flex flex-col transition-all duration-300 ease-in-out md:static md:translate-x-0 shadow-lg md:shadow-none",
+            "fixed inset-y-0 left-0 z-50 transform border-r flex flex-col transition-all duration-300 ease-in-out md:static md:translate-x-0",
             isSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full",
             isTopbarMode ? "md:hidden" : "",
             !isTopbarMode && (settings.isMinimized ? "md:w-20" : "md:w-64"),
@@ -166,22 +213,33 @@ function AppContent() {
             )}
           >
             <div className="flex items-center gap-3 overflow-hidden">
-              <img
-                src="/icon.jpg"
-                alt="Logo"
-                className="w-8 h-8 rounded-lg object-cover hidden md:block shrink-0 shadow-2xs"
+              <CompanyLogo
+                iconUrl={companyIcon}
+                companyName={companyName}
+                className="w-9 h-9 rounded-xl hidden md:flex"
+                alt={companyName}
               />
               {(!settings.isMinimized || isSidebarOpen) && (
                 <div className="hidden md:block truncate">
-                  <h1 className={cn("font-bold text-sm leading-tight tracking-tight", activeTheme.textLogo)}>
-                    AF Faktur
+                  <h1 className={cn("font-extrabold text-sm leading-tight tracking-tight truncate", activeTheme.textLogo)}>
+                    {companyName}
                   </h1>
-                  <p className={cn("text-[10px] font-medium leading-none", activeTheme.textSub)}>
-                    Manajemen Faktur
+                  <p className={cn("text-[10px] font-medium leading-none truncate mt-0.5", activeTheme.textSub)}>
+                    {companyTagline}
                   </p>
                 </div>
               )}
-              <h1 className={cn("font-bold text-lg md:hidden", activeTheme.textLogo)}>Menu Navigasi</h1>
+              <div className="flex items-center gap-2.5 md:hidden min-w-0">
+                <CompanyLogo
+                  iconUrl={companyIcon}
+                  companyName={companyName}
+                  className="w-8 h-8 rounded-lg"
+                  alt={companyName}
+                />
+                <h1 className={cn("font-bold text-base truncate", activeTheme.textLogo)}>
+                  {companyName}
+                </h1>
+              </div>
             </div>
 
             {/* Quick Minimize / Expand Toggle Button for Desktop */}
@@ -207,8 +265,8 @@ function AppContent() {
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden">
+          {/* 3D Navigation Links */}
+          <nav className="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden">
             {navigation.map((item) => {
               const isActive = view === item.id;
               const isMinimizedDesktop = settings.isMinimized && !isSidebarOpen;
@@ -226,7 +284,7 @@ function AppContent() {
                     settings.buttonShape,
                     isMinimizedDesktop
                       ? "justify-center p-3"
-                      : "gap-3 px-3 py-2.5 text-sm font-medium",
+                      : "gap-3 px-3.5 py-2.5 text-sm font-semibold",
                     isActive ? activeTheme.navItemActive : activeTheme.navItemInactive
                   )}
                 >
@@ -243,7 +301,7 @@ function AppContent() {
 
                   {/* Floating Hover Tooltip when Minimized on Desktop */}
                   {isMinimizedDesktop && (
-                    <div className="hidden group-hover:md:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold whitespace-nowrap shadow-xl z-50 pointer-events-none items-center gap-1.5 animate-in fade-in duration-150 border border-gray-700">
+                    <div className="hidden group-hover:md:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold whitespace-nowrap shadow-xl z-50 pointer-events-none items-center gap-1.5 border border-gray-700">
                       <span>{item.name}</span>
                     </div>
                   )}
@@ -258,10 +316,10 @@ function AppContent() {
               <div className="space-y-2">
                 <PWAInstallButton />
                 <div className="hidden md:flex items-center justify-between px-1 text-[10px] text-gray-400">
-                  <span>Tema: {activeTheme.name.split(" ")[0]}</span>
+                  <span className="truncate">Tema: {activeTheme.name}</span>
                   <button
                     onClick={() => setView("SETTINGS")}
-                    className="hover:underline text-blue-500 font-semibold"
+                    className="hover:underline text-blue-500 font-semibold shrink-0 ml-1"
                   >
                     Ubah Gaya
                   </button>
@@ -344,6 +402,7 @@ function AppContent() {
             <Reports
               invoices={store.invoices}
               customers={store.customers}
+              companyProfile={store.companyProfile}
               onPayFaktur={(invoice) => setPaymentInvoice(invoice)}
               onBulkPay={(payments) => store.addBulkPayments(payments)}
             />
@@ -351,6 +410,9 @@ function AppContent() {
 
           {view === "SETTINGS" && (
             <Settings
+              companyProfile={store.companyProfile}
+              onUpdateCompanyProfile={store.updateCompanyProfile}
+              onResetCompanyProfile={store.resetCompanyProfile}
               onRestore={store.restoreData}
               getBackupData={store.getBackupData}
               resetData={store.resetData}
@@ -378,10 +440,10 @@ function AppContent() {
         />
       )}
 
-      {/* Mobile Bottom Navigation (Styled with Chosen Theme) */}
+      {/* Mobile Bottom Navigation (3D Theme Matched) */}
       <nav
         className={cn(
-          "md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center h-16 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-1 transition-colors",
+          "md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center h-16 z-30 px-1 transition-colors",
           activeTheme.mobileBottomBg,
           activeTheme.mobileBottomBorder
         )}
@@ -401,7 +463,7 @@ function AppContent() {
                 setIsSidebarOpen(false);
               }}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
+                "flex flex-col items-center justify-center w-full h-full py-1 transition-all relative",
                 isActive ? activeTheme.mobileActiveText : activeTheme.mobileInactiveText
               )}
             >
@@ -410,7 +472,7 @@ function AppContent() {
               {isActive && (
                 <span
                   className={cn(
-                    "absolute bottom-1 w-6 h-0.5 rounded-full",
+                    "absolute bottom-1 w-6 h-1 rounded-full",
                     activeTheme.mobileActiveIndicator
                   )}
                 />
@@ -421,7 +483,7 @@ function AppContent() {
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className={cn(
-            "flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative",
+            "flex flex-col items-center justify-center w-full h-full py-1 transition-all relative",
             isSidebarOpen ? activeTheme.mobileActiveText : activeTheme.mobileInactiveText
           )}
         >
@@ -430,7 +492,7 @@ function AppContent() {
           {isSidebarOpen && (
             <span
               className={cn(
-                "absolute bottom-1 w-6 h-0.5 rounded-full",
+                "absolute bottom-1 w-6 h-1 rounded-full",
                 activeTheme.mobileActiveIndicator
               )}
             />

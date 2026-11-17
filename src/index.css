@@ -1,1 +1,158 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  table,
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ============================================================================
+ * 3D THEME SYSTEM — ALL 8 THEMES
+ * Tactile 3D beveled cards, extruded navigation edges, directional highlights,
+ * and spatial depth across every theme variant.
+ * ============================================================================ */
+
+.app-3d-shell {
+  --card-3d-highlight: rgba(255, 255, 255, 0.92);
+  --card-3d-ledge: #cbd5e1;
+  --card-3d-shadow: rgba(15, 23, 42, 0.08);
+  --btn-3d-ledge: rgba(15, 23, 42, 0.24);
+  --nav-3d-glow: rgba(37, 99, 235, 0.22);
+}
+
+.app-3d-shell[data-theme="modern-light"] {
+  --card-3d-ledge: #cbd5e1;
+  --card-3d-shadow: rgba(30, 58, 138, 0.08);
+  --nav-3d-glow: rgba(37, 99, 235, 0.28);
+}
+
+.app-3d-shell[data-theme="midnight-dark"] {
+  --card-3d-ledge: #cbd5e1;
+  --card-3d-shadow: rgba(67, 56, 202, 0.12);
+  --nav-3d-glow: rgba(99, 102, 241, 0.35);
+}
+
+.app-3d-shell[data-theme="deep-navy"] {
+  --card-3d-ledge: #bfdbfe;
+  --card-3d-shadow: rgba(30, 58, 138, 0.11);
+  --nav-3d-glow: rgba(56, 189, 248, 0.35);
+}
+
+.app-3d-shell[data-theme="emerald-luxury"] {
+  --card-3d-ledge: #a7f3d0;
+  --card-3d-shadow: rgba(6, 78, 59, 0.1);
+  --nav-3d-glow: rgba(16, 185, 129, 0.34);
+}
+
+.app-3d-shell[data-theme="royal-purple"] {
+  --card-3d-ledge: #ddd6fe;
+  --card-3d-shadow: rgba(88, 28, 135, 0.1);
+  --nav-3d-glow: rgba(168, 85, 247, 0.34);
+}
+
+.app-3d-shell[data-theme="sunset-crimson"] {
+  --card-3d-ledge: #fecdd3;
+  --card-3d-shadow: rgba(159, 18, 57, 0.1);
+  --nav-3d-glow: rgba(244, 63, 94, 0.34);
+}
+
+.app-3d-shell[data-theme="graphite-dark"] {
+  --card-3d-ledge: #d4d4d8;
+  --card-3d-shadow: rgba(24, 24, 27, 0.12);
+  --nav-3d-glow: rgba(113, 113, 122, 0.3);
+}
+
+.app-3d-shell[data-theme="soft-pastel"] {
+  --card-3d-ledge: #bae6fd;
+  --card-3d-shadow: rgba(2, 132, 199, 0.11);
+  --nav-3d-glow: rgba(2, 132, 199, 0.28);
+}
+
+/* Single-elevation 3D card depth on primary white/surface panels */
+.app-3d-shell main .rounded-xl.border.bg-white,
+.app-3d-shell main .rounded-2xl.border.bg-white,
+.app-3d-shell main .rounded-xl.border-gray-200,
+.app-3d-shell main .rounded-2xl.border-slate-200\/90 {
+  box-shadow:
+    inset 0 1px 0 var(--card-3d-highlight),
+    0 4px 0 0 var(--card-3d-ledge),
+    0 12px 24px -8px var(--card-3d-shadow);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Prevent nested cards inside cards from stacking thick 3D lips */
+.app-3d-shell main .rounded-xl .rounded-xl,
+.app-3d-shell main .rounded-2xl .rounded-xl,
+.app-3d-shell main .rounded-xl .rounded-2xl {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 2px 6px -2px rgba(15, 23, 42, 0.07);
+}
+
+/* Tactile 3D push buttons inside main content */
+.app-3d-shell main button[class*="bg-blue-600"],
+.app-3d-shell main button[class*="bg-emerald-600"],
+.app-3d-shell main button[class*="bg-indigo-600"],
+.app-3d-shell main button[class*="bg-orange-600"],
+.app-3d-shell main button[class*="bg-red-600"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 3px 0 0 rgba(15, 23, 42, 0.22),
+    0 6px 14px -4px rgba(15, 23, 42, 0.2);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-3d-shell main button[class*="bg-blue-600"]:hover,
+.app-3d-shell main button[class*="bg-emerald-600"]:hover,
+.app-3d-shell main button[class*="bg-indigo-600"]:hover,
+.app-3d-shell main button[class*="bg-orange-600"]:hover,
+.app-3d-shell main button[class*="bg-red-600"]:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 0 0 rgba(15, 23, 42, 0.24),
+    0 10px 18px -4px rgba(15, 23, 42, 0.26);
+}
+
+.app-3d-shell main button[class*="bg-blue-600"]:active,
+.app-3d-shell main button[class*="bg-emerald-600"]:active,
+.app-3d-shell main button[class*="bg-indigo-600"]:active,
+.app-3d-shell main button[class*="bg-orange-600"]:active,
+.app-3d-shell main button[class*="bg-red-600"]:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 0 0 rgba(15, 23, 42, 0.2),
+    0 2px 6px -2px rgba(15, 23, 42, 0.15);
+}
+
+/* 3D Swatch sphere & bevel helpers for Theme Gallery */
+.swatch-3d-sphere {
+  box-shadow:
+    inset -2px -3px 5px rgba(0, 0, 0, 0.28),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.55),
+    0 3px 6px rgba(15, 23, 42, 0.18);
+}
+
+.logo-frame-3d {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 3px 0 0 rgba(15, 23, 42, 0.25),
+    0 6px 12px -2px rgba(15, 23, 42, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-3d-shell *,
+  .app-3d-shell *::before,
+  .app-3d-shell *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
