@@ -86,23 +86,23 @@ function AppContent() {
       {/* Mobile Top Header (3D Theme Matched) */}
       <header
         className={cn(
-          "md:hidden sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b transition-all",
+          "md:hidden sticky top-0 z-20 flex items-center justify-between gap-3 px-4 py-2.5 min-h-[3.5rem] border-b transition-all",
           activeTheme.headerBg,
           activeTheme.headerBorder
         )}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <CompanyLogo
             iconUrl={companyIcon}
             companyName={companyName}
-            className="w-8 h-8 rounded-lg"
+            className="w-8 h-8 rounded-lg shrink-0"
             alt={companyName}
           />
-          <div className="min-w-0">
-            <h1 className={cn("text-sm font-extrabold leading-tight truncate", activeTheme.textLogo)}>
+          <div className="min-w-0 flex-1">
+            <h1 className={cn("text-sm font-extrabold leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
               {companyName}
             </h1>
-            <p className={cn("text-[10px] font-medium leading-none truncate", activeTheme.textSub)}>
+            <p className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}>
               {currentTitle}
             </p>
           </div>
@@ -120,34 +120,34 @@ function AppContent() {
       {isTopbarMode && (
         <header
           className={cn(
-            "hidden md:flex sticky top-0 z-40 items-center justify-between px-6 py-2.5 border-b transition-all",
+            "hidden md:flex sticky top-0 z-40 items-center justify-between gap-4 px-5 lg:px-6 py-2.5 border-b transition-all",
             activeTheme.headerBg,
             activeTheme.headerBorder
           )}
         >
-          <div className="flex items-center gap-6 min-w-0">
+          <div className="flex items-center gap-4 lg:gap-6 flex-1 min-w-0">
             <div
-              className="flex items-center gap-2.5 cursor-pointer shrink-0"
+              className="flex items-center gap-3 cursor-pointer shrink-0 max-w-[260px] xl:max-w-[340px]"
               onClick={() => setView("DASHBOARD")}
             >
               <CompanyLogo
                 iconUrl={companyIcon}
                 companyName={companyName}
-                className="w-9 h-9 rounded-xl"
+                className="w-9 h-9 rounded-xl shrink-0"
                 alt={companyName}
               />
-              <div className="max-w-[160px]">
-                <h1 className={cn("font-extrabold text-sm leading-tight tracking-tight truncate", activeTheme.textLogo)}>
+              <div className="min-w-0">
+                <h1 className={cn("font-extrabold text-sm leading-snug tracking-tight break-words whitespace-normal", activeTheme.textLogo)}>
                   {companyName}
                 </h1>
-                <p className={cn("text-[10px] font-medium leading-none truncate", activeTheme.textSub)}>
+                <p className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}>
                   {companyTagline}
                 </p>
               </div>
             </div>
 
             {/* Horizontal 3D Nav Links */}
-            <nav className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+            <nav className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto py-0.5">
               {navigation.map((item) => {
                 const isActive = view === item.id;
                 return (
@@ -199,7 +199,7 @@ function AppContent() {
             "fixed inset-y-0 left-0 z-50 transform border-r flex flex-col transition-all duration-300 ease-in-out md:static md:translate-x-0",
             isSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full",
             isTopbarMode ? "md:hidden" : "",
-            !isTopbarMode && (settings.isMinimized ? "md:w-20" : "md:w-64"),
+            !isTopbarMode && (settings.isMinimized ? "md:w-20" : "md:w-72"),
             activeTheme.sidebarBg,
             activeTheme.sidebarBorder
           )}
@@ -207,38 +207,60 @@ function AppContent() {
           {/* Sidebar Brand Header */}
           <div
             className={cn(
-              "h-16 flex items-center border-b px-4 transition-colors",
+              "min-h-16 flex border-b transition-colors",
               activeTheme.sidebarBorder,
-              settings.isMinimized && !isSidebarOpen ? "justify-center" : "justify-between"
+              settings.isMinimized && !isSidebarOpen
+                ? "flex-col items-center justify-center gap-2 py-3 px-2"
+                : "items-start justify-between gap-2.5 py-3 px-4"
             )}
           >
-            <div className="flex items-center gap-3 overflow-hidden">
-              <CompanyLogo
-                iconUrl={companyIcon}
-                companyName={companyName}
-                className="w-9 h-9 rounded-xl hidden md:flex"
-                alt={companyName}
-              />
+            <div
+              className={cn(
+                "flex items-center min-w-0",
+                settings.isMinimized && !isSidebarOpen ? "justify-center" : "gap-3 flex-1"
+              )}
+            >
+              <div
+                className="relative group hidden md:flex shrink-0"
+                title={settings.isMinimized && !isSidebarOpen ? `${companyName} — ${companyTagline}` : undefined}
+              >
+                <CompanyLogo
+                  iconUrl={companyIcon}
+                  companyName={companyName}
+                  className="w-9 h-9 rounded-xl shrink-0"
+                  alt={companyName}
+                />
+                {settings.isMinimized && !isSidebarOpen && (
+                  <div className="hidden group-hover:md:block absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-bold whitespace-nowrap shadow-xl z-50 pointer-events-none border border-gray-700">
+                    {companyName}
+                  </div>
+                )}
+              </div>
               {(!settings.isMinimized || isSidebarOpen) && (
-                <div className="hidden md:block truncate">
-                  <h1 className={cn("font-extrabold text-sm leading-tight tracking-tight truncate", activeTheme.textLogo)}>
+                <div className="hidden md:block flex-1 min-w-0">
+                  <h1 className={cn("font-extrabold text-sm leading-snug tracking-tight break-words whitespace-normal", activeTheme.textLogo)}>
                     {companyName}
                   </h1>
-                  <p className={cn("text-[10px] font-medium leading-none truncate mt-0.5", activeTheme.textSub)}>
+                  <p className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}>
                     {companyTagline}
                   </p>
                 </div>
               )}
-              <div className="flex items-center gap-2.5 md:hidden min-w-0">
+              <div className="flex items-center gap-2.5 md:hidden flex-1 min-w-0">
                 <CompanyLogo
                   iconUrl={companyIcon}
                   companyName={companyName}
-                  className="w-8 h-8 rounded-lg"
+                  className="w-8 h-8 rounded-lg shrink-0"
                   alt={companyName}
                 />
-                <h1 className={cn("font-bold text-base truncate", activeTheme.textLogo)}>
-                  {companyName}
-                </h1>
+                <div className="min-w-0 flex-1">
+                  <h1 className={cn("font-bold text-sm leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
+                    {companyName}
+                  </h1>
+                  <p className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}>
+                    {companyTagline}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -246,7 +268,8 @@ function AppContent() {
             <button
               onClick={toggleMinimized}
               className={cn(
-                "hidden md:flex items-center justify-center p-2 rounded-lg transition-all",
+                "hidden md:flex items-center justify-center p-2 rounded-lg transition-all shrink-0",
+                !(settings.isMinimized && !isSidebarOpen) && "mt-0.5",
                 activeTheme.toggleBtnHover
               )}
               title={settings.isMinimized ? "Perbesar Navbar (Expand)" : "Kecilkan Navbar (Minimize)"}
@@ -258,7 +281,7 @@ function AppContent() {
             {/* Close button for Mobile sliding drawer */}
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="md:hidden rounded-lg p-2 text-gray-400 hover:text-gray-100 hover:bg-white/10"
+              className="md:hidden rounded-lg p-2 text-gray-400 hover:text-gray-100 hover:bg-white/10 shrink-0"
               aria-label="Tutup Menu"
             >
               <X size={20} />
@@ -348,6 +371,47 @@ function AppContent() {
 
       {/* Main Content Area (Automatically Expands when Sidebar is Minimized) */}
       <main className="flex-1 overflow-y-auto w-full min-w-0 transition-all">
+        {/* Desktop Brand Banner when Sidebar is Minimized so Company Name is always visible */}
+        {settings.isMinimized && !isTopbarMode && (
+          <div
+            className={cn(
+              "hidden md:flex items-center justify-between gap-4 px-6 lg:px-8 py-2.5 border-b transition-colors",
+              activeTheme.headerBg,
+              activeTheme.headerBorder
+            )}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <CompanyLogo
+                iconUrl={companyIcon}
+                companyName={companyName}
+                className="w-8 h-8 rounded-lg shrink-0"
+                alt={companyName}
+              />
+              <div className="min-w-0">
+                <p className={cn("font-extrabold text-sm leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
+                  {companyName}
+                </p>
+                <p className={cn("text-[11px] font-medium leading-tight break-words whitespace-normal", activeTheme.textSub)}>
+                  {companyTagline}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={toggleMinimized}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 whitespace-nowrap",
+                activeTheme.toggleBtnHover,
+                activeTheme.sidebarBorder
+              )}
+              title="Tampilkan Navbar Penuh"
+            >
+              <PanelLeftOpen size={14} />
+              <span>Tampilkan Menu</span>
+            </button>
+          </div>
+        )}
+
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-5 md:py-6">
           {view === "DASHBOARD" && (
             <Dashboard

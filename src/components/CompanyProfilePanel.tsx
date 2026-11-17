@@ -324,23 +324,23 @@ export function CompanyProfilePanel({
                 <ImageIcon size={12} className="text-blue-400" />
                 Pratinjau Kop Navbar & Dokumen
               </span>
-              <div className="flex items-center gap-3 pt-1">
+              <div className="flex items-start gap-3 pt-1">
                 <CompanyLogo
                   iconUrl={formData.iconUrl}
                   companyName={formData.name}
-                  className="w-10 h-10 rounded-xl"
+                  className="w-10 h-10 rounded-xl shrink-0"
                 />
-                <div className="min-w-0">
-                  <div className="font-bold text-sm text-white truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-sm text-white break-words whitespace-normal leading-snug">
                     {formData.name || "Nama Perusahaan"}
                   </div>
-                  <div className="text-[11px] text-blue-300 truncate">
+                  <div className="text-[11px] text-blue-300 break-words whitespace-normal leading-tight mt-0.5">
                     {formData.tagline || "Manajemen Faktur"}
                   </div>
                 </div>
               </div>
               {(formData.address || formData.phone) && (
-                <div className="text-[10px] text-slate-400 border-t border-slate-800 pt-2 truncate">
+                <div className="text-[10px] text-slate-400 border-t border-slate-800 pt-2 break-words whitespace-normal leading-relaxed">
                   {[formData.phone, formData.address].filter(Boolean).join(" · ")}
                 </div>
               )}
@@ -361,7 +361,7 @@ export function CompanyProfilePanel({
                 <input
                   type="text"
                   required
-                  maxLength={60}
+                  maxLength={100}
                   value={formData.name}
                   onChange={(e) => handleFieldChange("name", e.target.value)}
                   placeholder="Contoh: Apotek Assyifa Farma / CV Maju Jaya"

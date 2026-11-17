@@ -946,8 +946,9 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     const cAddress = companyProfile?.address || "";
     const cPhone = companyProfile?.phone || "";
     const cEmail = companyProfile?.email || "";
+    const pageWidth = doc.internal.pageSize.getWidth();
     let textStartX = 14;
-    let startTableY = 30;
+    let hasLogo = false;
 
     // Optional uploaded company icon in PDF header
     if (companyProfile?.iconUrl && companyProfile.iconUrl.startsWith("data:image/")) {
@@ -959,34 +960,44 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
           : "JPEG";
         doc.addImage(companyProfile.iconUrl, formatType, 14, 10, 14, 14);
         textStartX = 32;
+        hasLogo = true;
       } catch {
         // Fallback smoothly if jsPDF rejects unsupported format like SVG
       }
     }
 
+    const maxTextWidth = pageWidth - textStartX - 14;
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text(cName, textStartX, 15);
+    const wrappedName: string[] = doc.splitTextToSize(cName, maxTextWidth);
+    doc.text(wrappedName, textStartX, 14.5);
+
+    let cursorY = 14.5 + (wrappedName.length - 1) * 6 + 5.5;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     const contactLine = [cPhone, cEmail, cAddress].filter(Boolean).join(" · ");
     if (contactLine) {
-      doc.text(contactLine.slice(0, 95), textStartX, 20.5);
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Laporan Rekap Faktur Jatuh Tempo", 14, 30);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text(`Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`, 14, 35.5);
-      startTableY = 41;
-    } else {
-      doc.setFontSize(12);
-      doc.text("Laporan Rekap Faktur Jatuh Tempo", textStartX, 21);
-      doc.setFontSize(9);
-      doc.text(`Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`, textStartX, 26.5);
-      startTableY = 32;
+      const wrappedContact: string[] = doc.splitTextToSize(contactLine, maxTextWidth);
+      doc.text(wrappedContact, textStartX, cursorY);
+      cursorY += wrappedContact.length * 4.5 + 3;
     }
+
+    if (hasLogo) {
+      cursorY = Math.max(cursorY, 27);
+    }
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Laporan Rekap Faktur Jatuh Tempo", 14, cursorY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+      `Tanggal Cetak: ${format(new Date(), "dd MMM yyyy HH:mm", { locale: id })}`,
+      14,
+      cursorY + 5.5
+    );
+    const startTableY = cursorY + 11;
 
     const body = filteredInvoices.map((inv) => {
       const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);

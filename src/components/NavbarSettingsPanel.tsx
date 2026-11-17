@@ -93,21 +93,21 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
           {/* Mini Mockup Window with 3D Elevation */}
           <div className="rounded-xl shadow-[0_6px_0_#cbd5e1,0_14px_28px_-8px_rgba(15,23,42,0.18)] overflow-hidden border border-slate-300/90 bg-white">
             {/* Window bar */}
-            <div className="bg-gradient-to-b from-slate-100 to-slate-200/80 px-3 py-2 border-b border-slate-300/80 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 swatch-3d-sphere inline-block" />
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 swatch-3d-sphere inline-block" />
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 swatch-3d-sphere inline-block" />
-                <span className="ml-2 font-bold text-slate-700 truncate max-w-[180px] sm:max-w-xs">
+            <div className="bg-gradient-to-b from-slate-100 to-slate-200/80 px-3 py-2 border-b border-slate-300/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 swatch-3d-sphere inline-block shrink-0" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 swatch-3d-sphere inline-block shrink-0" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 swatch-3d-sphere inline-block shrink-0" />
+                <span className="ml-2 font-bold text-slate-700 break-words whitespace-normal leading-snug">
                   {brandName} · Mode 3D
                 </span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-500">
+              <span className="text-[10px] font-semibold text-slate-500 shrink-0">
                 {settings.layout === "topbar"
                   ? "Navbar Atas 3D"
                   : settings.isMinimized
                   ? "Sidebar Minimized (80px)"
-                  : "Sidebar Penuh (256px)"}
+                  : "Sidebar Penuh (288px)"}
               </span>
             </div>
 
@@ -115,24 +115,26 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
             <div className={`flex min-h-[155px] ${activeTheme.appBg}`}>
               {/* Mini Sidebar */}
               <div
-                className={`transition-all duration-300 p-2.5 flex flex-col justify-between border-r ${activeTheme.sidebarBg} ${activeTheme.sidebarBorder} ${
-                  settings.isMinimized ? "w-16" : "w-48"
+                className={`transition-all duration-300 p-2.5 flex flex-col justify-between border-r shrink-0 ${activeTheme.sidebarBg} ${activeTheme.sidebarBorder} ${
+                  settings.isMinimized ? "w-16" : "w-52"
                 }`}
               >
                 <div>
                   {/* Brand logo preview */}
-                  <div className="flex items-center gap-2 mb-3 px-1">
+                  <div className={`flex items-start gap-2 mb-3 px-1 ${settings.isMinimized ? "justify-center" : ""}`}>
                     <CompanyLogo
                       iconUrl={companyProfile?.iconUrl}
                       companyName={brandName}
-                      className="w-7 h-7 rounded-lg"
+                      className="w-7 h-7 rounded-lg shrink-0"
                     />
                     {!settings.isMinimized && (
-                      <div className="truncate">
-                        <div className={`text-xs font-extrabold leading-tight truncate ${activeTheme.textLogo}`}>
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-xs font-extrabold leading-snug break-words whitespace-normal ${activeTheme.textLogo}`}>
                           {brandName}
                         </div>
-                        <div className={`text-[9px] truncate ${activeTheme.textSub}`}>{brandSub}</div>
+                        <div className={`text-[9px] leading-tight break-words whitespace-normal mt-0.5 ${activeTheme.textSub}`}>
+                          {brandSub}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -169,15 +171,23 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
                 {/* Bottom hint inside preview */}
                 <div className="pt-2 border-t border-white/10 text-center">
                   <span className={`text-[9px] font-medium ${activeTheme.isDark ? "text-slate-400" : "text-slate-400"}`}>
-                    {settings.isMinimized ? "80px" : "256px"}
+                    {settings.isMinimized ? "80px" : "288px"}
                   </span>
                 </div>
               </div>
 
               {/* Mini 3D Main Content Area */}
-              <div className="flex-1 p-3.5 flex flex-col justify-between">
+              <div className="flex-1 min-w-0 p-3.5 flex flex-col justify-between">
                 <div>
-                  <div className="h-4 bg-slate-300/80 rounded-md w-1/3 mb-3 shadow-inner" />
+                  {settings.isMinimized ? (
+                    <div className="mb-2.5 px-2.5 py-1.5 rounded-lg bg-white/80 border border-slate-200 flex items-center gap-2">
+                      <span className="text-[11px] font-extrabold text-slate-800 break-words whitespace-normal">
+                        {brandName}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="h-4 bg-slate-300/80 rounded-md w-1/3 mb-3 shadow-inner" />
+                  )}
                   <div className="grid grid-cols-3 gap-2.5 mb-2">
                     <div className="h-10 bg-white border border-slate-200 border-b-[3px] border-b-slate-300 rounded-lg p-1.5 shadow-xs">
                       <div className="h-2 bg-blue-100 rounded w-2/3 mb-1" />
@@ -332,11 +342,13 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
 
                 {/* 3D Beveled Sample Strip */}
                 <div
-                  className={`mt-1 py-2 px-2.5 rounded-lg text-[10px] font-bold flex items-center justify-between border border-b-[3px] ${theme.sidebarBg} ${theme.sidebarBorder}`}
+                  className={`mt-1 py-2 px-2.5 rounded-lg text-[10px] font-bold flex items-center justify-between gap-2 border border-b-[3px] ${theme.sidebarBg} ${theme.sidebarBorder}`}
                 >
-                  <span className={`truncate max-w-[100px] ${theme.textLogo}`}>{brandName}</span>
+                  <span className={`min-w-0 flex-1 break-words whitespace-normal leading-tight text-left ${theme.textLogo}`}>
+                    {brandName}
+                  </span>
                   <span
-                    className="px-2 py-0.5 rounded-md text-[9px] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_0_rgba(0,0,0,0.28)]"
+                    className="px-2 py-0.5 rounded-md text-[9px] font-bold shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_0_rgba(0,0,0,0.28)]"
                     style={{
                       backgroundColor: theme.swatchColors[1],
                       color: theme.id === "graphite-dark" ? "#09090b" : "#ffffff",
