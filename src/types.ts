@@ -68,3 +68,21 @@ export interface NavbarSettings {
   isMinimized: boolean;
   buttonShape: NavbarButtonShape;
 }
+
+export type ClockStyleId =
+  | "classic-3d"
+  | "flip-clock"
+  | "analog-hybrid"
+  | "retro-lcd"
+  | "calendar-desk"
+  | "glass-prism"
+  | "orbit-ring"
+  | "editorial-serif";
+
+export interface ClockSettings {
+  style: ClockStyleId;
+  format24h: boolean;
+  showSeconds: boolean;
+  showClock: boolean;
+}
+

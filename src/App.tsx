@@ -12,7 +12,9 @@ import { PaymentHistoryModal } from "./components/PaymentHistoryModal";
 import { PaymentHistory } from "./components/PaymentHistory";
 import { PWAInstallButton } from "./components/PWAInstallButton";
 import { CompanyLogo } from "./components/CompanyLogo";
+import { LiveClockWidget } from "./components/LiveClockWidget";
 import { NavbarProvider, useNavbar } from "./context/NavbarContext";
+import { ClockProvider, useClock } from "./context/ClockContext";
 import {
   LayoutDashboard,
   FilePlus,
@@ -32,6 +34,7 @@ import { cn } from "./utils";
 function AppContent() {
   const store = useAppStore();
   const { settings, activeTheme, toggleMinimized, setLayout } = useNavbar();
+  const { clockSettings } = useClock();
   const [view, setView] = useState<ViewState>("DASHBOARD");
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null);
   const [historyInvoice, setHistoryInvoice] = useState<Invoice | null>(null);
@@ -413,6 +416,10 @@ function AppContent() {
         )}
 
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-5 md:py-6">
+          {clockSettings.showClock && (
+            <LiveClockWidget className="mb-4 sm:mb-5" />
+          )}
+
           {view === "DASHBOARD" && (
             <Dashboard
               invoices={store.invoices}
@@ -570,7 +577,9 @@ function AppContent() {
 export default function App() {
   return (
     <NavbarProvider>
-      <AppContent />
+      <ClockProvider>
+        <AppContent />
+      </ClockProvider>
     </NavbarProvider>
   );
 }

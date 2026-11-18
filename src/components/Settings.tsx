@@ -4,6 +4,7 @@ import * as XLSX from "xlsx-js-style";
 import { CompanyProfile } from "../types";
 import { UserGuide } from "./UserGuide";
 import { NavbarSettingsPanel } from "./NavbarSettingsPanel";
+import { ClockSettingsPanel } from "./ClockSettingsPanel";
 import { CompanyProfilePanel } from "./CompanyProfilePanel";
 import { AboutApp } from "./AboutApp";
 
@@ -239,7 +240,7 @@ export function Settings({
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Kelola profil & icon perusahaan, tema 3D navbar, panduan penggunaan, backup, dan pemeliharaan data.
+          Kelola profil & icon perusahaan, tema 3D navbar, gaya jam realtime, panduan penggunaan, backup, dan pemeliharaan data.
         </p>
       </div>
 
@@ -252,6 +253,9 @@ export function Settings({
 
       {/* Kustomisasi Gaya 3D & Ukuran Navbar */}
       <NavbarSettingsPanel companyProfile={companyProfile} />
+
+      {/* Kustomisasi Jam Realtime, Hari, Tanggal & Gaya Jam Unik */}
+      <ClockSettingsPanel />
 
       {/* Tentang Aplikasi, Hak Cipta & Developer Denuda */}
       <AboutApp />
