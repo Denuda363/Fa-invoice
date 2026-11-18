@@ -1,7 +1,7 @@
 import React from "react";
 import { Invoice } from "../types";
 import { formatCurrency } from "../utils";
-import { Plus, TrendingUp, AlertCircle, CheckCircle2, DollarSign } from "lucide-react";
+import { TrendingUp, AlertCircle, CheckCircle2, DollarSign } from "lucide-react";
 import { format, isSameMonth, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
 import { motion } from "motion/react";
@@ -9,11 +9,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 interface DashboardProps {
   invoices: Invoice[];
-  onAddFaktur: () => void;
-  onPayFaktur?: (invoice: Invoice) => void;
 }
 
-export function Dashboard({ invoices, onAddFaktur }: DashboardProps) {
+export function Dashboard({ invoices }: DashboardProps) {
   // Calculate Metrics
   const today = new Date();
   
@@ -90,21 +88,9 @@ export function Dashboard({ invoices, onAddFaktur }: DashboardProps) {
       variants={containerVariants}
       className="space-y-6 md:space-y-8"
     >
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <motion.h2 variants={itemVariants} className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</motion.h2>
-          <motion.p variants={itemVariants} className="text-sm md:text-base text-gray-500 mt-1">Ringkasan tagihan dan piutang Anda.</motion.p>
-        </div>
-        <motion.button
-          variants={itemVariants}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onAddFaktur}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          Faktur Baru
-        </motion.button>
+      <div>
+        <motion.h2 variants={itemVariants} className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</motion.h2>
+        <motion.p variants={itemVariants} className="text-sm md:text-base text-gray-500 mt-1">Ringkasan tagihan dan piutang Anda.</motion.p>
       </div>
 
       {/* KPI Cards */}

@@ -421,10 +421,7 @@ function AppContent() {
           )}
 
           {view === "DASHBOARD" && (
-            <Dashboard
-              invoices={store.invoices}
-              onAddFaktur={() => setView("BULK_INPUT_INVOICE")}
-            />
+            <Dashboard invoices={store.invoices} />
           )}
 
           {view === "INVOICE_HISTORY" && (
