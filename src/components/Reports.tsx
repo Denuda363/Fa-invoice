@@ -3,7 +3,7 @@ import { Invoice, Customer, CompanyProfile } from "../types";
 import { formatCurrency, cn } from "../utils";
 import { format, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload, Calendar, RotateCcw, X } from "lucide-react";
+import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload, Calendar, RotateCcw, X, Banknote } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -26,6 +26,10 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
   const [invoiceEndDate, setInvoiceEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [amountTarget, setAmountTarget] = useState<"REMAINING" | "TOTAL">("REMAINING");
+  const [amountOperator, setAmountOperator] = useState<"GT" | "GTE" | "LT" | "LTE" | "RANGE">("GT");
+  const [amountValue, setAmountValue] = useState("");
+  const [amountMaxValue, setAmountMaxValue] = useState("");
   const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -136,6 +140,36 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
         return true;
     }
   });
+
+  // Filter Nominal Tagihan (Lebih dari / Kurang dari / Rentang)
+  const parsedAmount = amountValue.trim() !== "" ? parseFloat(amountValue) : NaN;
+  const parsedMaxAmount = amountMaxValue.trim() !== "" ? parseFloat(amountMaxValue) : NaN;
+
+  if (!isNaN(parsedAmount) || (amountOperator === "RANGE" && !isNaN(parsedMaxAmount))) {
+    filteredInvoices = filteredInvoices.filter((inv) => {
+      const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
+      const targetNominal =
+        amountTarget === "TOTAL" ? inv.totalAmount : inv.totalAmount - totalPaid;
+
+      switch (amountOperator) {
+        case "GT":
+          return !isNaN(parsedAmount) ? targetNominal > parsedAmount : true;
+        case "GTE":
+          return !isNaN(parsedAmount) ? targetNominal >= parsedAmount : true;
+        case "LT":
+          return !isNaN(parsedAmount) ? targetNominal < parsedAmount : true;
+        case "LTE":
+          return !isNaN(parsedAmount) ? targetNominal <= parsedAmount : true;
+        case "RANGE": {
+          const minOk = !isNaN(parsedAmount) ? targetNominal >= parsedAmount : true;
+          const maxOk = !isNaN(parsedMaxAmount) ? targetNominal <= parsedMaxAmount : true;
+          return minOk && maxOk;
+        }
+        default:
+          return true;
+      }
+    });
+  }
 
   // Group by customer
   const groupedInvoices = filteredInvoices.reduce((acc, inv) => {
@@ -1038,6 +1072,10 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     setEndDate("");
     setDueDateFilter("ALL");
     setCustomAgeFilter("");
+    setAmountTarget("REMAINING");
+    setAmountOperator("GT");
+    setAmountValue("");
+    setAmountMaxValue("");
     setCurrentPage(1);
   };
 
@@ -1049,7 +1087,9 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     startDate !== "" ||
     endDate !== "" ||
     dueDateFilter !== "ALL" ||
-    customAgeFilter !== "";
+    customAgeFilter !== "" ||
+    amountValue !== "" ||
+    amountMaxValue !== "";
 
   return (
     <div className="space-y-6">
@@ -1361,6 +1401,156 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
           </div>
         </div>
 
+        {/* Row 3: Nominal Tagihan Filter (Lebih dari / Kurang dari / Rentang) */}
+        <div className="rounded-lg bg-emerald-50/40 border border-emerald-100 p-3 space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+              <Banknote size={15} className="text-emerald-600" />
+              <span>Filter Nominal Tagihan</span>
+            </div>
+
+            {/* Quick Nominal Presets */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {[
+                { label: "> 500rb", op: "GT" as const, val: "500000" },
+                { label: "> 1jt", op: "GT" as const, val: "1000000" },
+                { label: "> 5jt", op: "GT" as const, val: "5000000" },
+                { label: "< 1jt", op: "LT" as const, val: "1000000" },
+              ].map((preset) => {
+                const isActive =
+                  amountOperator === preset.op && amountValue === preset.val;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      setAmountOperator(preset.op);
+                      setAmountValue(preset.val);
+                      setAmountMaxValue("");
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "text-[11px] font-semibold px-2 py-0.5 rounded border transition-colors",
+                      isActive
+                        ? "bg-emerald-600 text-white border-emerald-700"
+                        : "bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50"
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+
+              {(amountValue || amountMaxValue) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmountValue("");
+                    setAmountMaxValue("");
+                    setCurrentPage(1);
+                  }}
+                  className="text-[11px] text-red-600 hover:text-red-700 font-semibold px-1.5 py-0.5"
+                >
+                  Hapus
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {/* Target Nilai */}
+            <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-white px-2.5 py-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">Nilai:</span>
+              <select
+                value={amountTarget}
+                onChange={(e) => {
+                  setAmountTarget(e.target.value as "REMAINING" | "TOTAL");
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-transparent text-xs sm:text-sm font-medium text-gray-800 outline-none cursor-pointer"
+              >
+                <option value="REMAINING">Sisa Tagihan</option>
+                <option value="TOTAL">Total Faktur</option>
+              </select>
+            </div>
+
+            {/* Kondisi Operator */}
+            <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-white px-2.5 py-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">Kondisi:</span>
+              <select
+                value={amountOperator}
+                onChange={(e) => {
+                  const nextOp = e.target.value as "GT" | "GTE" | "LT" | "LTE" | "RANGE";
+                  setAmountOperator(nextOp);
+                  if (nextOp !== "RANGE") setAmountMaxValue("");
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-transparent text-xs sm:text-sm font-medium text-gray-800 outline-none cursor-pointer"
+              >
+                <option value="GT">Lebih dari (&gt;)</option>
+                <option value="GTE">Minimal (&ge;)</option>
+                <option value="LT">Kurang dari (&lt;)</option>
+                <option value="LTE">Maksimal (&le;)</option>
+                <option value="RANGE">Rentang (Min – Max)</option>
+              </select>
+            </div>
+
+            {/* Input Nominal Utama / Minimal */}
+            <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-white px-2.5 py-1.5">
+              <span className="text-xs text-gray-500 font-bold shrink-0">
+                {amountOperator === "RANGE" ? "Min Rp" : "Rp"}
+              </span>
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                placeholder={amountOperator === "RANGE" ? "Minimal..." : "Masukkan nominal..."}
+                value={amountValue}
+                onChange={(e) => {
+                  setAmountValue(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-transparent text-xs sm:text-sm font-mono tabular-nums text-gray-900 outline-none"
+                title="Masukkan nominal tagihan dalam Rupiah"
+              />
+            </div>
+
+            {/* Input Nominal Maksimal (jika mode Rentang) atau info pratinjau nominal */}
+            {amountOperator === "RANGE" ? (
+              <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-white px-2.5 py-1.5">
+                <span className="text-xs text-gray-500 font-bold shrink-0">Max Rp</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  placeholder="Maksimal..."
+                  value={amountMaxValue}
+                  onChange={(e) => {
+                    setAmountMaxValue(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-transparent text-xs sm:text-sm font-mono tabular-nums text-gray-900 outline-none"
+                  title="Masukkan batas maksimal nominal tagihan dalam Rupiah"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center px-2.5 py-1.5 text-xs text-emerald-800/80 font-medium truncate">
+                {!isNaN(parsedAmount)
+                  ? `${amountTarget === "TOTAL" ? "Total" : "Sisa"} ${
+                      amountOperator === "GT"
+                        ? ">"
+                        : amountOperator === "GTE"
+                        ? "≥"
+                        : amountOperator === "LT"
+                        ? "<"
+                        : "≤"
+                    } ${formatCurrency(parsedAmount)}`
+                  : "Kosongkan untuk semua nominal"}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Filter Summary */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-1 flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -1385,6 +1575,24 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
             {startDate && endDate && (
               <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
                 Jth Tempo: {format(new Date(startDate), "dd/MM/yy")} - {format(new Date(endDate), "dd/MM/yy")}
+              </span>
+            )}
+            {(!isNaN(parsedAmount) || (amountOperator === "RANGE" && !isNaN(parsedMaxAmount))) && (
+              <span className="text-emerald-800 font-semibold text-xs">
+                · {amountTarget === "TOTAL" ? "Total Faktur" : "Sisa Tagihan"}{" "}
+                {amountOperator === "RANGE"
+                  ? `${!isNaN(parsedAmount) ? formatCurrency(parsedAmount) : "Rp 0"} – ${
+                      !isNaN(parsedMaxAmount) ? formatCurrency(parsedMaxAmount) : "∞"
+                    }`
+                  : `${
+                      amountOperator === "GT"
+                        ? ">"
+                        : amountOperator === "GTE"
+                        ? "≥"
+                        : amountOperator === "LT"
+                        ? "<"
+                        : "≤"
+                    } ${formatCurrency(parsedAmount)}`}
               </span>
             )}
             {selectableInvoices.length > 0 && (
