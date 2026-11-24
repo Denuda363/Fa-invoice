@@ -26,6 +26,7 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
   const [invoiceEndDate, setInvoiceEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [amountScope, setAmountScope] = useState<"INVOICE" | "CUSTOMER">("INVOICE");
   const [amountTarget, setAmountTarget] = useState<"REMAINING" | "TOTAL">("REMAINING");
   const [amountOperator, setAmountOperator] = useState<"GT" | "GTE" | "LT" | "LTE" | "RANGE">("GT");
   const [amountValue, setAmountValue] = useState("");
@@ -141,16 +142,12 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     }
   });
 
-  // Filter Nominal Tagihan (Lebih dari / Kurang dari / Rentang)
+  // Filter Nominal Tagihan (Per Faktur atau Total per Konsumen)
   const parsedAmount = amountValue.trim() !== "" ? parseFloat(amountValue) : NaN;
   const parsedMaxAmount = amountMaxValue.trim() !== "" ? parseFloat(amountMaxValue) : NaN;
 
   if (!isNaN(parsedAmount) || (amountOperator === "RANGE" && !isNaN(parsedMaxAmount))) {
-    filteredInvoices = filteredInvoices.filter((inv) => {
-      const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
-      const targetNominal =
-        amountTarget === "TOTAL" ? inv.totalAmount : inv.totalAmount - totalPaid;
-
+    const matchesNominalCondition = (targetNominal: number) => {
       switch (amountOperator) {
         case "GT":
           return !isNaN(parsedAmount) ? targetNominal > parsedAmount : true;
@@ -168,7 +165,31 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
         default:
           return true;
       }
-    });
+    };
+
+    if (amountScope === "CUSTOMER") {
+      const customerTotals = new Map<string, number>();
+      filteredInvoices.forEach((inv) => {
+        const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
+        const val =
+          amountTarget === "TOTAL" ? inv.totalAmount : inv.totalAmount - totalPaid;
+        customerTotals.set(
+          inv.customerName,
+          (customerTotals.get(inv.customerName) || 0) + val
+        );
+      });
+
+      filteredInvoices = filteredInvoices.filter((inv) =>
+        matchesNominalCondition(customerTotals.get(inv.customerName) ?? 0)
+      );
+    } else {
+      filteredInvoices = filteredInvoices.filter((inv) => {
+        const totalPaid = inv.payments.reduce((sum, p) => sum + p.amount, 0);
+        const targetNominal =
+          amountTarget === "TOTAL" ? inv.totalAmount : inv.totalAmount - totalPaid;
+        return matchesNominalCondition(targetNominal);
+      });
+    }
   }
 
   // Group by customer
@@ -1102,6 +1123,7 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     setEndDate("");
     setDueDateFilter("ALL");
     setCustomAgeFilter("");
+    setAmountScope("INVOICE");
     setAmountTarget("REMAINING");
     setAmountOperator("GT");
     setAmountValue("");
@@ -1440,12 +1462,48 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
           </div>
         </div>
 
-        {/* Row 3: Nominal Tagihan Filter (Lebih dari / Kurang dari / Rentang) */}
+        {/* Row 3: Nominal Tagihan Filter (Per Faktur atau Total Konsumen) */}
         <div className="rounded-lg bg-emerald-50/40 border border-emerald-100 p-3 space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 uppercase tracking-wider">
-              <Banknote size={15} className="text-emerald-600" />
-              <span>Filter Nominal Tagihan</span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                <Banknote size={15} className="text-emerald-600" />
+                <span>Filter Nominal Tagihan</span>
+              </div>
+
+              {/* Scope Switch: Per Faktur vs Total per Konsumen */}
+              <div className="inline-flex items-center rounded-md border border-emerald-200 bg-white p-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmountScope("INVOICE");
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors",
+                    amountScope === "INVOICE"
+                      ? "bg-emerald-600 text-white"
+                      : "text-emerald-800 hover:bg-emerald-50"
+                  )}
+                >
+                  Per Faktur
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmountScope("CUSTOMER");
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors",
+                    amountScope === "CUSTOMER"
+                      ? "bg-emerald-600 text-white"
+                      : "text-emerald-800 hover:bg-emerald-50"
+                  )}
+                >
+                  Total per Konsumen
+                </button>
+              </div>
             </div>
 
             {/* Quick Nominal Presets */}
@@ -1508,8 +1566,12 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
                 }}
                 className="w-full bg-transparent text-xs sm:text-sm font-medium text-gray-800 outline-none cursor-pointer"
               >
-                <option value="REMAINING">Sisa Tagihan</option>
-                <option value="TOTAL">Total Faktur</option>
+                <option value="REMAINING">
+                  {amountScope === "CUSTOMER" ? "Total Sisa Tagihan" : "Sisa Tagihan"}
+                </option>
+                <option value="TOTAL">
+                  {amountScope === "CUSTOMER" ? "Total Nominal Faktur" : "Total Faktur"}
+                </option>
               </select>
             </div>
 
@@ -1575,7 +1637,15 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
             ) : (
               <div className="flex items-center px-2.5 py-1.5 text-xs text-emerald-800/80 font-medium truncate">
                 {!isNaN(parsedAmount)
-                  ? `${amountTarget === "TOTAL" ? "Total" : "Sisa"} ${
+                  ? `${
+                      amountScope === "CUSTOMER"
+                        ? amountTarget === "TOTAL"
+                          ? "Total Faktur Konsumen"
+                          : "Total Sisa Konsumen"
+                        : amountTarget === "TOTAL"
+                        ? "Total"
+                        : "Sisa"
+                    } ${
                       amountOperator === "GT"
                         ? ">"
                         : amountOperator === "GTE"
@@ -1584,6 +1654,8 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
                         ? "<"
                         : "≤"
                     } ${formatCurrency(parsedAmount)}`
+                  : amountScope === "CUSTOMER"
+                  ? "Menyaring total akumulasi tagihan per konsumen"
                   : "Kosongkan untuk semua nominal"}
               </div>
             )}
@@ -1594,7 +1666,7 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
         <div className="flex items-center justify-between text-xs text-gray-500 pt-1 flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-gray-700">
-              Menampilkan {filteredInvoices.length} dari {invoices.length} faktur
+              Menampilkan {filteredInvoices.length} dari {invoices.length} faktur · {customerEntries.length} konsumen
             </span>
             {invoiceStartDate && invoiceEndDate && (
               <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
@@ -1618,7 +1690,14 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
             )}
             {(!isNaN(parsedAmount) || (amountOperator === "RANGE" && !isNaN(parsedMaxAmount))) && (
               <span className="text-emerald-800 font-semibold text-xs">
-                · {amountTarget === "TOTAL" ? "Total Faktur" : "Sisa Tagihan"}{" "}
+                ·{" "}
+                {amountScope === "CUSTOMER"
+                  ? amountTarget === "TOTAL"
+                    ? "Total Faktur Konsumen"
+                    : "Total Sisa Konsumen"
+                  : amountTarget === "TOTAL"
+                  ? "Total Faktur"
+                  : "Sisa Tagihan"}{" "}
                 {amountOperator === "RANGE"
                   ? `${!isNaN(parsedAmount) ? formatCurrency(parsedAmount) : "Rp 0"} – ${
                       !isNaN(parsedMaxAmount) ? formatCurrency(parsedMaxAmount) : "∞"
