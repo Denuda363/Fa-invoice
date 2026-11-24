@@ -3,7 +3,7 @@ import { Invoice, Customer, CompanyProfile } from "../types";
 import { formatCurrency, cn } from "../utils";
 import { format, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileDown, Search, Filter, CheckSquare, Square, Check, Upload, Calendar, RotateCcw, X, Banknote } from "lucide-react";
+import { FileDown, FileText, Search, Filter, CheckSquare, Square, Check, Upload, Calendar, RotateCcw, X, Banknote } from "lucide-react";
 import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -1063,6 +1063,36 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
     doc.save("Laporan_Jatuh_Tempo.pdf");
   };
 
+  const exportTxt = () => {
+    if (customerEntries.length === 0) return;
+
+    const lines = customerEntries.map(([customerName, customerInvoices]) => {
+      const groupTotal = customerInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const groupRemaining = customerInvoices.reduce(
+        (sum, inv) => sum + (inv.totalAmount - inv.payments.reduce((s, p) => s + p.amount, 0)),
+        0
+      );
+      const targetAmount = statusFilter === "PAID" ? groupTotal : groupRemaining;
+      const formattedNominal = new Intl.NumberFormat("id-ID", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.round(targetAmount));
+
+      return `- ${customerName.trim()} Rp ${formattedNominal}`;
+    });
+
+    const content = lines.join("\r\n");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Laporan_Jatuh_Tempo_${format(new Date(), "dd-MMM-yyyy")}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleResetFilters = () => {
     setSearchTerm("");
     setStatusFilter("UNPAID");
@@ -1125,6 +1155,15 @@ export function Reports({ invoices, customers = [], companyProfile, onPayFaktur,
           >
             <FileDown size={18} />
             Export PDF
+          </button>
+          <button
+            onClick={exportTxt}
+            disabled={customerEntries.length === 0}
+            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="Export ringkasan tagihan per konsumen ke file TXT"
+          >
+            <FileText size={18} />
+            Export TXT
           </button>
           <button
             onClick={downloadPaymentTemplate}
