@@ -86,3 +86,35 @@ export interface ClockSettings {
   showClock: boolean;
 }
 
+export type TransactionNotificationType =
+  | "INVOICE_CREATED"
+  | "INVOICE_BULK_CREATED"
+  | "INVOICE_UPDATED"
+  | "INVOICE_DELETED"
+  | "PAYMENT_ADDED"
+  | "PAYMENT_BULK_ADDED"
+  | "PAYMENT_UPDATED"
+  | "PAYMENT_DELETED";
+
+export interface AppNotification {
+  id: string;
+  type: TransactionNotificationType;
+  title: string;
+  message: string;
+  customerName?: string;
+  invoiceNumber?: string;
+  amount?: number;
+  count?: number;
+  statusNote?: string;
+  createdAt: string;
+  read: boolean;
+  targetView?: ViewState;
+}
+
+export interface NotificationPreferences {
+  deviceEnabled: boolean;
+  toastEnabled: boolean;
+  soundEnabled: boolean;
+}
+
+

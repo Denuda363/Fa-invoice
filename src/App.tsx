@@ -13,8 +13,14 @@ import { PaymentHistory } from "./components/PaymentHistory";
 import { PWAInstallButton } from "./components/PWAInstallButton";
 import { CompanyLogo } from "./components/CompanyLogo";
 import { LiveClockWidget } from "./components/LiveClockWidget";
+import {
+  NotificationBellButton,
+  NotificationToastStack,
+  NotificationDrawer,
+} from "./components/NotificationCenter";
 import { NavbarProvider, useNavbar } from "./context/NavbarContext";
 import { ClockProvider, useClock } from "./context/ClockContext";
+import { NotificationProvider, useNotifications } from "./context/NotificationContext";
 import {
   LayoutDashboard,
   FilePlus,
@@ -32,7 +38,8 @@ import {
 import { cn } from "./utils";
 
 function AppContent() {
-  const store = useAppStore();
+  const { notifyTransaction } = useNotifications();
+  const store = useAppStore(notifyTransaction);
   const { settings, activeTheme, toggleMinimized, setLayout } = useNavbar();
   const { clockSettings } = useClock();
   const [view, setView] = useState<ViewState>("DASHBOARD");
@@ -110,13 +117,16 @@ function AppContent() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className={cn("p-2 rounded-xl transition-all shrink-0", activeTheme.toggleBtnHover)}
-          aria-label="Buka Menu"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <NotificationBellButton />
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className={cn("p-2 rounded-xl transition-all shrink-0", activeTheme.toggleBtnHover)}
+            aria-label="Buka Menu"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </header>
 
       {/* DESKTOP TOPBAR LAYOUT (3D Topbar Mode) */}
@@ -191,6 +201,7 @@ function AppContent() {
               <span>Ganti Sidebar</span>
             </button>
             <PWAInstallButton />
+            <NotificationBellButton />
           </div>
         </header>
       )}
@@ -374,45 +385,63 @@ function AppContent() {
 
       {/* Main Content Area (Automatically Expands when Sidebar is Minimized) */}
       <main className="flex-1 overflow-y-auto w-full min-w-0 transition-all">
-        {/* Desktop Brand Banner when Sidebar is Minimized so Company Name is always visible */}
-        {settings.isMinimized && !isTopbarMode && (
-          <div
+        {/* Desktop Top Utility Header for Sidebar Mode (Brand when minimized + Top-Right Notification Bell) */}
+        {!isTopbarMode && (
+          <header
             className={cn(
-              "hidden md:flex items-center justify-between gap-4 px-6 lg:px-8 py-2.5 border-b transition-colors",
+              "hidden md:flex sticky top-0 z-30 items-center justify-between gap-4 px-6 lg:px-8 py-2.5 border-b transition-colors",
               activeTheme.headerBg,
               activeTheme.headerBorder
             )}
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <CompanyLogo
-                iconUrl={companyIcon}
-                companyName={companyName}
-                className="w-8 h-8 rounded-lg shrink-0"
-                alt={companyName}
-              />
-              <div className="min-w-0">
-                <p className={cn("font-extrabold text-sm leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
-                  {companyName}
-                </p>
-                <p className={cn("text-[11px] font-medium leading-tight break-words whitespace-normal", activeTheme.textSub)}>
-                  {companyTagline}
-                </p>
+            {settings.isMinimized ? (
+              <div className="flex items-center gap-3 min-w-0">
+                <CompanyLogo
+                  iconUrl={companyIcon}
+                  companyName={companyName}
+                  className="w-8 h-8 rounded-lg shrink-0"
+                  alt={companyName}
+                />
+                <div className="min-w-0">
+                  <p className={cn("font-extrabold text-sm leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
+                    {companyName}
+                  </p>
+                  <p className={cn("text-[11px] font-medium leading-tight break-words whitespace-normal", activeTheme.textSub)}>
+                    {companyTagline}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleMinimized}
+                  className={cn(
+                    "ml-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 whitespace-nowrap",
+                    activeTheme.toggleBtnHover,
+                    activeTheme.sidebarBorder
+                  )}
+                  title="Tampilkan Navbar Penuh"
+                >
+                  <PanelLeftOpen size={14} />
+                  <span>Tampilkan Menu</span>
+                </button>
               </div>
+            ) : (
+              <div className="min-w-0 flex items-center gap-2.5">
+                <span className={cn("font-extrabold text-sm tracking-tight", activeTheme.textLogo)}>
+                  {currentTitle}
+                </span>
+                <span aria-hidden="true" className={cn("text-xs opacity-50", activeTheme.textSub)}>
+                  ·
+                </span>
+                <span className={cn("text-xs font-medium truncate", activeTheme.textSub)}>
+                  {companyName}
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+              <NotificationBellButton />
             </div>
-            <button
-              type="button"
-              onClick={toggleMinimized}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 whitespace-nowrap",
-                activeTheme.toggleBtnHover,
-                activeTheme.sidebarBorder
-              )}
-              title="Tampilkan Navbar Penuh"
-            >
-              <PanelLeftOpen size={14} />
-              <span>Tampilkan Menu</span>
-            </button>
-          </div>
+          </header>
         )}
 
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-5 md:py-6">
@@ -567,6 +596,14 @@ function AppContent() {
           )}
         </button>
       </nav>
+
+      {/* Live 3D Floating Transaction Notifications & Slide-over Notification Center */}
+      <NotificationToastStack />
+      <NotificationDrawer
+        companyName={companyName}
+        companyIcon={companyIcon}
+        onNavigate={(target) => setView(target)}
+      />
     </div>
   );
 }
@@ -575,7 +612,9 @@ export default function App() {
   return (
     <NavbarProvider>
       <ClockProvider>
-        <AppContent />
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
       </ClockProvider>
     </NavbarProvider>
   );

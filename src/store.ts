@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Invoice, Payment, Customer, AppData, CompanyProfile } from "./types";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { CreateNotificationInput } from "./context/NotificationContext";
+import { formatCurrency } from "./utils";
 
 export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
   name: "AF Faktur",
@@ -57,9 +59,19 @@ const deduplicateInvoices = (invoices: Invoice[]): Invoice[] => {
   });
 };
 
-export function useAppStore() {
+export function useAppStore(
+  onNotify?: (input: CreateNotificationInput, iconUrl?: string, companyName?: string) => void
+) {
   const [data, setData] = useState<AppData>(INITIAL_DATA);
   const [isLoading, setIsLoading] = useState(true);
+  const dataRef = useRef<AppData>(data);
+  dataRef.current = data;
+
+  const emitNotify = (input: CreateNotificationInput) => {
+    if (!onNotify) return;
+    const profile = dataRef.current.companyProfile || DEFAULT_COMPANY_PROFILE;
+    onNotify(input, profile.iconUrl, profile.name);
+  };
 
   // Sync state to Firebase
   useEffect(() => {
@@ -173,6 +185,17 @@ export function useAppStore() {
       }
       return { ...prev, invoices: [...prev.invoices, newInvoice], customers: nextCustomers };
     });
+
+    emitNotify({
+      type: "INVOICE_CREATED",
+      title: "Faktur Baru Dicatat",
+      message: `${customerName} · No. ${invoiceNumber}`,
+      customerName,
+      invoiceNumber,
+      amount: totalAmount,
+      statusNote: `Jatuh tempo ${dueDate}`,
+      targetView: "INVOICE_HISTORY",
+    });
   };
 
   const addInvoices = (invoicesData: Omit<Invoice, "id" | "payments" | "status">[]) => {
@@ -202,9 +225,58 @@ export function useAppStore() {
         customers: nextCustomers,
       };
     });
+
+    const totalNominal = newInvoices.reduce((s, inv) => s + inv.totalAmount, 0);
+    const uniqueCustomers = Array.from(new Set(newInvoices.map((inv) => inv.customerName)));
+
+    if (newInvoices.length === 1) {
+      const only = newInvoices[0];
+      emitNotify({
+        type: "INVOICE_CREATED",
+        title: "Faktur Baru Dicatat",
+        message: `${only.customerName} · No. ${only.invoiceNumber}`,
+        customerName: only.customerName,
+        invoiceNumber: only.invoiceNumber,
+        amount: only.totalAmount,
+        statusNote: `Jatuh tempo ${only.dueDate}`,
+        targetView: "INVOICE_HISTORY",
+      });
+    } else if (newInvoices.length > 1) {
+      emitNotify({
+        type: "INVOICE_BULK_CREATED",
+        title: `${newInvoices.length} Faktur Baru Disimpan`,
+        message:
+          uniqueCustomers.length === 1
+            ? `${uniqueCustomers[0]} · ${newInvoices.length} faktur`
+            : `${uniqueCustomers.length} konsumen · ${newInvoices.length} faktur`,
+        customerName:
+          uniqueCustomers.length === 1 ? uniqueCustomers[0] : `${uniqueCustomers.length} Konsumen`,
+        amount: totalNominal,
+        count: newInvoices.length,
+        statusNote: "Berhasil masuk ke riwayat faktur",
+        targetView: "INVOICE_HISTORY",
+      });
+    }
   };
 
   const addBulkPayments = (payments: { invoiceId: string; amount: number; date: string }[]) => {
+    const snapshotInvoices = dataRef.current.invoices;
+    const affectedNames = new Set<string>();
+    let totalPaidBatch = 0;
+    let paidOffCount = 0;
+
+    payments.forEach((p) => {
+      totalPaidBatch += p.amount;
+      const inv = snapshotInvoices.find((i) => i.id === p.invoiceId);
+      if (inv) {
+        affectedNames.add(inv.customerName);
+        const prevPaid = inv.payments.reduce((sum, item) => sum + item.amount, 0);
+        if (prevPaid + p.amount >= inv.totalAmount) {
+          paidOffCount++;
+        }
+      }
+    });
+
     mutateData((prev) => {
       let nextInvoices = [...prev.invoices];
       for (const p of payments) {
@@ -232,9 +304,32 @@ export function useAppStore() {
       }
       return { ...prev, invoices: nextInvoices };
     });
+
+    if (payments.length > 0) {
+      const custLabel =
+        affectedNames.size === 1
+          ? Array.from(affectedNames)[0]
+          : `${affectedNames.size} Konsumen`;
+
+      emitNotify({
+        type: "PAYMENT_BULK_ADDED",
+        title: `Pelunasan Massal (${payments.length} Faktur)`,
+        message: `${custLabel} · ${payments.length} pembayaran diproses`,
+        customerName: custLabel,
+        amount: totalPaidBatch,
+        count: payments.length,
+        statusNote:
+          paidOffCount > 0
+            ? `${paidOffCount} faktur berstatus Lunas`
+            : "Pembayaran tercatat",
+        targetView: "PAYMENT_HISTORY",
+      });
+    }
   };
 
   const addPayment = (invoiceId: string, amount: number, date: string) => {
+    const targetInv = dataRef.current.invoices.find((i) => i.id === invoiceId);
+
     mutateData((prev) => ({
       ...prev,
       invoices: prev.invoices.map((inv) => {
@@ -259,6 +354,24 @@ export function useAppStore() {
         };
       }),
     }));
+
+    if (targetInv) {
+      const prevPaid = targetInv.payments.reduce((sum, p) => sum + p.amount, 0);
+      const newRemaining = Math.max(0, targetInv.totalAmount - (prevPaid + amount));
+      emitNotify({
+        type: "PAYMENT_ADDED",
+        title: newRemaining === 0 ? "Faktur Lunas Terbayar" : "Pembayaran Diterima",
+        message: `${targetInv.customerName} · No. ${targetInv.invoiceNumber}`,
+        customerName: targetInv.customerName,
+        invoiceNumber: targetInv.invoiceNumber,
+        amount,
+        statusNote:
+          newRemaining === 0
+            ? "Status: Lunas 100%"
+            : `Sisa tagihan ${formatCurrency(newRemaining)}`,
+        targetView: "PAYMENT_HISTORY",
+      });
+    }
   };
 
   const editPayment = (
@@ -267,6 +380,8 @@ export function useAppStore() {
     newAmount: number,
     newDate: string
   ) => {
+    const targetInv = dataRef.current.invoices.find((i) => i.id === invoiceId);
+
     mutateData((prev) => ({
       ...prev,
       invoices: prev.invoices.map((inv) => {
@@ -290,9 +405,25 @@ export function useAppStore() {
         };
       }),
     }));
+
+    if (targetInv) {
+      emitNotify({
+        type: "PAYMENT_UPDATED",
+        title: "Pembayaran Diperbarui",
+        message: `${targetInv.customerName} · No. ${targetInv.invoiceNumber}`,
+        customerName: targetInv.customerName,
+        invoiceNumber: targetInv.invoiceNumber,
+        amount: newAmount,
+        statusNote: `Tanggal bayar ${newDate}`,
+        targetView: "PAYMENT_HISTORY",
+      });
+    }
   };
 
   const deletePayment = (invoiceId: string, paymentId: string) => {
+    const targetInv = dataRef.current.invoices.find((i) => i.id === invoiceId);
+    const targetPay = targetInv?.payments.find((p) => p.id === paymentId);
+
     mutateData((prev) => ({
       ...prev,
       invoices: prev.invoices.map((inv) => {
@@ -314,6 +445,19 @@ export function useAppStore() {
         };
       }),
     }));
+
+    if (targetInv) {
+      emitNotify({
+        type: "PAYMENT_DELETED",
+        title: "Pembayaran Dihapus",
+        message: `${targetInv.customerName} · No. ${targetInv.invoiceNumber}`,
+        customerName: targetInv.customerName,
+        invoiceNumber: targetInv.invoiceNumber,
+        amount: targetPay?.amount,
+        statusNote: "Saldo tagihan disesuaikan otomatis",
+        targetView: "PAYMENT_HISTORY",
+      });
+    }
   };
 
   const resetDueDates = () => {
@@ -366,13 +510,39 @@ export function useAppStore() {
         };
       }),
     }));
+
+    emitNotify({
+      type: "INVOICE_UPDATED",
+      title: "Faktur Diperbarui",
+      message: `${customerName} · No. ${invoiceNumber}`,
+      customerName,
+      invoiceNumber,
+      amount: totalAmount,
+      statusNote: `Jatuh tempo ${dueDate}`,
+      targetView: "INVOICE_HISTORY",
+    });
   };
 
   const deleteInvoice = (invoiceId: string) => {
+    const targetInv = dataRef.current.invoices.find((i) => i.id === invoiceId);
+
     mutateData((prev) => ({
       ...prev,
       invoices: prev.invoices.filter((inv) => inv.id !== invoiceId),
     }));
+
+    if (targetInv) {
+      emitNotify({
+        type: "INVOICE_DELETED",
+        title: "Faktur Dihapus",
+        message: `${targetInv.customerName} · No. ${targetInv.invoiceNumber}`,
+        customerName: targetInv.customerName,
+        invoiceNumber: targetInv.invoiceNumber,
+        amount: targetInv.totalAmount,
+        statusNote: "Dihapus dari daftar faktur",
+        targetView: "INVOICE_HISTORY",
+      });
+    }
   };
 
   const addCustomer = (
