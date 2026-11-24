@@ -12,7 +12,6 @@ import {
   FileX2,
   Banknote,
   Layers,
-  Pencil,
   Receipt,
   Smartphone,
   Volume2,
@@ -22,6 +21,11 @@ import {
   MonitorCheck,
   ShieldAlert,
   BellOff,
+  Search,
+  SlidersHorizontal,
+  Check,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -32,6 +36,7 @@ import {
 } from "../types";
 import { useNotifications } from "../context/NotificationContext";
 import { useNavbar } from "../context/NavbarContext";
+import { CompanyLogo } from "./CompanyLogo";
 import { cn, formatCurrency } from "../utils";
 
 function getNotificationVisual(type: TransactionNotificationType) {
@@ -45,7 +50,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "+",
         categoryLabel: "Pembayaran",
         cardTint: "border-emerald-200/90 border-b-[3px] border-b-emerald-300",
+        topAccent: "bg-gradient-to-r from-emerald-500 to-teal-500",
         progressColor: "bg-emerald-500",
+        timelineRing: "ring-emerald-100",
       };
     case "PAYMENT_BULK_ADDED":
       return {
@@ -56,7 +63,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "+",
         categoryLabel: "Pelunasan Massal",
         cardTint: "border-teal-200/90 border-b-[3px] border-b-teal-300",
+        topAccent: "bg-gradient-to-r from-teal-500 to-emerald-500",
         progressColor: "bg-teal-500",
+        timelineRing: "ring-teal-100",
       };
     case "PAYMENT_UPDATED":
       return {
@@ -67,7 +76,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "",
         categoryLabel: "Edit Pembayaran",
         cardTint: "border-amber-200/90 border-b-[3px] border-b-amber-300",
+        topAccent: "bg-gradient-to-r from-amber-400 to-orange-500",
         progressColor: "bg-amber-500",
+        timelineRing: "ring-amber-100",
       };
     case "PAYMENT_DELETED":
       return {
@@ -78,7 +89,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "-",
         categoryLabel: "Hapus Pembayaran",
         cardTint: "border-rose-200/90 border-b-[3px] border-b-rose-300",
+        topAccent: "bg-gradient-to-r from-rose-500 to-red-600",
         progressColor: "bg-rose-500",
+        timelineRing: "ring-rose-100",
       };
     case "INVOICE_CREATED":
       return {
@@ -89,7 +102,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "",
         categoryLabel: "Faktur Baru",
         cardTint: "border-blue-200/90 border-b-[3px] border-b-blue-300",
+        topAccent: "bg-gradient-to-r from-blue-500 to-indigo-600",
         progressColor: "bg-blue-500",
+        timelineRing: "ring-blue-100",
       };
     case "INVOICE_BULK_CREATED":
       return {
@@ -100,7 +115,9 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "",
         categoryLabel: "Faktur Massal",
         cardTint: "border-indigo-200/90 border-b-[3px] border-b-indigo-300",
+        topAccent: "bg-gradient-to-r from-indigo-500 to-blue-600",
         progressColor: "bg-indigo-500",
+        timelineRing: "ring-indigo-100",
       };
     case "INVOICE_UPDATED":
       return {
@@ -111,19 +128,23 @@ function getNotificationVisual(type: TransactionNotificationType) {
         amountPrefix: "",
         categoryLabel: "Edit Faktur",
         cardTint: "border-sky-200/90 border-b-[3px] border-b-sky-300",
+        topAccent: "bg-gradient-to-r from-sky-500 to-blue-500",
         progressColor: "bg-sky-500",
+        timelineRing: "ring-sky-100",
       };
     case "INVOICE_DELETED":
     default:
       return {
-        icon: Pencil,
+        icon: FileX2,
         iconBg:
           "bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_3px_0_#991b1b]",
         amountColor: "text-rose-700",
         amountPrefix: "",
         categoryLabel: "Hapus Faktur",
         cardTint: "border-rose-200/90 border-b-[3px] border-b-rose-300",
+        topAccent: "bg-gradient-to-r from-rose-500 to-red-600",
         progressColor: "bg-rose-500",
+        timelineRing: "ring-rose-100",
       };
   }
 }
@@ -208,7 +229,7 @@ export function NotificationBellButton({ className }: { className?: string }) {
 }
 
 /* ============================================================================
- * 2. UNIQUE FLOATING 3D TRANSACTION SLIP TOAST STACK
+ * 2. UNIQUE FLOATING 3D TRANSACTION RECEIPT SLIP TOAST STACK
  * ============================================================================ */
 function ToastCard({
   toast,
@@ -235,24 +256,27 @@ function ToastCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, x: 48, scale: 0.94 }}
+      initial={{ opacity: 0, x: 52, scale: 0.94 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 40, scale: 0.94 }}
+      exit={{ opacity: 0, x: 44, scale: 0.94 }}
       transition={{ type: "spring", stiffness: 380, damping: 28 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       className={cn(
-        "pointer-events-auto relative w-full max-w-sm rounded-2xl bg-white/95 backdrop-blur-md border overflow-hidden shadow-[0_18px_36px_-10px_rgba(15,23,42,0.28)]",
+        "pointer-events-auto relative w-full max-w-sm rounded-2xl bg-white/95 backdrop-blur-md border overflow-hidden shadow-[0_20px_40px_-12px_rgba(15,23,42,0.3)]",
         visual.cardTint
       )}
     >
-      {/* Ticket Perforation Header Strip */}
+      {/* Top Color Rail */}
+      <div className={cn("h-1 w-full", visual.topAccent)} />
+
+      {/* Receipt Header Strip */}
       <div className="px-3.5 py-2 bg-slate-50/90 border-b border-dashed border-slate-200 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
           <Sparkles size={12} className="text-blue-600" />
           <span>{visual.categoryLabel}</span>
           <span aria-hidden="true" className="text-slate-400">·</span>
-          <span className="font-mono tabular-nums text-slate-400 font-medium">
+          <span className="font-mono tabular-nums text-slate-500 font-medium">
             {format(new Date(toast.createdAt), "HH:mm:ss")}
           </span>
         </div>
@@ -279,17 +303,21 @@ function ToastCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="text-sm font-extrabold text-slate-900 leading-snug">
-              {toast.title}
-            </h4>
-          </div>
+          <h4 className="text-sm font-extrabold text-slate-900 leading-snug">
+            {toast.title}
+          </h4>
 
           <p className="text-xs text-slate-600 mt-0.5 leading-relaxed break-words">
             {toast.message}
           </p>
 
-          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+          {toast.statusNote && (
+            <p className="text-[11px] font-medium text-slate-500 mt-1">
+              {toast.statusNote}
+            </p>
+          )}
+
+          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
             {typeof toast.amount === "number" && toast.amount > 0 ? (
               <span
                 className={cn(
@@ -302,7 +330,7 @@ function ToastCard({
               </span>
             ) : (
               <span className="text-[11px] text-slate-500 font-medium">
-                {toast.statusNote || "Tercatat"}
+                Tersimpan
               </span>
             )}
 
@@ -314,7 +342,7 @@ function ToastCard({
               }}
               className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap"
             >
-              <span>Lihat Semua</span>
+              <span>Pusat Notifikasi</span>
               <ArrowUpRight size={12} />
             </button>
           </div>
@@ -328,7 +356,7 @@ function ToastCard({
           animate={{ scaleX: 0 }}
           transition={{ duration: 5.2, ease: "linear" }}
           style={{ transformOrigin: "left" }}
-          className={cn("h-1 w-full", visual.progressColor)}
+          className={cn("h-0.5 w-full opacity-75", visual.progressColor)}
         />
       )}
     </motion.div>
@@ -358,7 +386,7 @@ export function NotificationToastStack() {
 }
 
 /* ============================================================================
- * 3. SLIDE-OVER 3D NOTIFICATION CENTER DRAWER
+ * 3. EXECUTIVE 3D NOTIFICATION CENTER DRAWER
  * ============================================================================ */
 export function NotificationDrawer({
   companyName,
@@ -385,7 +413,13 @@ export function NotificationDrawer({
     sendTestNotification,
   } = useNotifications();
 
-  const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "PAYMENT" | "INVOICE">("ALL");
+  const [filterTab, setFilterTab] = useState<
+    "ALL" | "UNREAD" | "PAYMENT" | "INVOICE" | "CHANGES"
+  >("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showPrefs, setShowPrefs] = useState(
+    () => devicePermission === "default" || devicePermission === "denied"
+  );
 
   useEffect(() => {
     if (!isDrawerOpen) return;
@@ -396,14 +430,86 @@ export function NotificationDrawer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isDrawerOpen, setDrawerOpen]);
 
+  // Real-time Daily Pulse Summary computed from today's notifications
+  const dailySummary = useMemo(() => {
+    let paidToday = 0;
+    let invoicedToday = 0;
+    let todayCount = 0;
+
+    notifications.forEach((n) => {
+      if (!isToday(new Date(n.createdAt))) return;
+      todayCount++;
+      if (
+        (n.type === "PAYMENT_ADDED" || n.type === "PAYMENT_BULK_ADDED") &&
+        typeof n.amount === "number"
+      ) {
+        paidToday += n.amount;
+      }
+      if (
+        (n.type === "INVOICE_CREATED" || n.type === "INVOICE_BULK_CREATED") &&
+        typeof n.amount === "number"
+      ) {
+        invoicedToday += n.amount;
+      }
+    });
+
+    return { paidToday, invoicedToday, todayCount };
+  }, [notifications]);
+
+  const tabCounts = useMemo(() => {
+    return {
+      ALL: notifications.length,
+      UNREAD: unreadCount,
+      PAYMENT: notifications.filter(
+        (n) => n.type === "PAYMENT_ADDED" || n.type === "PAYMENT_BULK_ADDED"
+      ).length,
+      INVOICE: notifications.filter(
+        (n) => n.type === "INVOICE_CREATED" || n.type === "INVOICE_BULK_CREATED"
+      ).length,
+      CHANGES: notifications.filter(
+        (n) =>
+          n.type === "INVOICE_UPDATED" ||
+          n.type === "INVOICE_DELETED" ||
+          n.type === "PAYMENT_UPDATED" ||
+          n.type === "PAYMENT_DELETED"
+      ).length,
+    };
+  }, [notifications, unreadCount]);
+
   const filteredNotifications = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return notifications.filter((n) => {
-      if (filterTab === "UNREAD") return !n.read;
-      if (filterTab === "PAYMENT") return n.type.startsWith("PAYMENT_");
-      if (filterTab === "INVOICE") return n.type.startsWith("INVOICE_");
+      if (filterTab === "UNREAD" && n.read) return false;
+      if (
+        filterTab === "PAYMENT" &&
+        n.type !== "PAYMENT_ADDED" &&
+        n.type !== "PAYMENT_BULK_ADDED"
+      )
+        return false;
+      if (
+        filterTab === "INVOICE" &&
+        n.type !== "INVOICE_CREATED" &&
+        n.type !== "INVOICE_BULK_CREATED"
+      )
+        return false;
+      if (
+        filterTab === "CHANGES" &&
+        n.type !== "INVOICE_UPDATED" &&
+        n.type !== "INVOICE_DELETED" &&
+        n.type !== "PAYMENT_UPDATED" &&
+        n.type !== "PAYMENT_DELETED"
+      )
+        return false;
+
+      if (q) {
+        const hay = `${n.title} ${n.message} ${n.customerName || ""} ${
+          n.invoiceNumber || ""
+        } ${n.statusNote || ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       return true;
     });
-  }, [notifications, filterTab]);
+  }, [notifications, filterTab, searchQuery]);
 
   const todayItems = filteredNotifications.filter((n) => isToday(new Date(n.createdAt)));
   const earlierItems = filteredNotifications.filter((n) => !isToday(new Date(n.createdAt)));
@@ -426,10 +532,10 @@ export function NotificationDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setDrawerOpen(false)}
-            className="fixed inset-0 bg-slate-950/45 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs"
           />
 
-          {/* Slide-over 3D Panel */}
+          {/* Slide-over Executive Command Drawer */}
           <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -437,187 +543,288 @@ export function NotificationDrawer({
             transition={{ type: "spring", stiffness: 340, damping: 32 }}
             role="dialog"
             aria-label="Pusat Notifikasi Transaksi"
-            className="relative z-10 w-full max-w-md h-full bg-slate-50 border-l border-slate-200 shadow-2xl flex flex-col"
+            className="relative z-10 w-full max-w-lg h-full bg-slate-100 border-l border-slate-300/80 shadow-2xl flex flex-col"
           >
-            {/* Top Header */}
-            <div className="bg-white px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-b from-blue-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_3px_0_#1e40af]">
-                  <BellRing size={20} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-base font-extrabold text-slate-900 leading-tight">
-                    Pusat Notifikasi
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 tabular-nums">
-                    {unreadCount > 0
-                      ? `${unreadCount} belum dibaca · ${notifications.length} total`
-                      : `${notifications.length} riwayat transaksi`}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
-                aria-label="Tutup Pusat Notifikasi"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Device OS Notification & Sound Control Card */}
-            <div className="px-4 pt-4">
-              <div className="rounded-2xl border border-slate-200 border-b-[3px] border-b-slate-300 bg-white p-3.5 space-y-3 shadow-xs">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2.5 min-w-0">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                        devicePermission === "granted" && preferences.deviceEnabled
-                          ? "bg-emerald-100 text-emerald-700"
-                          : devicePermission === "denied"
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-blue-100 text-blue-700"
-                      )}
-                    >
-                      {devicePermission === "denied" ? (
-                        <ShieldAlert size={16} />
-                      ) : (
-                        <Smartphone size={16} />
+            {/* Branded Executive Dark Header + Live Daily Ledger Telemetry */}
+            <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white px-5 pt-4 pb-4 border-b border-slate-800 shadow-[0_6px_20px_-6px_rgba(2,6,23,0.5)]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CompanyLogo
+                    iconUrl={companyIcon}
+                    companyName={companyName}
+                    className="w-10 h-10 rounded-xl shrink-0"
+                    alt={companyName}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-extrabold tracking-tight text-white">
+                        Pusat Notifikasi
+                      </h3>
+                      {unreadCount > 0 && (
+                        <span className="font-mono tabular-nums text-[11px] font-bold text-amber-300">
+                          · {unreadCount} baru
+                        </span>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-900">
-                        Notifikasi Sistem Perangkat
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-                        {devicePermission === "granted"
-                          ? preferences.deviceEnabled
-                            ? "Aktif — muncul di panel notifikasi HP/Laptop saat transaksi."
-                            : "Izin diberikan, saat ini dijeda."
-                          : devicePermission === "denied"
-                          ? "Diblokir browser. Izinkan notifikasi lewat ikon gembok di address bar."
-                          : devicePermission === "unsupported"
-                          ? "Browser ini tidak mendukung notifikasi sistem; notifikasi layar tetap aktif."
-                          : "Aktifkan agar setiap faktur & pembayaran muncul di notifikasi sistem perangkat."}
-                      </p>
-                    </div>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">
+                      {companyName} — Log Transaksi & Sistem
+                    </p>
                   </div>
-
-                  {devicePermission === "default" && (
-                    <button
-                      type="button"
-                      onClick={requestDevicePermission}
-                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 shadow-[0_2px_0_#1e40af] active:translate-y-0.5 transition-all"
-                    >
-                      Aktifkan
-                    </button>
-                  )}
-
-                  {devicePermission === "granted" && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updatePreferences({ deviceEnabled: !preferences.deviceEnabled })
-                      }
-                      className={cn(
-                        "px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-colors",
-                        preferences.deviceEnabled
-                          ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                          : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                      )}
-                    >
-                      {preferences.deviceEnabled ? "Aktif" : "Nonaktif"}
-                    </button>
-                  )}
                 </div>
 
-                {/* Quick Utility Row: Toast, Sound, Test */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updatePreferences({ toastEnabled: !preferences.toastEnabled })
-                      }
-                      className={cn(
-                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors",
-                        preferences.toastEnabled
-                          ? "bg-blue-50 border-blue-200 text-blue-700"
-                          : "bg-slate-50 border-slate-200 text-slate-500"
-                      )}
-                      title="Tampilkan kartu notifikasi mengambang saat transaksi"
-                    >
-                      <MonitorCheck size={12} />
-                      <span>Popup Layar</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updatePreferences({ soundEnabled: !preferences.soundEnabled })
-                      }
-                      className={cn(
-                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors",
-                        preferences.soundEnabled
-                          ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                          : "bg-slate-50 border-slate-200 text-slate-500"
-                      )}
-                      title="Bunyi lonceng halus saat transaksi baru"
-                    >
-                      {preferences.soundEnabled ? (
-                        <Volume2 size={12} />
-                      ) : (
-                        <VolumeX size={12} />
-                      )}
-                      <span>Suara</span>
-                    </button>
-                  </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowPrefs((prev) => !prev)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-semibold transition-all",
+                      showPrefs
+                        ? "bg-blue-600 border-blue-500 text-white"
+                        : "bg-white/10 border-white/15 text-slate-200 hover:bg-white/15"
+                    )}
+                    title="Atur Notifikasi Perangkat & Suara"
+                    aria-expanded={showPrefs}
+                  >
+                    <SlidersHorizontal size={15} />
+                    <span className="hidden sm:inline">Sistem</span>
+                  </button>
 
                   <button
                     type="button"
-                    onClick={() => sendTestNotification(companyIcon, companyName)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors"
+                    onClick={() => setDrawerOpen(false)}
+                    className="p-2 rounded-xl border border-white/15 bg-white/10 text-slate-200 hover:text-white hover:bg-white/20 transition-colors"
+                    aria-label="Tutup Pusat Notifikasi"
                   >
-                    <Sparkles size={12} className="text-amber-600" />
-                    <span>Tes Notif</span>
+                    <X size={18} />
                   </button>
+                </div>
+              </div>
+
+              {/* 3-Column Daily Activity Telemetry Bar */}
+              <div className="mt-4 grid grid-cols-3 gap-2.5 rounded-xl bg-white/[0.06] border border-white/10 p-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-300">
+                    <TrendingUp size={11} className="shrink-0" />
+                    <span className="truncate">Masuk Hari Ini</span>
+                  </div>
+                  <div className="font-mono tabular-nums text-xs sm:text-sm font-extrabold text-white mt-0.5 truncate">
+                    {formatCurrency(dailySummary.paidToday)}
+                  </div>
+                </div>
+
+                <div className="min-w-0 border-l border-white/10 pl-2.5">
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-sky-300">
+                    <FilePlus2 size={11} className="shrink-0" />
+                    <span className="truncate">Faktur Hari Ini</span>
+                  </div>
+                  <div className="font-mono tabular-nums text-xs sm:text-sm font-extrabold text-white mt-0.5 truncate">
+                    {formatCurrency(dailySummary.invoicedToday)}
+                  </div>
+                </div>
+
+                <div className="min-w-0 border-l border-white/10 pl-2.5">
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-amber-300">
+                    <Activity size={11} className="shrink-0" />
+                    <span className="truncate">Aktivitas</span>
+                  </div>
+                  <div className="font-mono tabular-nums text-xs sm:text-sm font-extrabold text-white mt-0.5">
+                    {dailySummary.todayCount}{" "}
+                    <span className="font-sans text-[10px] font-medium text-slate-400">
+                      trx
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="px-4 pt-3">
-              <div className="flex items-center gap-1 bg-slate-200/75 p-1 rounded-xl border border-slate-200 text-xs">
+            {/* Collapsible Device Notification & Sound Control Panel */}
+            <AnimatePresence initial={false}>
+              {showPrefs && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden border-b border-slate-200 bg-white"
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div
+                          className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                            devicePermission === "granted" && preferences.deviceEnabled
+                              ? "bg-emerald-100 text-emerald-700"
+                              : devicePermission === "denied"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-blue-100 text-blue-700"
+                          )}
+                        >
+                          {devicePermission === "denied" ? (
+                            <ShieldAlert size={16} />
+                          ) : (
+                            <Smartphone size={16} />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-900">
+                            Notifikasi Sistem Perangkat (HP / Desktop)
+                          </div>
+                          <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                            {devicePermission === "granted"
+                              ? preferences.deviceEnabled
+                                ? "Aktif — pemberitahuan muncul di bilah notifikasi perangkat."
+                                : "Izin aktif, namun notifikasi sistem sedang dijeda."
+                              : devicePermission === "denied"
+                              ? "Diblokir browser. Izinkan notifikasi lewat ikon pengaturan situs di address bar."
+                              : devicePermission === "unsupported"
+                              ? "Perangkat/browser tidak mendukung notifikasi sistem; popup layar tetap aktif."
+                              : "Klik Aktifkan agar setiap transaksi muncul di notifikasi sistem perangkat."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {devicePermission === "default" && (
+                        <button
+                          type="button"
+                          onClick={requestDevicePermission}
+                          className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 shadow-[0_2px_0_#1e40af] active:translate-y-0.5 transition-all"
+                        >
+                          Aktifkan
+                        </button>
+                      )}
+
+                      {devicePermission === "granted" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updatePreferences({ deviceEnabled: !preferences.deviceEnabled })
+                          }
+                          className={cn(
+                            "px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-colors",
+                            preferences.deviceEnabled
+                              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                          )}
+                        >
+                          {preferences.deviceEnabled ? "Aktif" : "Dijeda"}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updatePreferences({ toastEnabled: !preferences.toastEnabled })
+                          }
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors",
+                            preferences.toastEnabled
+                              ? "bg-blue-50 border-blue-200 text-blue-700"
+                              : "bg-slate-50 border-slate-200 text-slate-500"
+                          )}
+                        >
+                          <MonitorCheck size={12} />
+                          <span>Slip Layar</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updatePreferences({ soundEnabled: !preferences.soundEnabled })
+                          }
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors",
+                            preferences.soundEnabled
+                              ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                              : "bg-slate-50 border-slate-200 text-slate-500"
+                          )}
+                        >
+                          {preferences.soundEnabled ? (
+                            <Volume2 size={12} />
+                          ) : (
+                            <VolumeX size={12} />
+                          )}
+                          <span>Suara Lonceng</span>
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => sendTestNotification(companyIcon, companyName)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 border-b-2 transition-colors"
+                      >
+                        <Sparkles size={12} className="text-amber-600" />
+                        <span>Tes Notif</span>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Search & Segmented Filter Bar */}
+            <div className="bg-white/90 backdrop-blur-xs px-4 py-3 border-b border-slate-200 space-y-2.5">
+              {/* Instant Search Input */}
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15 transition-all">
+                <Search size={15} className="text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari konsumen, no. faktur, atau aktivitas..."
+                  className="w-full bg-transparent text-xs sm:text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="p-0.5 text-slate-400 hover:text-slate-700"
+                    aria-label="Hapus pencarian"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200 text-[11px]">
                 {[
-                  { id: "ALL" as const, label: "Semua" },
-                  {
-                    id: "UNREAD" as const,
-                    label: unreadCount > 0 ? `Baru (${unreadCount})` : "Baru",
-                  },
-                  { id: "PAYMENT" as const, label: "Pembayaran" },
-                  { id: "INVOICE" as const, label: "Faktur" },
+                  { id: "ALL" as const, label: "Semua", count: tabCounts.ALL },
+                  { id: "UNREAD" as const, label: "Baru", count: tabCounts.UNREAD },
+                  { id: "PAYMENT" as const, label: "Bayar", count: tabCounts.PAYMENT },
+                  { id: "INVOICE" as const, label: "Faktur", count: tabCounts.INVOICE },
+                  { id: "CHANGES" as const, label: "Ubah", count: tabCounts.CHANGES },
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setFilterTab(tab.id)}
                     className={cn(
-                      "flex-1 py-1.5 px-2 rounded-lg font-semibold transition-all whitespace-nowrap",
+                      "flex-1 py-1.5 px-2 rounded-lg font-semibold transition-all whitespace-nowrap inline-flex items-center justify-center gap-1",
                       filterTab === tab.id
                         ? "bg-white text-slate-900 shadow-[0_2px_0_#cbd5e1]"
                         : "text-slate-600 hover:text-slate-900"
                     )}
                   >
-                    {tab.label}
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span
+                        className={cn(
+                          "font-mono tabular-nums text-[10px]",
+                          filterTab === tab.id ? "text-blue-600 font-bold" : "text-slate-400"
+                        )}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Notifications List */}
+            {/* Vertical Timeline Notifications Feed */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
               {filteredNotifications.length === 0 ? (
                 <div className="h-full min-h-[240px] flex flex-col items-center justify-center text-center px-6 py-10">
@@ -625,73 +832,51 @@ export function NotificationDrawer({
                     <BellOff size={24} />
                   </div>
                   <h4 className="text-sm font-bold text-slate-800">
-                    {filterTab === "UNREAD"
+                    {searchQuery
+                      ? "Tidak Ada Notifikasi yang Cocok"
+                      : filterTab === "UNREAD"
                       ? "Semua Notifikasi Sudah Dibaca"
                       : "Belum Ada Notifikasi Transaksi"}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
-                    Setiap faktur baru, pembayaran masuk, pelunasan massal, atau perubahan transaksi akan tercatat otomatis di sini.
+                    {searchQuery
+                      ? "Coba kata kunci lain atau hapus pencarian untuk melihat semua log transaksi."
+                      : "Setiap faktur baru, pembayaran masuk, pelunasan massal, atau perubahan data akan tercatat otomatis di lini masa ini."}
                   </p>
                 </div>
               ) : (
                 <>
                   {todayItems.length > 0 && (
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                          Hari Ini
-                        </span>
-                        <span className="text-[11px] font-mono tabular-nums text-slate-400">
-                          {todayItems.length}
-                        </span>
-                      </div>
-                      <div className="space-y-2.5">
-                        {todayItems.map((item) => (
-                          <NotificationFeedCard
-                            key={item.id}
-                            item={item}
-                            onClick={() => handleItemClick(item)}
-                            onDelete={() => deleteNotification(item.id)}
-                          />
-                        ))}
-                      </div>
-                    </div>
+                    <TimelineSection
+                      title="Hari Ini"
+                      items={todayItems}
+                      onItemClick={handleItemClick}
+                      onMarkRead={markAsRead}
+                      onDelete={deleteNotification}
+                    />
                   )}
 
                   {earlierItems.length > 0 && (
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                          Sebelumnya
-                        </span>
-                        <span className="text-[11px] font-mono tabular-nums text-slate-400">
-                          {earlierItems.length}
-                        </span>
-                      </div>
-                      <div className="space-y-2.5">
-                        {earlierItems.map((item) => (
-                          <NotificationFeedCard
-                            key={item.id}
-                            item={item}
-                            onClick={() => handleItemClick(item)}
-                            onDelete={() => deleteNotification(item.id)}
-                          />
-                        ))}
-                      </div>
-                    </div>
+                    <TimelineSection
+                      title="Sebelumnya"
+                      items={earlierItems}
+                      onItemClick={handleItemClick}
+                      onMarkRead={markAsRead}
+                      onDelete={deleteNotification}
+                    />
                   )}
                 </>
               )}
             </div>
 
-            {/* Footer Controls */}
+            {/* Footer Action Bar */}
             {notifications.length > 0 && (
               <div className="bg-white px-4 py-3 border-t border-slate-200 flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={markAllAsRead}
                   disabled={unreadCount === 0}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-45 disabled:pointer-events-none transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-45 disabled:pointer-events-none transition-colors"
                 >
                   <CheckCheck size={15} />
                   <span>Tandai Semua Dibaca</span>
@@ -700,10 +885,10 @@ export function NotificationDrawer({
                 <button
                   type="button"
                   onClick={clearAllNotifications}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors"
                 >
                   <Trash2 size={15} />
-                  <span>Hapus Semua</span>
+                  <span>Bersihkan Semua</span>
                 </button>
               </div>
             )}
@@ -714,106 +899,182 @@ export function NotificationDrawer({
   );
 }
 
+function TimelineSection({
+  title,
+  items,
+  onItemClick,
+  onMarkRead,
+  onDelete,
+}: {
+  title: string;
+  items: AppNotification[];
+  onItemClick: (item: AppNotification) => void;
+  onMarkRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          {title}
+        </span>
+        <span className="text-[11px] font-mono tabular-nums text-slate-400">
+          {items.length} aktivitas
+        </span>
+      </div>
+
+      {/* Timeline Container with Vertical Rail */}
+      <div className="relative pl-6 space-y-3 before:content-[''] before:absolute before:left-[15px] before:top-4 before:bottom-4 before:w-px before:bg-slate-300/80">
+        {items.map((item) => (
+          <NotificationFeedCard
+            key={item.id}
+            item={item}
+            onClick={() => onItemClick(item)}
+            onMarkRead={() => onMarkRead(item.id)}
+            onDelete={() => onDelete(item.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NotificationFeedCard({
   item,
   onClick,
+  onMarkRead,
   onDelete,
 }: {
   key?: string;
   item: AppNotification;
   onClick: () => void;
+  onMarkRead: () => void;
   onDelete: () => void;
 }) {
   const visual = getNotificationVisual(item.type);
   const Icon = visual.icon;
 
   return (
-    <div
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-      className={cn(
-        "group relative rounded-2xl border p-3.5 transition-all cursor-pointer flex items-start gap-3",
-        item.read
-          ? "bg-white border-slate-200 hover:border-slate-300"
-          : cn("bg-white shadow-sm hover:-translate-y-0.5", visual.cardTint)
-      )}
-    >
+    <div className="relative group">
+      {/* 3D Node Anchor on Timeline */}
       <div
         className={cn(
-          "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
+          "absolute -left-6 top-3.5 w-8 h-8 rounded-xl flex items-center justify-center ring-4 ring-slate-100 z-10 transition-transform group-hover:scale-105",
           visual.iconBg
         )}
       >
-        <Icon size={17} />
+        <Icon size={15} />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h5
-                className={cn(
-                  "text-xs sm:text-sm leading-snug",
-                  item.read ? "font-bold text-slate-800" : "font-extrabold text-slate-950"
-                )}
+      {/* Ledger Ticket Card */}
+      <div
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        className={cn(
+          "ml-4 rounded-2xl border p-3.5 transition-all cursor-pointer",
+          item.read
+            ? "bg-white/85 border-slate-200/90 hover:bg-white hover:border-slate-300"
+            : cn("bg-white shadow-sm hover:-translate-y-0.5", visual.cardTint)
+        )}
+      >
+        {/* Top Metadata Line (Unboxed) */}
+        <div className="flex items-center justify-between gap-2 text-[11px]">
+          <div className="flex items-center gap-1.5 text-slate-500 min-w-0">
+            <span className="font-bold text-slate-700">{visual.categoryLabel}</span>
+            <span aria-hidden="true">·</span>
+            <span className="font-mono tabular-nums text-slate-400">
+              {formatRelativeTime(item.createdAt)}
+            </span>
+            {!item.read && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="font-bold text-blue-600">Baru</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            {!item.read && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkRead();
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                title="Tandai sudah dibaca"
+                aria-label="Tandai sudah dibaca"
               >
-                {item.title}
-              </h5>
-              {!item.read && (
-                <span className="text-[10px] font-bold text-blue-600">· Baru</span>
+                <Check size={13} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+              title="Hapus notifikasi ini"
+              aria-label="Hapus notifikasi"
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* Main Row: Title + Details + Prominent Right-aligned Nominal */}
+        <div className="mt-1.5 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h5
+              className={cn(
+                "text-xs sm:text-sm leading-snug",
+                item.read ? "font-bold text-slate-800" : "font-extrabold text-slate-950"
               )}
-            </div>
+            >
+              {item.title}
+            </h5>
             <p className="text-xs text-slate-600 mt-0.5 leading-relaxed break-words">
               {item.message}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0"
-            title="Hapus notifikasi ini"
-            aria-label="Hapus notifikasi"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-
-        <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
-          <div className="flex items-center gap-1.5 text-slate-400 min-w-0">
-            <span className="truncate">{formatRelativeTime(item.createdAt)}</span>
-            {item.statusNote && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="text-slate-500 font-medium truncate">
-                  {item.statusNote}
-                </span>
-              </>
-            )}
-          </div>
-
           {typeof item.amount === "number" && item.amount > 0 && (
-            <span
-              className={cn(
-                "font-mono tabular-nums font-extrabold shrink-0",
-                visual.amountColor
-              )}
-            >
-              {visual.amountPrefix}
-              {formatCurrency(item.amount)}
-            </span>
+            <div className="text-right shrink-0">
+              <div
+                className={cn(
+                  "font-mono tabular-nums text-xs sm:text-sm font-extrabold",
+                  visual.amountColor
+                )}
+              >
+                {visual.amountPrefix}
+                {formatCurrency(item.amount)}
+              </div>
+            </div>
           )}
         </div>
+
+        {/* Bottom Hairline Status + Quick Jump */}
+        {(item.statusNote || item.targetView) && (
+          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+            <span className="text-slate-500 font-medium truncate">
+              {item.statusNote || "Tercatat dalam sistem"}
+            </span>
+            {item.targetView && (
+              <span className="inline-flex items-center gap-0.5 font-bold text-blue-600 opacity-85 group-hover:opacity-100 shrink-0">
+                <span>Lihat</span>
+                <ArrowUpRight size={12} />
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
