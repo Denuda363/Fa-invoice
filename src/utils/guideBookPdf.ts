@@ -552,10 +552,17 @@ export async function exportGuideBookA4Pdf(
   doc.rect(pageCenterX + 12, preY, 10, 1.4, "F");
   preY += 13;
 
+  const countWordMap: Record<number, string> = {
+    9: "sembilan",
+    10: "sepuluh",
+    11: "sebelas",
+  };
+  const sectionCountWord = countWordMap[sections.length] || String(sections.length);
+
   const prefaceParagraphs = [
     `Puji syukur ke hadirat Tuhan Yang Maha Esa atas tersusunnya Buku Panduan Penggunaan Aplikasi ${companyName}. Dokumen ini dihadirkan sebagai rujukan operasional resmi bagi pimpinan usaha, staf administrasi, tim keuangan, serta bagian penagihan dalam menjalankan seluruh alur pengelolaan faktur penjualan dan pemantauan piutang secara terstruktur, transparan, dan akurat.`,
     `Dalam dinamika operasional perdagangan modern, ketepatan pencatatan transaksi serta kecepatan pemantauan status pembayaran konsumen menjadi kunci utama menjaga kesehatan arus kas perusahaan. Aplikasi ${companyName} dirancang secara khusus untuk menjawab kebutuhan tersebut melalui fitur input faktur terintegrasi, pencatatan cicilan berkala, penyaringan laporan jatuh tempo berbasis umur piutang maupun nominal, pusat notifikasi transaksi waktu nyata, hingga pelaporan lintas format (Excel, PDF, dan TXT).`,
-    `Buku panduan ini disusun secara sistematis ke dalam ${sections.length} (sembilan) bab utama yang mencakup gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler serta kustomisasi antarmuka.`,
+    `Buku panduan ini disusun secara sistematis ke dalam ${sections.length} (${sectionCountWord}) bab utama yang mencakup pengenalan tentang aplikasi, gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler serta kustomisasi antarmuka.`,
     `Kami berharap buku panduan ini dapat menjadi pedoman praktis yang memudahkan setiap pengguna dalam mengoptimalkan seluruh kapabilitas sistem, meminimalkan kesalahan pencatatan administratif, serta mendukung kelancaran aktivitas bisnis harian. Masukan konstruktif senantiasa kami harapkan demi penyempurnaan sistem di masa mendatang.`,
   ].map((p) => sanitizePdfText(p));
 
@@ -578,7 +585,7 @@ export async function exportGuideBookA4Pdf(
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(203, 213, 225);
   const noteText = sanitizePdfText(
-    "Catatan Penggunaan: Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 6 mengenai prosedur pencadangan data (Backup JSON dan Excel) sebelum memulai pengoperasian rutin secara penuh."
+    "Catatan Penggunaan: Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 7 mengenai prosedur pencadangan data (Backup JSON dan Excel) sebelum memulai pengoperasian rutin secara penuh."
   );
   doc.setFont("helvetica", "italic");
   doc.setFontSize(9.4);
