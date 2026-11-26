@@ -200,6 +200,13 @@
     break-after: page;
   }
 
+  .a4-book-front-page {
+    min-height: 256mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
   .a4-book-page-break {
     page-break-after: always;
     break-after: page;
