@@ -165,6 +165,11 @@
   margin: 16mm 18mm;
 }
 
+@page cover {
+  size: A4 portrait;
+  margin: 0;
+}
+
 .a4-print-only-container {
   display: none;
 }
@@ -192,10 +197,18 @@
   }
 
   .a4-book-cover {
-    min-height: 256mm;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    page: cover;
+    width: 210mm !important;
+    min-height: 296.5mm !important;
+    height: 296.5mm !important;
+    max-height: 296.5mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: row !important;
     page-break-after: always;
     break-after: page;
   }

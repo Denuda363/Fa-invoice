@@ -299,23 +299,26 @@ export async function exportGuideBookA4Pdf(
   const processedLogoPng = await loadRasterLogoDataUrl(logoSrc);
 
   // ============================================================================
-  // SAMPUL BUKU RESMI (TIDAK DIHITUNG HALAMAN / TANPA NOMOR HALAMAN)
+  // SAMPUL BUKU RESMI FULL KERTAS A4 (TIDAK DIHITUNG HALAMAN / TANPA NOMOR HALAMAN)
   // ============================================================================
-  doc.setFillColor(15, 23, 42);
-  doc.rect(0, 0, 12, pageHeight, "F");
-  doc.setFillColor(37, 99, 235);
-  doc.rect(12, 0, 2.2, pageHeight, "F");
-  doc.setFillColor(217, 119, 6);
-  doc.rect(14.2, 0, 0.7, pageHeight, "F");
+  const spineW = 14.5;
+  const bodyX = spineW;
+  const bodyW = pageWidth - spineW;
+  const coverCenterX = bodyX + bodyW / 2;
 
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineWidth(0.35);
-  doc.rect(20, 14, pageWidth - 32, pageHeight - 28);
+  // Full-bleed left book spine (edge-to-edge 297mm)
+  doc.setFillColor(2, 6, 23); // slate-950
+  doc.rect(0, 0, 10.5, pageHeight, "F");
+  doc.setFillColor(37, 99, 235); // blue-600
+  doc.rect(10.5, 0, 2.5, pageHeight, "F");
+  doc.setFillColor(245, 158, 11); // amber-500
+  doc.rect(13, 0, 1.5, pageHeight, "F");
 
-  const mastX = 26;
-  const mastY = 22;
-  const mastW = pageWidth - mastX - 18;
+  // Full-bleed subtle editorial surface background
+  doc.setFillColor(248, 250, 252); // slate-50
+  doc.rect(bodyX, 0, bodyW, pageHeight, "F");
 
+  // Top masthead text metrics
   const contactParts = [
     companyProfile?.phone,
     companyProfile?.email,
@@ -325,11 +328,13 @@ export async function exportGuideBookA4Pdf(
     .map((p) => sanitizePdfText(String(p)));
   const contactText = contactParts.join("  |  ");
 
-  const textColX = mastX + 28;
-  const textColW = mastW - 33;
+  const logoSize = 21;
+  const logoX = bodyX + 10;
+  const textColX = logoX + logoSize + 6.5;
+  const textColW = pageWidth - textColX - 11;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14.5);
+  doc.setFontSize(15);
   doc.setLineHeightFactor(1.22);
   const nameWrapped = doc.splitTextToSize(companyName, textColW);
   const nameStep = getLineStepMm(doc);
@@ -347,33 +352,37 @@ export async function exportGuideBookA4Pdf(
   const contactStep = getLineStepMm(doc);
 
   const mastTextHeight =
+    4.8 + // small eyebrow label
     nameWrapped.length * nameStep +
     tagWrapped.length * tagStep +
-    (contactWrapped.length > 0 ? contactWrapped.length * contactStep + 1.5 : 0);
+    (contactWrapped.length > 0 ? contactWrapped.length * contactStep + 1.8 : 0);
 
-  const mastH = Math.max(30, mastTextHeight + 12);
+  const mastH = Math.max(40, mastTextHeight + 15);
 
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(203, 213, 225);
-  doc.roundedRect(mastX, mastY, mastW, mastH, 2.5, 2.5, "FD");
+  // 1. Full-Bleed Executive Top Masthead Band
+  doc.setFillColor(15, 23, 42); // slate-900
+  doc.rect(bodyX, 0, bodyW, mastH, "F");
+  doc.setFillColor(30, 58, 138); // subtle geometric accent on top-right
+  doc.triangle(pageWidth - 52, 0, pageWidth, 0, pageWidth, mastH, "F");
+  doc.setFillColor(245, 158, 11); // amber-500 bottom trim
+  doc.rect(bodyX, mastH, bodyW, 1.4, "F");
 
-  const logoSize = 20;
-  const logoX = mastX + 4.5;
-  const logoY = mastY + (mastH - logoSize) / 2;
-
+  // Logo Frame
+  const logoY = (mastH - logoSize) / 2;
   doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(203, 213, 225);
-  doc.roundedRect(logoX, logoY, logoSize, logoSize, 2, 2, "FD");
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(logoX, logoY, logoSize, logoSize, 2.4, 2.4, "FD");
 
   if (processedLogoPng) {
     try {
       doc.addImage(
         processedLogoPng,
         "PNG",
-        logoX + 1.2,
-        logoY + 1.2,
-        logoSize - 2.4,
-        logoSize - 2.4
+        logoX + 1.3,
+        logoY + 1.3,
+        logoSize - 2.6,
+        logoSize - 2.6
       );
     } catch {
       drawInitialsEmblem(doc, rawCompanyName, logoX, logoY, logoSize);
@@ -382,61 +391,84 @@ export async function exportGuideBookA4Pdf(
     drawInitialsEmblem(doc, rawCompanyName, logoX, logoY, logoSize);
   }
 
-  let mastTextY = mastY + (mastH - mastTextHeight) / 2 + 4.2;
+  let mastTextY = (mastH - mastTextHeight) / 2 + 3.6;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14.5);
-  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(7.4);
+  doc.setTextColor(147, 197, 253); // blue-300
+  doc.text("IDENTITAS PERUSAHAAN & SISTEM", textColX, mastTextY);
+  mastTextY += 5.4;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(15);
+  doc.setTextColor(255, 255, 255);
   doc.text(nameWrapped, textColX, mastTextY);
   mastTextY += nameWrapped.length * nameStep;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
-  doc.setTextColor(37, 99, 235);
+  doc.setTextColor(251, 191, 36); // amber-400
   doc.text(tagWrapped, textColX, mastTextY);
-  mastTextY += tagWrapped.length * tagStep + 1.2;
+  mastTextY += tagWrapped.length * tagStep + 1.4;
 
   if (contactWrapped.length > 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.2);
-    doc.setTextColor(100, 116, 139);
+    doc.setTextColor(203, 213, 225); // slate-300
     doc.text(contactWrapped, textColX, mastTextY);
   }
 
-  const coverCenterX = mastX + mastW / 2;
-  const heroTopY = Math.max(84, mastY + mastH + 26);
+  // Subtle corner architectural framing marks in hero region
+  const frameLeft = bodyX + 11;
+  const frameRight = pageWidth - 11;
+  const frameTop = mastH + 10;
+  const frameBottom = 204;
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.45);
+  // Top-left & Top-right corners
+  doc.line(frameLeft, frameTop, frameLeft + 7, frameTop);
+  doc.line(frameLeft, frameTop, frameLeft, frameTop + 7);
+  doc.line(frameRight - 7, frameTop, frameRight, frameTop);
+  doc.line(frameRight, frameTop, frameRight, frameTop + 7);
+  // Bottom-left & Bottom-right corners
+  doc.line(frameLeft, frameBottom, frameLeft + 7, frameBottom);
+  doc.line(frameLeft, frameBottom - 7, frameLeft, frameBottom);
+  doc.line(frameRight - 7, frameBottom, frameRight, frameBottom);
+  doc.line(frameRight, frameBottom - 7, frameRight, frameBottom);
 
-  doc.setDrawColor(191, 219, 254);
-  doc.setLineWidth(0.5);
-  doc.line(coverCenterX - 48, heroTopY, coverCenterX - 10, heroTopY);
-  doc.line(coverCenterX + 10, heroTopY, coverCenterX + 48, heroTopY);
-  doc.setFillColor(37, 99, 235);
-  doc.circle(coverCenterX, heroTopY, 2.2, "F");
+  // 2. Centered Monumental Hero Section
+  const heroTopY = Math.max(76, mastH + 24);
 
-  doc.setFillColor(239, 246, 255);
-  doc.setDrawColor(191, 219, 254);
-  doc.roundedRect(coverCenterX - 42, heroTopY + 7, 84, 7.5, 1.8, 1.8, "FD");
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.45);
+  doc.line(coverCenterX - 42, heroTopY, coverCenterX - 9, heroTopY);
+  doc.line(coverCenterX + 9, heroTopY, coverCenterX + 42, heroTopY);
+  doc.setFillColor(29, 78, 216);
+  doc.rect(coverCenterX - 1.6, heroTopY - 1.6, 3.2, 3.2, "F");
+
+  doc.setFillColor(23, 37, 84); // blue-950
+  doc.rect(coverCenterX - 45, heroTopY + 7, 90, 7.5, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.2);
-  doc.setTextColor(30, 58, 138);
+  doc.setTextColor(255, 255, 255);
   doc.text("DOKUMENTASI RESMI OPERASIONAL", coverCenterX, heroTopY + 12, {
     align: "center",
   });
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(31);
+  doc.setFontSize(33);
   doc.setTextColor(15, 23, 42);
-  doc.text("BUKU PANDUAN", coverCenterX, heroTopY + 31, { align: "center" });
+  doc.text("BUKU PANDUAN", coverCenterX, heroTopY + 30.5, { align: "center" });
 
-  doc.setFontSize(22.5);
+  doc.setFontSize(21.5);
   doc.setTextColor(30, 58, 138);
-  doc.text("PENGGUNAAN APLIKASI", coverCenterX, heroTopY + 42.5, {
+  doc.text("PENGGUNAAN APLIKASI", coverCenterX, heroTopY + 41.5, {
     align: "center",
   });
 
-  doc.setFillColor(37, 99, 235);
-  doc.rect(coverCenterX - 24, heroTopY + 48, 36, 1.8, "F");
-  doc.setFillColor(217, 119, 6);
-  doc.rect(coverCenterX + 14, heroTopY + 48, 10, 1.8, "F");
+  doc.setFillColor(29, 78, 216);
+  doc.rect(coverCenterX - 24, heroTopY + 47, 36, 1.8, "F");
+  doc.setFillColor(245, 158, 11);
+  doc.rect(coverCenterX + 14, heroTopY + 47, 10, 1.8, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
@@ -444,84 +476,141 @@ export async function exportGuideBookA4Pdf(
   doc.text(
     `EDISI RESMI · ${companyName.toUpperCase()}`,
     coverCenterX,
-    heroTopY + 58,
+    heroTopY + 57,
     { align: "center" }
   );
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.2);
+  doc.setFontSize(10);
   doc.setLineHeightFactor(1.45);
   doc.setTextColor(71, 85, 105);
-  const coverDescWidth = mastW - 18;
+  const coverDescWidth = bodyW - 38;
   const coverSynopsis =
     "Panduan komprehensif tata kelola faktur penjualan, pencatatan pembayaran dan cicilan konsumen, pemantauan laporan jatuh tempo, pusat notifikasi transaksi, serta prosedur pengamanan cadangan data.";
   const coverSynLines = doc.splitTextToSize(coverSynopsis, coverDescWidth);
   const coverSynStep = getLineStepMm(doc);
   coverSynLines.forEach((line: string, lIdx: number) => {
-    doc.text(line, coverCenterX, heroTopY + 69 + lIdx * coverSynStep, {
+    doc.text(line, coverCenterX, heroTopY + 67.5 + lIdx * coverSynStep, {
       align: "center",
     });
   });
 
+  // 3-Column Executive Content Highlights Strip
+  const stripY = heroTopY + 67.5 + coverSynLines.length * coverSynStep + 9;
+  const stripTotalW = bodyW - 34;
+  const pillarGap = 4.5;
+  const pillarW = (stripTotalW - pillarGap * 2) / 3;
+  const stripStartX = coverCenterX - stripTotalW / 2;
+
+  const pillars: { title: string; sub: string; accent: [number, number, number] }[] = [
+    {
+      title: `${sections.length} Bab Materi`,
+      sub: "Sistematis & Terpadu",
+      accent: [29, 78, 216],
+    },
+    {
+      title: "Panduan Praktis",
+      sub: "Langkah Demi Langkah",
+      accent: [245, 158, 11],
+    },
+    {
+      title: "Siap Cetak A4",
+      sub: "Referensi Resmi Kerja",
+      accent: [29, 78, 216],
+    },
+  ];
+
+  pillars.forEach((p, idx) => {
+    const px = stripStartX + idx * (pillarW + pillarGap);
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.3);
+    doc.rect(px, stripY, pillarW, 16, "FD");
+    doc.setFillColor(...p.accent);
+    doc.rect(px, stripY, pillarW, 1.1, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.2);
+    doc.setTextColor(15, 23, 42);
+    doc.text(p.title, px + pillarW / 2, stripY + 7.5, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(p.sub, px + pillarW / 2, stripY + 12.6, { align: "center" });
+  });
+
+  // 3. Document Control Box & Full-Bleed Dark Footer Band
   const metaRows: [string, string][] = [
     ["Nama Sistem", `${companyName} (Versi 2.5 Pro)`],
-    ["Cakupan Materi", `${sections.length} Bab Panduan Lengkap & Tanya Jawab (FAQ)`],
+    ["Cakupan Materi", `${sections.length} Bab Lengkap dan Tanya Jawab (FAQ)`],
     ["Tanggal Penerbitan", printDateStr],
     ["Pengembang Resmi", "Denuda"],
   ];
 
-  const metaBoxY = 200;
-  const metaBoxH = 17 + metaRows.length * 7.5 + 4;
+  const metaBoxX = bodyX + 12;
+  const metaBoxW = bodyW - 24;
+  const metaBoxY = 214;
+  const metaBoxH = 16 + metaRows.length * 7.5 + 3.5;
 
-  doc.setFillColor(248, 250, 252);
+  doc.setFillColor(255, 255, 255);
   doc.setDrawColor(203, 213, 225);
-  doc.roundedRect(mastX, metaBoxY, mastW, metaBoxH, 2.5, 2.5, "FD");
-  doc.setFillColor(30, 58, 138);
-  doc.rect(mastX, metaBoxY, mastW, 8.5, "F");
+  doc.setLineWidth(0.35);
+  doc.rect(metaBoxX, metaBoxY, metaBoxW, metaBoxH, "FD");
+
+  doc.setFillColor(15, 23, 42); // slate-900
+  doc.rect(metaBoxX, metaBoxY, metaBoxW, 8.5, "F");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.8);
+  doc.setFontSize(8.6);
   doc.setTextColor(255, 255, 255);
-  doc.text("INFORMASI DOKUMEN & EDISI", coverCenterX, metaBoxY + 5.8, {
+  doc.text("INFORMASI DOKUMEN & EDISI", coverCenterX, metaBoxY + 5.7, {
     align: "center",
   });
 
-  let metaY = metaBoxY + 16;
+  let metaY = metaBoxY + 15.5;
   metaRows.forEach(([label, val], idx) => {
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.2);
+    doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(label, mastX + 8, metaY);
+    doc.text(label, metaBoxX + 7, metaY);
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(15, 23, 42);
-    doc.text(`: ${val}`, mastX + 56, metaY);
+    doc.text(`: ${val}`, metaBoxX + 54, metaY);
 
     if (idx < metaRows.length - 1) {
       doc.setDrawColor(226, 232, 240);
-      doc.line(mastX + 8, metaY + 2.5, mastX + mastW - 8, metaY + 2.5);
+      doc.setLineWidth(0.25);
+      doc.line(metaBoxX + 7, metaY + 2.5, metaBoxX + metaBoxW - 7, metaY + 2.5);
     }
     metaY += 7.5;
   });
 
-  doc.setDrawColor(203, 213, 225);
-  doc.line(mastX + 10, pageHeight - 31, mastX + mastW - 10, pageHeight - 31);
+  // Full-Bleed Bottom Navy Footer Band (flush to bottom edge 297mm)
+  const footerBandH = 23;
+  const footerBandY = pageHeight - footerBandH;
+  doc.setFillColor(2, 6, 23); // slate-950
+  doc.rect(bodyX, footerBandY, bodyW, footerBandH, "F");
+  doc.setFillColor(245, 158, 11); // amber-500 top border
+  doc.rect(bodyX, footerBandY, bodyW, 1.4, "F");
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.2);
-  doc.setTextColor(30, 41, 59);
+  doc.setTextColor(255, 255, 255);
   doc.text(
     `Hak Cipta (c) ${currentYear} Denuda · Seluruh Hak Dilindungi Undang-Undang`,
     coverCenterX,
-    pageHeight - 24,
+    footerBandY + 10.5,
     { align: "center" }
   );
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.2);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(148, 163, 184); // slate-400
   doc.text(
     "Dokumen referensi operasional resmi sistem manajemen faktur dan piutang.",
     coverCenterX,
-    pageHeight - 18.5,
+    footerBandY + 16.5,
     { align: "center" }
   );
 

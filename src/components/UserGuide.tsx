@@ -862,21 +862,23 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
     return (
       <div className="text-slate-900 font-sans">
         {/* ====================================================================
-            SAMPUL BUKU RESMI (TIDAK DIHITUNG HALAMAN / TANPA NOMOR HALAMAN)
+            SAMPUL BUKU RESMI FULL KERTAS A4 (TANPA NOMOR HALAMAN)
             ==================================================================== */}
-        <section className="a4-book-cover border border-slate-200 rounded-lg bg-white relative overflow-hidden mb-8 print:border-0 print:rounded-none print:mb-0">
-          {/* Architectural Left Spine */}
-          <div className="absolute inset-y-0 left-0 flex pointer-events-none">
-            <div className="w-3 sm:w-4 bg-slate-900" />
-            <div className="w-1 bg-blue-600" />
-            <div className="w-0.5 bg-amber-500" />
+        <section className="a4-book-cover flex flex-row border border-slate-300 rounded-lg bg-slate-50 shadow-md relative overflow-hidden mb-8 sm:min-h-[296mm] print:shadow-none print:border-0 print:rounded-none print:mb-0">
+          {/* Architectural Left Spine (Full Edge-to-Edge Height) */}
+          <div className="flex shrink-0 pointer-events-none">
+            <div className="w-3.5 sm:w-4.5 bg-slate-950" />
+            <div className="w-1.5 bg-blue-600" />
+            <div className="w-1 bg-amber-500" />
           </div>
 
-          <div className="pl-9 pr-6 py-7 sm:pl-14 sm:pr-10 sm:py-10 min-h-[256mm] flex flex-col justify-between">
-            {/* Top Corporate Masthead */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-5 py-4 shadow-2xs">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1.5 flex items-center justify-center shrink-0">
+          {/* Main Full-Bleed Right Cover Surface */}
+          <div className="flex-1 flex flex-col justify-between bg-linear-to-b from-slate-50 via-white to-slate-100 relative min-w-0">
+            {/* 1. Full-Bleed Executive Top Masthead */}
+            <header className="bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 text-white px-6 py-6 sm:px-10 sm:py-7 border-b-4 border-amber-500 relative overflow-hidden">
+              <div className="absolute right-0 top-0 bottom-0 w-40 bg-blue-400/10 -skew-x-12 translate-x-12 pointer-events-none" />
+              <div className="relative flex items-center gap-4 sm:gap-5">
+                <div className="w-16 h-16 sm:w-[70px] sm:h-[70px] rounded-xl bg-white p-1.5 shadow-sm border border-white/25 flex items-center justify-center shrink-0">
                   {!coverLogoError ? (
                     <img
                       src={logoSrc}
@@ -891,14 +893,17 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-xl font-extrabold text-slate-900 tracking-tight break-words">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-300 mb-0.5">
+                    Identitas Perusahaan &amp; Sistem
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight break-words leading-tight">
                     {companyName}
                   </h1>
-                  <p className="text-sm font-bold text-blue-700 mt-0.5 break-words">
+                  <p className="text-xs sm:text-sm font-bold text-amber-400 mt-0.5 break-words">
                     {companyTagline}
                   </p>
                   {(companyProfile?.phone || companyProfile?.email || companyProfile?.address) && (
-                    <p className="text-xs text-slate-500 mt-1 break-words leading-relaxed">
+                    <p className="text-[11px] text-slate-300 mt-1.5 break-words leading-snug">
                       {[companyProfile?.phone, companyProfile?.email, companyProfile?.address]
                         .filter(Boolean)
                         .join("  |  ")}
@@ -906,52 +911,87 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                   )}
                 </div>
               </div>
-            </div>
+            </header>
 
-            {/* Centered Hero Section (Rata Tengah Profesional) */}
-            <div className="my-10 sm:my-12 text-center space-y-5 px-2">
-              <div className="flex items-center justify-center gap-3">
-                <div className="h-px w-16 bg-blue-200" />
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <div className="h-px w-16 bg-blue-200" />
+            {/* 2. Centered Monumental Hero Section */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-8 sm:px-12 relative">
+              {/* Subtle Corner Architectural Framing */}
+              <div className="hidden sm:block absolute top-6 left-7 w-7 h-7 border-t-2 border-l-2 border-slate-300 pointer-events-none" />
+              <div className="hidden sm:block absolute top-6 right-7 w-7 h-7 border-t-2 border-r-2 border-slate-300 pointer-events-none" />
+              <div className="hidden sm:block absolute bottom-6 left-7 w-7 h-7 border-b-2 border-l-2 border-slate-300 pointer-events-none" />
+              <div className="hidden sm:block absolute bottom-6 right-7 w-7 h-7 border-b-2 border-r-2 border-slate-300 pointer-events-none" />
+
+              {/* Decorative Center Ornament */}
+              <div className="flex items-center justify-center gap-3 mb-5">
+                <div className="h-px w-16 bg-slate-300" />
+                <div className="w-2.5 h-2.5 rotate-45 bg-blue-700" />
+                <div className="h-px w-16 bg-slate-300" />
               </div>
 
-              <div>
-                <span className="inline-block px-4 py-1 rounded bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-bold uppercase tracking-widest">
+              <div className="mb-5">
+                <span className="inline-block px-4 py-1.5 bg-blue-950 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em]">
                   Dokumentasi Resmi Operasional
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <h2 className="text-3xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+              <div className="space-y-1.5">
+                <h2 className="text-4xl sm:text-[50px] font-black text-slate-900 leading-[1.08] tracking-tight">
                   BUKU PANDUAN
                 </h2>
-                <p className="text-xl sm:text-3xl font-extrabold text-blue-900 tracking-wide">
+                <p className="text-xl sm:text-[27px] font-extrabold text-blue-900 tracking-[0.06em]">
                   PENGGUNAAN APLIKASI
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 pt-1">
-                <div className="w-16 h-1.5 bg-blue-600 rounded-full" />
-                <div className="w-5 h-1.5 bg-amber-500 rounded-full" />
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <div className="w-20 h-1.5 bg-blue-700" />
+                <div className="w-7 h-1.5 bg-amber-500" />
               </div>
 
-              <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.14em] text-slate-700 mt-5">
                 Edisi Resmi · {companyName}
               </p>
 
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl mx-auto text-center">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto text-center mt-4">
                 Panduan komprehensif tata kelola faktur penjualan, pencatatan pembayaran dan cicilan konsumen, pemantauan laporan jatuh tempo, pusat notifikasi transaksi, serta prosedur pengamanan cadangan data.
               </p>
+
+              {/* Executive Content Highlights Strip */}
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 w-full max-w-lg mt-7">
+                <div className="bg-white border border-slate-200 border-t-2 border-t-blue-700 px-2.5 py-2.5 text-center shadow-2xs">
+                  <div className="text-xs sm:text-sm font-black text-slate-900">
+                    {GUIDE_DATA.length} Bab Materi
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Sistematis &amp; Terpadu
+                  </div>
+                </div>
+                <div className="bg-white border border-slate-200 border-t-2 border-t-amber-500 px-2.5 py-2.5 text-center shadow-2xs">
+                  <div className="text-xs sm:text-sm font-black text-slate-900">
+                    Panduan Praktis
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Langkah Demi Langkah
+                  </div>
+                </div>
+                <div className="bg-white border border-slate-200 border-t-2 border-t-blue-700 px-2.5 py-2.5 text-center shadow-2xs">
+                  <div className="text-xs sm:text-sm font-black text-slate-900">
+                    Siap Cetak A4
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Referensi Resmi Kerja
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Bottom Document Control & Centered Copyright (Tanpa Nomor Halaman) */}
-            <div className="space-y-6">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
-                <div className="bg-blue-950 text-white text-center py-2 text-[11px] font-extrabold uppercase tracking-widest">
+            {/* 3. Document Control Card & Full-Bleed Footer Band */}
+            <div>
+              <div className="mx-6 sm:mx-10 mb-6 border border-slate-300 bg-white shadow-2xs overflow-hidden">
+                <div className="bg-slate-900 text-white text-center py-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.18em]">
                   Informasi Dokumen &amp; Edisi
                 </div>
-                <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 text-xs">
+                <div className="px-4 py-3.5 sm:px-6 sm:py-4 grid grid-cols-2 gap-y-2.5 gap-x-6 text-xs">
                   <div>
                     <span className="text-slate-500">Nama Sistem:</span>{" "}
                     <strong className="text-slate-900">{companyName} (Versi 2.5 Pro)</strong>
@@ -971,14 +1011,14 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                 </div>
               </div>
 
-              <div className="border-t border-slate-200 pt-4 text-center space-y-1 text-xs">
-                <div className="font-bold text-slate-800">
+              <footer className="bg-slate-950 text-white px-6 py-4 sm:px-10 sm:py-5 border-t-4 border-amber-500 text-center space-y-1">
+                <div className="text-xs font-bold text-white tracking-wide">
                   Hak Cipta © {currentYear} Denuda · Seluruh Hak Dilindungi Undang-Undang
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-400">
                   Dokumen referensi operasional resmi sistem manajemen faktur dan piutang.
                 </div>
-              </div>
+              </footer>
             </div>
           </div>
         </section>
@@ -1330,7 +1370,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
           onClick={() => {
             setSearchQuery("");
             setSelectedCategory("semua");
-            setExpandedSection(expandedSection ? null : "alur-kerja");
+            setExpandedSection(expandedSection ? null : "pengenalan-aplikasi");
           }}
           className="text-blue-600 font-medium hover:underline"
         >
