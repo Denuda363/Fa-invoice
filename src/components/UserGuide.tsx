@@ -51,12 +51,12 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Langkah 1: Daftarkan Konsumen (Opsional namun Disarankan)",
-        description: "Buka menu 'Data Konsumen', lalu tambahkan nama toko atau pelanggan Anda beserta nomor telepon dan alamat lengkap. Anda juga dapat mengaktifkan pengaturan agar konsumen tertentu otomatis dibuatkan sheet terpisah saat melakukan Export Excel.",
+        description: "Buka menu “Data Konsumen”, lalu tambahkan nama toko atau pelanggan Anda beserta nomor telepon dan alamat lengkap. Anda juga dapat mengaktifkan pengaturan agar konsumen tertentu otomatis dibuatkan sheet terpisah saat melakukan Export Excel.",
         tip: "Jika Anda langsung menginput faktur baru, data konsumen baru akan otomatis tersimpan ke dalam daftar pelanggan."
       },
       {
         title: "Langkah 2: Input Faktur Penjualan",
-        description: "Buka menu 'Input Faktur', kemudian masukkan nomor faktur, pilih konsumen, tentukan tanggal faktur, tanggal jatuh tempo (otomatis 30 hari atau sesuai kesepakatan), serta total nominal tagihan. Anda juga dapat melakukan input banyak faktur sekaligus maupun mengimpor langsung dari file Excel.",
+        description: "Buka menu “Input Faktur”, kemudian masukkan nomor faktur, pilih konsumen, tentukan tanggal faktur, tanggal jatuh tempo (otomatis 30 hari atau sesuai kesepakatan), serta total nominal tagihan. Anda juga dapat melakukan input banyak faktur sekaligus maupun mengimpor langsung dari file Excel.",
         tip: "Pastikan setiap nomor faktur bersifat unik dan tidak ganda agar pencatatan pelunasan tetap akurat."
       },
       {
@@ -65,18 +65,18 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Pada layar smartphone, tampilan Dashboard otomatis beralih ke mode ringkas agar nyaman dipantau dalam satu layar."
       },
       {
-        title: "Langkah 4: Catat Pembayaran / Pelunasan",
-        description: "Saat konsumen melakukan pembayaran (baik cicilan sebagian maupun pelunasan penuh), buka menu 'Riwayat Faktur', klik tombol 'Bayar' pada faktur terkait, lalu masukkan tanggal transaksi dan nominal yang diterima.",
-        tip: "Status faktur akan otomatis berubah menjadi 'Sebagian' jika masih bersisa, atau 'Lunas' apabila pembayaran telah mencapai 100%."
+        title: "Langkah 4: Catat Pembayaran dan Pelunasan",
+        description: "Saat konsumen melakukan pembayaran (baik cicilan sebagian maupun pelunasan penuh), buka menu “Riwayat Faktur”, klik tombol “Bayar” pada faktur terkait, lalu masukkan tanggal transaksi dan nominal yang diterima.",
+        tip: "Status faktur akan otomatis berubah menjadi “Sebagian” jika masih bersisa, atau “Lunas” apabila pembayaran telah mencapai 100%."
       },
       {
-        title: "Langkah 5: Ekspor Laporan & Rekapitulasi",
-        description: "Buka menu 'Laporan Jatuh Tempo' untuk menyaring data berdasarkan Tanggal Faktur, Jatuh Tempo, maupun Nominal Tagihan, kemudian unduh laporan dalam format Excel Rekap, Excel Pembayaran, PDF, atau ringkasan teks TXT.",
+        title: "Langkah 5: Ekspor Laporan dan Rekapitulasi",
+        description: "Buka menu “Laporan Jatuh Tempo” untuk menyaring data berdasarkan Tanggal Faktur, Jatuh Tempo, maupun Nominal Tagihan, kemudian unduh laporan dalam format Excel Rekap, Excel Pembayaran, PDF, atau ringkasan teks TXT.",
         tip: "Pada lembar kerja per tanggal jatuh tempo di Excel, faktur yang telah melewati batas jatuh tempo otomatis ditandai dengan sorotan warna merah."
       },
       {
         title: "Langkah 6: Backup Rutin Data Anda",
-        description: "Melalui menu 'Pengaturan', lakukan Backup Data ke file JSON maupun Excel secara berkala agar seluruh arsip faktur, transaksi pembayaran, dan data konsumen selalu terjaga dengan aman.",
+        description: "Melalui menu “Pengaturan”, lakukan Backup Data ke file JSON maupun Excel secara berkala agar seluruh arsip faktur, transaksi pembayaran, dan data konsumen selalu terjaga dengan aman.",
       }
     ]
   },
@@ -88,22 +88,22 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Input Faktur Manual",
-        description: "1. Klik menu 'Input Faktur' pada bilah navigasi.\n2. Masukkan Nomor Faktur secara lengkap (contoh: INV-001).\n3. Pilih nama konsumen dari daftar dropdown atau ketikkan nama pelanggan baru.\n4. Tentukan Tanggal Faktur. Tanggal Jatuh Tempo akan terisi otomatis 30 hari ke depan dan tetap dapat disesuaikan secara manual.\n5. Masukkan Total Tagihan Faktur dalam satuan Rupiah (Rp).\n6. Klik tombol 'Simpan Faktur' untuk menyimpan data.",
+        description: "1. Klik menu “Input Faktur” pada bilah navigasi.\n2. Masukkan Nomor Faktur secara lengkap (contoh: INV-001).\n3. Pilih nama konsumen dari daftar dropdown atau ketikkan nama pelanggan baru.\n4. Tentukan Tanggal Faktur. Tanggal Jatuh Tempo akan terisi otomatis 30 hari ke depan dan tetap dapat disesuaikan secara manual.\n5. Masukkan Total Tagihan Faktur dalam satuan Rupiah (Rp).\n6. Klik tombol “Simpan Faktur” untuk menyimpan data.",
       },
       {
         title: "Input Massal (Banyak Faktur Sekaligus)",
-        description: "Gunakan formulir multi-baris pada halaman Input Faktur untuk memasukkan beberapa faktur sekaligus tanpa perlu menekan simpan berulang kali. Setelah seluruh baris terisi dengan benar, klik 'Simpan Semua Faktur'.",
+        description: "Gunakan formulir multi-baris pada halaman Input Faktur untuk memasukkan beberapa faktur sekaligus tanpa perlu menekan simpan berulang kali. Setelah seluruh baris terisi dengan benar, klik “Simpan Semua Faktur”.",
         tip: "Fitur ini sangat efisien untuk merekap tumpukan faktur penjualan pada akhir hari kerja."
       },
       {
         title: "Import Faktur dari File Excel",
-        description: "1. Pada halaman Input Faktur, klik tombol 'Import Excel'.\n2. Unduh template Excel resmi yang tersedia untuk memastikan kesesuaian urutan kolom (No. Faktur, Nama Konsumen, Tanggal Faktur, Jatuh Tempo, dan Total).\n3. Lengkapi data faktur pada lembar kerja Excel tersebut, lalu simpan berkas.\n4. Unggah kembali file Excel ke aplikasi agar seluruh faktur terbaca dan tersimpan secara otomatis.",
+        description: "1. Pada halaman Input Faktur, klik tombol “Import Excel”.\n2. Unduh template Excel resmi yang tersedia untuk memastikan kesesuaian urutan kolom (No. Faktur, Nama Konsumen, Tanggal Faktur, Jatuh Tempo, dan Total).\n3. Lengkapi data faktur pada lembar kerja Excel tersebut, lalu simpan berkas.\n4. Unggah kembali file Excel ke aplikasi agar seluruh faktur terbaca dan tersimpan secara otomatis.",
         tip: "Pastikan format penulisan tanggal di Excel menggunakan format tahun-bulan-hari (YYYY-MM-DD) atau format tanggal standar Excel."
       },
       {
         title: "Riwayat Faktur, Total Tagihan Tiap Konsumen & Filter Rentang Tanggal",
-        description: "Buka menu 'Riwayat Faktur' untuk meninjau serta mengelola seluruh catatan faktur penjualan:\n1. Total Tagihan Tiap Konsumen: Pada setiap baris faktur tercantum label 'Total Tagihan' yang mengakumulasikan nilai faktur dari toko terkait. Anda juga dapat membuka tab 'Total Tagihan per Konsumen' untuk melihat peringkat nilai penjualan, jumlah faktur, total pembayaran masuk, sisa piutang berjalan, serta kontribusi persentase tiap pelanggan.\n2. Filter Rentang Tanggal: Saring data berdasarkan Tanggal Faktur atau Tanggal Jatuh Tempo dengan menentukan rentang tanggal 'Dari' dan 'Sampai', atau menggunakan pintasan 'Hari Ini', 'Bulan Ini', 'Bulan Lalu', serta 'Semua Waktu'.\n3. Filter Dropdown Konsumen & Status: Pilih pelanggan tertentu dari dropdown untuk menampilkan seluruh daftar fakturnya beserta akumulasi tagihan.\n4. Export Excel 2 Sheet Lengkap: Unduh laporan Excel yang otomatis memuat Sheet 'Daftar Faktur' dan Sheet 'Total Tagihan per Konsumen'.",
-        tip: "Klik lencana 'Total Tagihan' pada nama konsumen di tabel faktur untuk langsung menyaring seluruh transaksi milik pelanggan tersebut."
+        description: "Buka menu “Riwayat Faktur” untuk meninjau serta mengelola seluruh catatan faktur penjualan:\n1. Total Tagihan Tiap Konsumen: Pada setiap baris faktur tercantum label “Total Tagihan” yang mengakumulasikan nilai faktur dari toko terkait. Anda juga dapat membuka tab “Total Tagihan per Konsumen” untuk melihat peringkat nilai penjualan, jumlah faktur, total pembayaran masuk, sisa piutang berjalan, serta kontribusi persentase tiap pelanggan.\n2. Filter Rentang Tanggal: Saring data berdasarkan Tanggal Faktur atau Tanggal Jatuh Tempo dengan menentukan rentang tanggal “Dari” dan “Sampai”, atau menggunakan pintasan “Hari Ini”, “Bulan Ini”, “Bulan Lalu”, serta “Semua Waktu”.\n3. Filter Dropdown Konsumen & Status: Pilih pelanggan tertentu dari dropdown untuk menampilkan seluruh daftar fakturnya beserta akumulasi tagihan.\n4. Export Excel 2 Sheet Lengkap: Unduh laporan Excel yang otomatis memuat Sheet “Daftar Faktur” dan Sheet “Total Tagihan per Konsumen”.",
+        tip: "Klik lencana “Total Tagihan” pada nama konsumen di tabel faktur untuk langsung menyaring seluruh transaksi milik pelanggan tersebut."
       }
     ],
     faq: [
@@ -125,21 +125,21 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Mencatat Pembayaran Baru",
-        description: "1. Masuk ke menu 'Riwayat Faktur'.\n2. Cari faktur yang dituju melalui kolom pencarian atau filter status.\n3. Klik tombol hijau 'Bayar' pada baris faktur yang bersangkutan.\n4. Masukkan tanggal penerimaan dana beserta nominal pembayaran yang diterima.\n5. Gunakan tombol cepat 'Bayar Lunas' apabila konsumen langsung melunasi seluruh sisa tagihan.\n6. Klik 'Konfirmasi Pembayaran' untuk memperbarui saldo faktur.",
+        description: "1. Masuk ke menu “Riwayat Faktur”.\n2. Cari faktur yang dituju melalui kolom pencarian atau filter status.\n3. Klik tombol hijau “Bayar” pada baris faktur yang bersangkutan.\n4. Masukkan tanggal penerimaan dana beserta nominal pembayaran yang diterima.\n5. Gunakan tombol cepat “Bayar Lunas” apabila konsumen langsung melunasi seluruh sisa tagihan.\n6. Klik “Konfirmasi Pembayaran” untuk memperbarui saldo faktur.",
       },
       {
         title: "Melihat Rincian Riwayat Pembayaran",
-        description: "1. Pada faktur yang memiliki riwayat cicilan, klik tombol 'Riwayat' atau ketuk indikator status pembayaran.\n2. Jendela rincian akan menampilkan daftar lengkap setiap setoran, meliputi tanggal bayar, nominal setoran, serta sisa tagihan pada setiap tahap.",
+        description: "1. Pada faktur yang memiliki riwayat cicilan, klik tombol “Riwayat” atau ketuk indikator status pembayaran.\n2. Jendela rincian akan menampilkan daftar lengkap setiap setoran, meliputi tanggal bayar, nominal setoran, serta sisa tagihan pada setiap tahap.",
       },
       {
         title: "Membatalkan atau Menghapus Salah Catat Pembayaran",
-        description: "Apabila terjadi kekeliruan saat memasukkan nominal maupun tanggal pembayaran, buka jendela 'Riwayat Pembayaran' pada faktur tersebut, lalu klik ikon hapus pada baris transaksi yang keliru. Sisa saldo beserta status faktur akan dihitung ulang secara otomatis ke kondisi semula.",
+        description: "Apabila terjadi kekeliruan saat memasukkan nominal maupun tanggal pembayaran, buka jendela “Riwayat Pembayaran” pada faktur tersebut, lalu klik ikon hapus pada baris transaksi yang keliru. Sisa saldo beserta status faktur akan dihitung ulang secara otomatis ke kondisi semula.",
         tip: "Lakukan penghapusan riwayat pembayaran hanya apabila benar-benar terjadi kesalahan input."
       },
       {
         title: "Menu Terpusat: Riwayat Pembayaran & Total Pembayaran Setiap Konsumen",
-        description: "Gunakan menu navigasi 'Riwayat Pembayaran' untuk memantau seluruh arus kas masuk secara terpusat beserta rekap total pembayaran per konsumen:\n1. Tab 'Riwayat Transaksi': Menampilkan rincian kronologis setiap setoran dana konsumen lengkap dengan informasi 'Total Disetor' pada masing-masing baris.\n2. Tab 'Total per Konsumen': Menyajikan rekapitulasi total pembayaran per pelanggan yang dapat disaring berdasarkan rentang tanggal ('Dari' dan 'Sampai') maupun pintasan cepat ('Hari Ini', 'Bulan Ini', 'Bulan Lalu', dan 'Semua Waktu').\n3. Perhitungan Akurat Berdasarkan Periode: Saat rentang tanggal aktif, kolom Total Pembayaran dan frekuensi setoran menghitung murni dana yang diterima pada periode tersebut, sementara informasi 'All-time' tetap ditampilkan sebagai pembanding.\n4. Opsi 'Hanya yang Membayar di Rentang Ini': Menyaring daftar agar hanya menampilkan pelanggan yang melakukan transaksi pembayaran pada rentang tanggal terpilih.\n5. Filter Konsumen & Pencarian: Cari pelanggan berdasarkan nama toko atau pilih langsung melalui dropdown konsumen.\n6. Export Excel 2 Sheet Lengkap: Hasil unduhan Excel menyesuaikan rentang tanggal terpilih, lengkap dengan judul periode serta lembar kerja 'Riwayat Transaksi' dan 'Total per Konsumen'.",
-        tip: "Gunakan pintasan 'Bulan Ini' pada tab Total per Konsumen untuk mengevaluasi kinerja setoran pelanggan pada bulan berjalan secara instan."
+        description: "Gunakan menu navigasi “Riwayat Pembayaran” untuk memantau seluruh arus kas masuk secara terpusat beserta rekap total pembayaran per konsumen:\n1. Tab Riwayat Transaksi: Menampilkan rincian kronologis setiap setoran dana konsumen lengkap dengan informasi “Total Disetor” pada masing-masing baris.\n2. Tab Total per Konsumen: Menyajikan rekapitulasi total pembayaran per pelanggan yang dapat disaring berdasarkan rentang tanggal (“Dari” dan “Sampai”) maupun pintasan cepat (“Hari Ini”, “Bulan Ini”, “Bulan Lalu”, dan “Semua Waktu”).\n3. Perhitungan Akurat Berdasarkan Periode: Saat rentang tanggal aktif, kolom Total Pembayaran dan frekuensi setoran menghitung murni dana yang diterima pada periode tersebut, sementara informasi “All-time” tetap ditampilkan sebagai pembanding.\n4. Opsi Hanya yang Membayar di Rentang Ini: Menyaring daftar agar hanya menampilkan pelanggan yang melakukan transaksi pembayaran pada rentang tanggal terpilih.\n5. Filter Konsumen & Pencarian: Cari pelanggan berdasarkan nama toko atau pilih langsung melalui dropdown konsumen.\n6. Export Excel 2 Sheet Lengkap: Hasil unduhan Excel menyesuaikan rentang tanggal terpilih, lengkap dengan judul periode serta lembar kerja “Riwayat Transaksi” dan “Total per Konsumen”.",
+        tip: "Gunakan pintasan “Bulan Ini” pada tab Total per Konsumen untuk mengevaluasi kinerja setoran pelanggan pada bulan berjalan secara instan."
       }
     ]
   },
@@ -151,7 +151,7 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Filter Berdasarkan Tanggal Faktur",
-        description: "Pada menu 'Laporan Jatuh Tempo', gunakan panel Filter Tanggal Faktur berwarna biru lembut untuk memasukkan rentang tanggal 'Dari' dan 'Sampai', atau menekan tombol pintas 'Bulan Ini' dan 'Hari Ini'.",
+        description: "Pada menu “Laporan Jatuh Tempo”, gunakan panel Filter Tanggal Faktur berwarna biru lembut untuk memasukkan rentang tanggal “Dari” dan “Sampai”, atau menekan tombol pintas “Bulan Ini” dan “Hari Ini”.",
         tip: "Filter ini membatasi laporan hanya pada faktur yang diterbitkan dalam rentang tanggal yang dipilih."
       },
       {
@@ -160,21 +160,21 @@ const GUIDE_DATA: GuideSection[] = [
       },
       {
         title: "Filter Nominal Tagihan (Per Faktur & Total per Konsumen)",
-        description: "Gunakan panel 'Filter Nominal Tagihan' berwarna hijau lembut untuk menyaring data dengan kondisi Lebih dari (>), Minimal (>=), Kurang dari (<), Maksimal (<=), maupun Rentang (Min - Max). Anda dapat memilih cakupan 'Per Faktur' atau 'Total per Konsumen' untuk menyaring berdasarkan akumulasi total sisa tagihan atau nilai faktur masing-masing pelanggan.",
+        description: "Gunakan panel “Filter Nominal Tagihan” berwarna hijau lembut untuk menyaring data dengan kondisi Lebih dari (>), Minimal (>=), Kurang dari (<), Maksimal (<=), maupun Rentang (Min - Max). Anda dapat memilih cakupan “Per Faktur” atau “Total per Konsumen” untuk menyaring berdasarkan akumulasi total sisa tagihan atau nilai faktur masing-masing pelanggan.",
         tip: "Tersedia tombol preset cepat (> 500rb, > 1jt, > 5jt, < 1jt) untuk melakukan penyaringan hanya dengan satu klik."
       },
       {
         title: "Tanda Warna Merah pada Export Excel",
-        description: "Saat Anda menekan tombol 'Export Excel', berkas spreadsheet yang dihasilkan secara otomatis mencakup:\n- Sheet Rekap Utama.\n- Sheet per Tanggal Jatuh Tempo (faktur yang telah melewati batas jatuh tempo ditandai dengan teks dan latar merah tegas agar mudah diprioritaskan untuk penagihan).\n- Sheet khusus per Konsumen (apabila opsi pisah sheet diaktifkan).",
+        description: "Saat Anda menekan tombol “Export Excel”, berkas spreadsheet yang dihasilkan secara otomatis mencakup:\n- Sheet Rekap Utama: Berisi ringkasan keseluruhan data faktur yang memenuhi filter aktif.\n- Sheet per Tanggal Jatuh Tempo: Faktur yang telah melewati batas jatuh tempo ditandai dengan teks dan latar merah tegas agar mudah diprioritaskan untuk penagihan.\n- Sheet Khusus per Konsumen: Dibuat otomatis apabila opsi pisah sheet diaktifkan pada profil pelanggan.",
         tip: "Penandaan warna merah membantu tim penagihan memprioritaskan faktur yang telah melewati tenggat pembayaran."
       },
       {
         title: "Export Pembayaran, Export PDF & Export TXT",
-        description: "Selain format Export Excel utama, tersedia tiga format ekspor tambahan untuk kebutuhan pelaporan yang beragam:\n1. Export Pembayaran: Mengunduh berkas Excel berisi rincian seluruh riwayat pembayaran per faktur.\n2. Export PDF: Menghasilkan dokumen laporan ringkas siap cetak lengkap dengan kop identitas dan logo perusahaan.\n3. Export TXT: Menyajikan ringkasan teks cepat per konsumen dengan format '- NAMA KONSUMEN Rp NOMINAL' yang praktis dibagikan melalui WhatsApp.",
+        description: "Selain format Export Excel utama, tersedia tiga format ekspor tambahan untuk kebutuhan pelaporan yang beragam:\n1. Export Pembayaran: Mengunduh berkas Excel berisi rincian seluruh riwayat pembayaran per faktur.\n2. Export PDF: Menghasilkan dokumen laporan ringkas siap cetak lengkap dengan kop identitas dan logo perusahaan.\n3. Export TXT: Menyajikan ringkasan teks cepat per konsumen dengan format “- NAMA KONSUMEN Rp NOMINAL” yang praktis dibagikan melalui WhatsApp.",
       },
       {
         title: "Perhitungan Otomatis Total Sisa Tagihan yang Diceklis",
-        description: "Pada tabel rekap jatuh tempo, beri tanda centang pada satu atau beberapa faktur yang hendak direkap maupun dilunasi. Sistem akan menghitung secara waktu nyata (real-time):\n1. Total Sisa Tagihan Ceklis (Rp) sebagai nilai utama yang wajib ditagih atau dilunasi.\n2. Total Nominal Faktur awal beserta rincian pembayaran yang telah diterima.\n3. Jumlah keseluruhan faktur yang terpilih.\n4. Akumulasi sisa tagihan per konsumen pada baris header masing-masing toko.\nInformasi akumulasi tersebut ditampilkan pada bagian atas tabel, kartu ringkasan ceklis, serta bilah aksi mengambang di bawah layar yang dilengkapi tombol 'Bayar Terpilih' untuk pelunasan massal.",
+        description: "Pada tabel rekap jatuh tempo, beri tanda centang pada satu atau beberapa faktur yang hendak direkap maupun dilunasi. Sistem akan menghitung secara waktu nyata (real-time):\n1. Total Sisa Tagihan Ceklis (Rp): Nilai utama yang wajib ditagih atau dilunasi.\n2. Total Nominal Faktur Awal: Beserta rincian pembayaran yang telah diterima.\n3. Jumlah Keseluruhan Faktur Terpilih: Total baris faktur yang sedang dicentang.\n4. Akumulasi Sisa Tagihan per Konsumen: Ditampilkan pada baris header masing-masing toko beserta bilah aksi mengambang dengan tombol “Bayar Terpilih” untuk pelunasan massal.",
         tip: "Perhitungan sisa tagihan otomatis memperhitungkan cicilan yang telah masuk sehingga angka yang tampil adalah murni sisa piutang berjalan."
       },
       {
@@ -192,11 +192,11 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Menambah & Mengubah Data Konsumen",
-        description: "Buka menu 'Data Konsumen', kemudian klik tombol 'Tambah Konsumen' untuk mendaftarkan Nama Toko atau Pelanggan, Nomor WhatsApp/Telepon, dan Alamat Pengiriman.",
+        description: "Buka menu “Data Konsumen”, kemudian klik tombol “Tambah Konsumen” untuk mendaftarkan Nama Toko atau Pelanggan, Nomor Telepon atau WhatsApp, dan Alamat Pengiriman.",
       },
       {
-        title: "Fitur 'Pisah Sheet Saat Export'",
-        description: "Aktifkan opsi centang 'Pisahkan Sheet saat Export Excel' pada konsumen prioritas. Setiap kali laporan Excel diunduh, sistem otomatis membuatkan tab lembar kerja tersendiri khusus untuk konsumen tersebut beserta seluruh daftar fakturnya.",
+        title: "Fitur Pisah Sheet Saat Export",
+        description: "Aktifkan opsi centang “Pisahkan Sheet saat Export Excel” pada konsumen prioritas. Setiap kali laporan Excel diunduh, sistem otomatis membuatkan tab lembar kerja tersendiri khusus untuk konsumen tersebut beserta seluruh daftar fakturnya.",
         tip: "Fitur ini sangat menghemat waktu apabila Anda rutin mengirimkan kartu piutang secara terpisah kepada pelanggan utama."
       },
       {
@@ -205,12 +205,12 @@ const GUIDE_DATA: GuideSection[] = [
       },
       {
         title: "Pencarian & Filter Cepat Data Konsumen",
-        description: "Pada menu 'Data Konsumen', Anda dapat mencari dan menyaring data pelanggan secara fleksibel:\n1. Kotak Pencarian: Lakukan pencarian berdasarkan nama toko, nomor telepon, alamat, hingga kata kunci status seperti 'utang', 'lunas', atau 'sheet'.\n2. Tombol Filter Cepat & Dropdown: Saring data secara instan berdasarkan status (Semua, Ada Utang, Lunas, atau Pisah Sheet Excel) lengkap dengan jumlah konsumen.\n3. Pengurutan Data: Urutkan daftar berdasarkan Sisa Utang Terbesar, Nama (A-Z atau Z-A), maupun Total Pembayaran Terbanyak.\n4. Pencarian pada Grafik & Tren: Pada tab 'Grafik & Tren', tersedia kotak pencarian konsumen untuk berpindah data toko dengan cepat serta pencarian langsung pada tabel matriks utang-pembayaran.",
-        tip: "Kolom pencarian dan filter status dapat digunakan secara bersamaan, dan klik 'Reset' untuk memulihkan tampilan awal."
+        description: "Pada menu “Data Konsumen”, Anda dapat mencari dan menyaring data pelanggan secara fleksibel:\n1. Kotak Pencarian: Lakukan pencarian berdasarkan nama toko, nomor telepon, alamat, hingga kata kunci status seperti “utang”, “lunas”, atau “sheet”.\n2. Tombol Filter Cepat & Dropdown: Saring data secara instan berdasarkan status (Semua, Ada Utang, Lunas, atau Pisah Sheet Excel) lengkap dengan jumlah konsumen.\n3. Pengurutan Data: Urutkan daftar berdasarkan Sisa Utang Terbesar, Nama (A-Z atau Z-A), maupun Total Pembayaran Terbanyak.\n4. Pencarian pada Grafik & Tren: Pada tab “Grafik & Tren”, tersedia kotak pencarian konsumen untuk berpindah data toko dengan cepat serta pencarian langsung pada tabel matriks utang-pembayaran.",
+        tip: "Kolom pencarian dan filter status dapat digunakan secara bersamaan, lalu klik “Reset” untuk memulihkan tampilan awal."
       },
       {
         title: "Grafik Perbandingan Pembayaran, Faktur & Utang Per Bulan (MoM)",
-        description: "Di menu 'Data Konsumen', buka tab 'Grafik & Tren' atau klik tombol 'Grafik & Tren' pada baris konsumen. Grafik otomatis mengakumulasi transaksi per bulan secara akurat:\n- Contoh Perhitungan Bulanan:\n  Bulan Januari: Total nominal faktur Rp 5.000.000 dan total pembayaran Rp 3.000.000 menghasilkan sisa utang sebesar Rp 2.000.000.\n  Bulan Februari: Total nominal faktur Rp 6.000.000 dan total pembayaran Rp 4.000.000 menghasilkan sisa utang sebesar Rp 2.000.000.\n1. Grafik Bar Bulanan: Menampilkan perbandingan diagram batang untuk Total Nominal Faktur (biru), Total Pembayaran (hijau), dan Sisa Utang (merah) dengan opsi filter indikator.\n2. Mode Konsolidasi & Per Konsumen: Mendukung tampilan gabungan seluruh konsumen maupun per pelanggan tertentu.\n3. Grafik Area Tren MoM: Memvisualisasikan kurva kenaikan atau penurunan penerimaan pembayaran dibandingkan nilai faktur baru.\n4. Tabel Rincian MoM: Menyajikan angka nominal per bulan, selisih pertumbuhan (Rp), persentase perubahan (%), serta rasio pelunasan.",
+        description: "Di menu “Data Konsumen”, buka tab “Grafik & Tren” atau klik tombol “Grafik & Tren” pada baris konsumen. Grafik otomatis mengakumulasi transaksi per bulan secara akurat. Sebagai contoh, apabila pada bulan Januari tercatat total nominal faktur Rp 5.000.000 dengan pembayaran Rp 3.000.000, maka sisa utang timbul adalah Rp 2.000.000; sedangkan pada bulan Februari dengan faktur Rp 6.000.000 dan pembayaran Rp 4.000.000 akan menghasilkan sisa utang Rp 2.000.000.\n1. Grafik Bar Bulanan: Menampilkan perbandingan diagram batang untuk Total Nominal Faktur (biru), Total Pembayaran (hijau), dan Sisa Utang (merah) dengan opsi filter indikator.\n2. Mode Konsolidasi & Per Konsumen: Mendukung tampilan gabungan seluruh konsumen maupun per pelanggan tertentu.\n3. Grafik Area Tren MoM: Memvisualisasikan kurva kenaikan atau penurunan penerimaan pembayaran dibandingkan nilai faktur baru.\n4. Tabel Rincian MoM: Menyajikan angka nominal per bulan, selisih pertumbuhan (Rp), persentase perubahan (%), serta rasio pelunasan.",
         tip: "Anda dapat menyaring rentang waktu (6 Bulan, 12 Bulan, atau Semua) untuk mengevaluasi kinerja penagihan jangka panjang."
       }
     ]
@@ -223,17 +223,17 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Backup Data (Format JSON & Excel)",
-        description: "Pada menu 'Pengaturan', tersedia dua metode pencadangan data yang dapat dipilih sesuai kebutuhan:\n1. Backup JSON: Menyimpan seluruh struktur basis data mentah secara utuh termasuk rincian riwayat pembayaran.\n2. Backup Excel: Menyimpan data ke dalam file spreadsheet Excel 3 lembar kerja (Customers, Invoices, dan Payments).",
+        description: "Pada menu “Pengaturan”, tersedia dua metode pencadangan data yang dapat dipilih sesuai kebutuhan:\n1. Backup JSON: Menyimpan seluruh struktur basis data mentah secara utuh termasuk rincian riwayat pembayaran.\n2. Backup Excel: Menyimpan data ke dalam file spreadsheet Excel 3 lembar kerja (Customers, Invoices, dan Payments).",
         tip: "Sangat dianjurkan melakukan Backup JSON secara rutin setiap akhir pekan lalu menyimpannya di Google Drive atau media penyimpanan terpisah."
       },
       {
-        title: "Restore / Pulihkan Data",
-        description: "Apabila Anda hendak memulihkan cadangan data lama atau memindahkan pembukuan ke perangkat lain:\n1. Buka menu Pengaturan, lalu klik 'Restore JSON' atau 'Restore Excel'.\n2. Pilih file cadangan yang tersimpan di perangkat Anda.\n3. Lakukan konfirmasi agar sistem memuat ulang seluruh data cadangan.",
+        title: "Restore (Pulihkan) Data",
+        description: "Apabila Anda hendak memulihkan cadangan data lama atau memindahkan pembukuan ke perangkat lain:\n1. Buka menu Pengaturan, lalu klik “Restore JSON” atau “Restore Excel”.\n2. Pilih file cadangan yang tersimpan di perangkat Anda.\n3. Lakukan konfirmasi agar sistem memuat ulang seluruh data cadangan.",
         tip: "Perhatian: Proses restore akan menggantikan seluruh data yang sedang aktif pada perangkat."
       },
       {
         title: "Reset Tanggal Jatuh Tempo",
-        description: "Apabila diperlukan penyeragaman batas waktu kredit, tombol 'Reset Tanggal Jatuh Tempo' memungkinkan seluruh faktur disesuaikan menjadi jatuh tempo tepat 30 hari dari tanggal penerbitan masing-masing faktur.",
+        description: "Apabila diperlukan penyeragaman batas waktu kredit, tombol “Reset Tanggal Jatuh Tempo” memungkinkan seluruh faktur disesuaikan menjadi jatuh tempo tepat 30 hari dari tanggal penerbitan masing-masing faktur.",
       },
       {
         title: "Reset Semua Data (Zona Berbahaya)",
@@ -257,7 +257,7 @@ const GUIDE_DATA: GuideSection[] = [
       },
       {
         title: "Pasang Aplikasi di Layar Utama Ponsel (Install PWA)",
-        description: "Aplikasi ini mendukung teknologi Progressive Web App (PWA) sehingga dapat dipasang langsung pada perangkat Android maupun iPhone:\n- Melalui browser Chrome Android: Klik tombol 'Install Aplikasi' di sidebar atau ketuk menu titik tiga di pojok kanan atas browser, lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).\n- Melalui browser Safari iPhone: Ketuk tombol Share (ikon panah ke atas), lalu pilih 'Add to Home Screen'.\nSetelah terpasang, aplikasi memiliki ikon tersendiri di layar utama dan terbuka dalam mode layar penuh tanpa bilah alamat browser.",
+        description: "Aplikasi ini mendukung teknologi Progressive Web App (PWA) sehingga dapat dipasang langsung pada perangkat Android maupun iPhone:\n- Melalui Browser Chrome Android: Klik tombol “Install Aplikasi” di sidebar atau ketuk menu titik tiga di pojok kanan atas browser, lalu pilih “Tambahkan ke Layar Utama” (Add to Home Screen).\n- Melalui Browser Safari iPhone: Ketuk tombol Share (ikon panah ke atas), lalu pilih “Add to Home Screen”.\nSetelah terpasang, aplikasi memiliki ikon tersendiri di layar utama dan terbuka dalam mode layar penuh tanpa bilah alamat browser.",
         tip: "Aplikasi beroperasi dengan sangat ringan dan responsif tanpa membebani kapasitas penyimpanan perangkat."
       }
     ]
@@ -270,26 +270,26 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Memilih Tema 3D (8 Pilihan Gaya Berdimensi)",
-        description: "Buka menu 'Pengaturan', kemudian pada panel 'Tampilan & Tema 3D Navbar' pilih salah satu dari 8 tema berdimensi lengkap dengan aksen bevel dan pencahayaan terarah: Modern Clean 3D, Midnight Slate 3D, Deep Navy 3D, Emerald Forest 3D, Royal Purple 3D, Sunset Crimson 3D, Graphite Minimal 3D, atau Soft Sky 3D.",
+        description: "Buka menu “Pengaturan”, kemudian pada panel “Tampilan & Tema 3D Navbar” pilih salah satu dari 8 tema berdimensi lengkap dengan aksen bevel dan pencahayaan terarah: Modern Clean 3D, Midnight Slate 3D, Deep Navy 3D, Emerald Forest 3D, Royal Purple 3D, Sunset Crimson 3D, Graphite Minimal 3D, atau Soft Sky 3D.",
         tip: "Seluruh panel kartu, tombol aksi, dan bilah navigasi otomatis menyesuaikan karakter 3D dari tema terpilih."
       },
       {
         title: "Edit Profil Perusahaan & Upload Icon Perusahaan",
-        description: "Melalui panel 'Profil & Icon Perusahaan' di menu Pengaturan:\n1. Upload Icon Logo: Seret dan lepas atau pilih berkas gambar (PNG, JPG, WEBP, atau SVG). Sistem otomatis menyesuaikan ukuran logo untuk ditampilkan pada navbar, header seluler, favicon browser, sampul buku panduan, serta laporan PDF.\n2. Edit Data Perusahaan: Lengkapi Nama Perusahaan/Toko, Tagline, Nomor Telepon/WA, Email, Nama Penanggung Jawab, NPWP, dan Alamat Lengkap.\n3. Klik 'Simpan Profil Perusahaan' untuk menerapkan pembaruan secara menyeluruh.",
-        tip: "Gunakan tombol 'Pakai Default' kapan saja apabila ingin mengembalikan ikon logo bawaan aplikasi."
+        description: "Melalui panel “Profil & Icon Perusahaan” di menu Pengaturan:\n1. Upload Icon Logo: Seret dan lepas atau pilih berkas gambar (PNG, JPG, WEBP, atau SVG). Sistem otomatis menyesuaikan ukuran logo untuk ditampilkan pada navbar, header seluler, favicon browser, sampul buku panduan, serta laporan PDF.\n2. Edit Data Perusahaan: Lengkapi Nama Perusahaan atau Toko, Tagline, Nomor Telepon atau WhatsApp, Email, Nama Penanggung Jawab, NPWP, dan Alamat Lengkap.\n3. Klik “Simpan Profil Perusahaan” untuk menerapkan pembaruan secara menyeluruh.",
+        tip: "Gunakan tombol “Pakai Default” kapan saja apabila ingin mengembalikan ikon logo bawaan aplikasi."
       },
       {
-        title: "Mode Minimize / Kecilkan Navbar",
-        description: "Anda dapat memperkecil bilah navigasi samping menjadi mode ikon ringkas (80px) guna memperluas area kerja tabel faktur dan laporan:\n1. Klik tombol minimize pada sudut kanan atas sidebar desktop.\n2. Atau aktifkan sakelar 'Minimize Navbar' pada halaman Pengaturan.\nSaat mode ringkas aktif, label teks disembunyikan dan tooltip nama menu muncul otomatis ketika kursor diarahkan ke ikon.",
+        title: "Mode Minimize (Kecilkan Navbar)",
+        description: "Anda dapat memperkecil bilah navigasi samping menjadi mode ikon ringkas (80px) guna memperluas area kerja tabel faktur dan laporan:\n1. Klik tombol minimize pada sudut kanan atas sidebar desktop.\n2. Atau aktifkan sakelar “Minimize Navbar” pada halaman Pengaturan.\nSaat mode ringkas aktif, label teks disembunyikan dan tooltip nama menu muncul otomatis ketika kursor diarahkan ke ikon.",
         tip: "Sangat bermanfaat pada layar laptop beresolusi sedang agar tabel faktur tampil lega tanpa terpotong."
       },
       {
         title: "Tata Letak Navbar, Bentuk Tombol & Gaya Transisi Halaman",
-        description: "Pengguna dapat memilih tata letak 'Sidebar Kiri 3D' atau 'Navbar Atas 3D', menyesuaikan bentuk tombol navigasi, serta memilih 5 gaya animasi perpindahan halaman yang halus dan profesional (Precision 3D Stage, Directional Ledger, 3D Executive Tilt, Silk Editorial Veil, atau Instant Crossfade).",
+        description: "Pengguna dapat memilih tata letak “Sidebar Kiri 3D” atau “Navbar Atas 3D”, menyesuaikan bentuk tombol navigasi, serta memilih 5 gaya animasi perpindahan halaman yang halus dan profesional (Precision 3D Stage, Directional Ledger, 3D Executive Tilt, Silk Editorial Veil, atau Instant Crossfade).",
       },
       {
         title: "Jam Realtime (8 Gaya) & Pusat Notifikasi Transaksi",
-        description: "1. Jam Realtime & Tanggal: Pada tab 'Gaya Jam' di menu Pengaturan, tersedia 8 pilihan tampilan jam waktu nyata lengkap beserta hari dan tanggal.\n2. Pusat Notifikasi: Setiap penambahan faktur, penerimaan pembayaran, pelunasan massal, atau perubahan data otomatis tercatat pada ikon lonceng di sudut kanan atas, lengkap dengan panel riwayat notifikasi, efek suara lonceng, serta dukungan notifikasi sistem perangkat.",
+        description: "1. Jam Realtime & Tanggal: Pada tab “Gaya Jam” di menu Pengaturan, tersedia 8 pilihan tampilan jam waktu nyata lengkap beserta hari dan tanggal.\n2. Pusat Notifikasi: Setiap penambahan faktur, penerimaan pembayaran, pelunasan massal, atau perubahan data otomatis tercatat pada ikon lonceng di sudut kanan atas, lengkap dengan panel riwayat notifikasi, efek suara lonceng, serta dukungan notifikasi sistem perangkat.",
       }
     ]
   },
@@ -553,6 +553,23 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
     </div>
   );
 
+  const renderInlineWithLeadLabel = (content: string) => {
+    const colonIdx = content.indexOf(":");
+    if (colonIdx > 0 && colonIdx <= 48) {
+      const lead = content.slice(0, colonIdx + 1);
+      const rest = content.slice(colonIdx + 1);
+      if (rest.trim().length > 0 && !lead.includes("http")) {
+        return (
+          <>
+            <strong className="font-semibold text-slate-900">{lead}</strong>
+            {rest}
+          </>
+        );
+      }
+    }
+    return content;
+  };
+
   const renderBookFormattedText = (rawText: string) => {
     const lines = rawText.split("\n");
     return (
@@ -567,10 +584,12 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
           if (numMatch) {
             return (
               <div key={lIdx} className="flex items-start gap-2">
-                <span className="font-bold text-blue-900 shrink-0 w-4">
+                <span className="font-bold text-blue-900 shrink-0 w-5">
                   {numMatch[1]}
                 </span>
-                <p className="flex-1 text-justify">{numMatch[2]}</p>
+                <p className="flex-1 text-justify">
+                  {renderInlineWithLeadLabel(numMatch[2])}
+                </p>
               </div>
             );
           }
@@ -579,7 +598,9 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
             return (
               <div key={lIdx} className="flex items-start gap-2 pl-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                <p className="flex-1 text-justify">{bulletMatch[1]}</p>
+                <p className="flex-1 text-justify">
+                  {renderInlineWithLeadLabel(bulletMatch[1])}
+                </p>
               </div>
             );
           }
@@ -599,7 +620,6 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
       key: string;
       kind: "special" | "chapter" | "sub";
       label: string;
-      summary?: string;
     }
 
     interface BookChapterSheet {
@@ -616,13 +636,11 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
         key: "preface",
         kind: "special",
         label: "Kata Pengantar",
-        summary: "Sambutan resmi, tujuan penyusunan panduan, dan pengantar sistem.",
       },
       {
         key: "toc",
         kind: "special",
         label: "Daftar Isi",
-        summary: "Struktur lengkap bab, sub-bahasan, FAQ, dan indeks nomor halaman.",
       },
     ];
 
@@ -631,7 +649,6 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
         key: `chap-${sec.id}`,
         kind: "chapter",
         label: sec.title,
-        summary: sec.summary,
       });
       sec.steps.forEach((step, stepIdx) => {
         tocRows.push({
@@ -653,17 +670,16 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
       key: "closing",
       kind: "special",
       label: "Catatan Penutup & Hak Cipta",
-      summary: "Pernyataan resmi penerbitan, imbauan pemeliharaan data, dan hak cipta.",
     });
 
-    // Paginate TOC entries cleanly into A4 sheets (~175mm usable body budget)
+    // Paginate TOC entries cleanly into A4 sheets (~182mm usable body budget)
     const tocChunks: BookTocRow[][] = [];
     let currentTocChunk: BookTocRow[] = [];
-    let tocUsedMm = 26; // First TOC page heading
+    let tocUsedMm = 26;
 
     tocRows.forEach((row) => {
-      const rowH = row.kind === "sub" ? 5.8 : row.summary ? 13.5 : 9;
-      if (tocUsedMm + rowH > 175 && currentTocChunk.length > 0) {
+      const rowH = row.kind === "sub" ? 5.6 : row.kind === "chapter" ? 9.5 : 8;
+      if (tocUsedMm + rowH > 182 && currentTocChunk.length > 0) {
         tocChunks.push(currentTocChunk);
         currentTocChunk = [row];
         tocUsedMm = 26 + rowH;
@@ -923,7 +939,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                   Hak Cipta © {currentYear} Denuda · Seluruh Hak Dilindungi Undang-Undang
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  Dokumen referensi operasional resmi sistem manajemen faktur &amp; piutang.
+                  Dokumen referensi operasional resmi sistem manajemen faktur dan piutang.
                 </div>
               </div>
             </div>
@@ -933,7 +949,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
         {/* ====================================================================
             HALAMAN 1 BUKU: KATA PENGANTAR (TERPISAH DARI DAFTAR ISI)
             ==================================================================== */}
-        <section className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-8 sm:p-11 bg-white mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0 flex flex-col justify-between">
+        <section className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-8 sm:p-11 sm:min-h-[256mm] bg-white mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0 flex flex-col justify-between">
           <div>
             {renderPageHeaderBar()}
 
@@ -960,7 +976,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                 <strong className="text-slate-900">{companyName}</strong> dirancang secara khusus untuk menjawab kebutuhan tersebut melalui fitur input faktur terintegrasi, pencatatan cicilan berkala, penyaringan laporan jatuh tempo berbasis umur piutang maupun nominal, pusat notifikasi transaksi waktu nyata, hingga pelaporan lintas format (Excel, PDF, dan TXT).
               </p>
               <p className="text-justify">
-                Buku panduan ini disusun secara sistematis ke dalam {GUIDE_DATA.length} (sembilan) bab utama yang mencakup gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler dan kustomisasi antarmuka.
+                Buku panduan ini disusun secara sistematis ke dalam {GUIDE_DATA.length} (sembilan) bab utama yang mencakup gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler serta kustomisasi antarmuka.
               </p>
               <p className="text-justify">
                 Kami berharap buku panduan ini dapat menjadi pedoman praktis yang memudahkan setiap pengguna dalam mengoptimalkan seluruh kapabilitas sistem, meminimalkan kesalahan pencatatan administratif, serta mendukung kelancaran aktivitas bisnis harian. Masukan konstruktif senantiasa kami harapkan demi penyempurnaan sistem di masa mendatang.
@@ -968,7 +984,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
             </div>
 
             <div className="mt-6 rounded-lg bg-slate-50 border border-slate-200 border-l-4 border-l-blue-600 p-4 text-xs text-slate-600 italic leading-relaxed text-justify">
-              <strong className="not-italic text-slate-800">Catatan Penggunaan:</strong> Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 6 mengenai prosedur pencadangan data (Backup JSON &amp; Excel) sebelum memulai pengoperasian rutin secara penuh.
+              <strong className="not-italic text-slate-800">Catatan Penggunaan:</strong> Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 6 mengenai prosedur pencadangan data (Backup JSON dan Excel) sebelum memulai pengoperasian rutin secara penuh.
             </div>
 
             <div className="mt-8 text-right text-xs text-slate-600 space-y-1">
@@ -994,7 +1010,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
           return (
             <section
               key={`toc-page-${tocPageNum}`}
-              className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-8 sm:p-11 bg-white mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0 flex flex-col justify-between"
+              className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-8 sm:p-11 sm:min-h-[256mm] bg-white mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0 flex flex-col justify-between"
             >
               <div>
                 {renderPageHeaderBar()}
@@ -1012,14 +1028,14 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {chunk.map((entry) => {
                     const targetPage = pageMap[entry.key] || 1;
                     if (entry.kind === "sub") {
                       return (
                         <div
                           key={entry.key}
-                          className="pl-5 flex items-baseline text-[11px] text-slate-600 leading-snug"
+                          className="pl-5 flex items-baseline text-[11px] text-slate-600 leading-snug py-0.5"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-2 shrink-0 self-center" />
                           <span className="font-medium text-slate-700">{entry.label}</span>
@@ -1037,7 +1053,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                         key={entry.key}
                         className={
                           isChapter
-                            ? "mt-2 rounded-md bg-slate-50 border border-slate-200 border-l-3 border-l-blue-600 px-3 py-2"
+                            ? "mt-2 rounded-md bg-slate-50 border border-slate-200 border-l-3 border-l-blue-600 px-3 py-1.5"
                             : "py-1.5 border-b border-dotted border-slate-300"
                         }
                       >
@@ -1054,11 +1070,6 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                             Hal. {targetPage}
                           </span>
                         </div>
-                        {entry.summary && (
-                          <p className="text-[10.5px] text-slate-500 mt-0.5 leading-snug text-justify">
-                            {entry.summary}
-                          </p>
-                        )}
                       </div>
                     );
                   })}
@@ -1077,7 +1088,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
           {chapterSheets.map((sheet) => (
             <article
               key={`sheet-${sheet.section.id}-${sheet.pageNumber}`}
-              className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-7 sm:p-10 bg-white print:border-0 print:rounded-none print:p-0 flex flex-col justify-between"
+              className="a4-book-front-page a4-book-page-break border border-slate-200 rounded-lg p-7 sm:p-10 sm:min-h-[256mm] bg-white print:border-0 print:rounded-none print:p-0 flex flex-col justify-between"
             >
               <div>
                 {renderPageHeaderBar()}
@@ -1094,7 +1105,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                 ) : (
                   <div className="rounded-md bg-slate-50 border border-slate-200 border-l-4 border-l-blue-600 px-3.5 py-2 mb-4 flex items-center justify-between">
                     <h3 className="text-xs font-extrabold text-blue-950">
-                      {sheet.section.title} (Lanjutan)
+                      {sheet.section.title}
                     </h3>
                   </div>
                 )}
@@ -1134,10 +1145,14 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                       {sheet.section.faq.map((f, fIdx) => (
                         <div
                           key={fIdx}
-                          className="rounded-md bg-slate-50 border border-slate-200 p-3 text-xs text-justify"
+                          className="rounded-md bg-slate-50 border border-slate-200 p-3 text-xs text-justify space-y-1"
                         >
-                          <div className="font-bold text-slate-900">Q: {f.q}</div>
-                          <div className="text-slate-600 mt-1">A: {f.a}</div>
+                          <div className="font-bold text-slate-900">
+                            Pertanyaan: {f.q}
+                          </div>
+                          <div className="text-slate-600">
+                            Jawaban: {f.a}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1150,7 +1165,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
           ))}
 
           {/* HALAMAN PENUTUP / KOLOFON */}
-          <section className="a4-book-front-page border border-slate-200 rounded-lg p-8 sm:p-11 bg-white print:border-0 print:rounded-none print:p-0 flex flex-col justify-between">
+          <section className="a4-book-front-page border border-slate-200 rounded-lg p-8 sm:p-11 sm:min-h-[256mm] bg-white print:border-0 print:rounded-none print:p-0 flex flex-col justify-between">
             <div>
               {renderPageHeaderBar()}
 

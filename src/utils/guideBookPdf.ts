@@ -27,7 +27,6 @@ interface PdfTocEntry {
   key: string;
   kind: "special" | "chapter" | "sub";
   label: string;
-  summary?: string;
   page: number;
 }
 
@@ -143,7 +142,7 @@ function renderTocPages(
       doc.setFillColor(217, 119, 6);
       doc.rect(pageCenterX + 12, y, 10, 1.3, "F");
     }
-    y += 11;
+    y += 12;
   };
 
   drawTocHeading();
@@ -159,13 +158,13 @@ function renderTocPages(
 
     if (entry.kind === "sub") {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setLineHeightFactor(1.28);
+      doc.setFontSize(8.7);
+      doc.setLineHeightFactor(1.3);
       const subStep = getLineStepMm(doc);
-      const subX = marginX + 6;
+      const subX = marginX + 6.5;
       const maxLabelW = contentWidth - 28;
       const wrappedLabel = doc.splitTextToSize(entry.label, maxLabelW);
-      const itemH = wrappedLabel.length * subStep + 1.8;
+      const itemH = wrappedLabel.length * subStep + 2.1;
 
       if (y + itemH > bottomLimit) {
         nextTocPage();
@@ -173,11 +172,11 @@ function renderTocPages(
 
       if (!dryRun) {
         doc.setFillColor(148, 163, 184);
-        doc.circle(marginX + 3, y - 1, 0.75, "F");
+        doc.circle(marginX + 3.2, y - 1, 0.75, "F");
 
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setLineHeightFactor(1.28);
+        doc.setFontSize(8.7);
+        doc.setLineHeightFactor(1.3);
         doc.setTextColor(51, 65, 85);
         doc.text(wrappedLabel, subX, y);
 
@@ -186,7 +185,7 @@ function renderTocPages(
         const labelW = doc.getTextWidth(lastLineText);
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
+        doc.setFontSize(8.7);
         doc.setTextColor(37, 99, 235);
         const pageW = doc.getTextWidth(pageStr);
         doc.text(pageStr, rightX, lastLineY, { align: "right" });
@@ -206,33 +205,18 @@ function renderTocPages(
       return;
     }
 
-    // Main Chapter or Special Front/Back Matter Entry
     const isChapter = entry.kind === "chapter";
     if (isChapter && idx > 0) {
-      y += 2;
+      y += 2.2;
     }
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.6);
-    doc.setLineHeightFactor(1.28);
+    doc.setFontSize(9.8);
+    doc.setLineHeightFactor(1.3);
     const titleStep = getLineStepMm(doc);
-    const titleMaxW = contentWidth - 22;
+    const titleMaxW = contentWidth - 24;
     const titleLines = doc.splitTextToSize(entry.label, titleMaxW);
-
-    let sumLines: string[] = [];
-    let sumStep = 0;
-    if (entry.summary) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setLineHeightFactor(1.26);
-      sumStep = getLineStepMm(doc);
-      sumLines = doc.splitTextToSize(entry.summary, contentWidth - 20);
-    }
-
-    const blockH =
-      titleLines.length * titleStep +
-      (sumLines.length > 0 ? sumLines.length * sumStep + 1.2 : 0) +
-      4.5;
+    const blockH = titleLines.length * titleStep + (isChapter ? 5.2 : 4.2);
 
     if (y + blockH > bottomLimit) {
       nextTocPage();
@@ -242,43 +226,41 @@ function renderTocPages(
       if (isChapter) {
         doc.setFillColor(248, 250, 252);
         doc.setDrawColor(226, 232, 240);
-        doc.roundedRect(marginX, y - 3.6, contentWidth, blockH - 1.5, 1.2, 1.2, "FD");
+        doc.roundedRect(marginX, y - 3.9, contentWidth, blockH - 1.2, 1.2, 1.2, "FD");
         doc.setFillColor(37, 99, 235);
-        doc.rect(marginX, y - 3.6, 1.8, blockH - 1.5, "F");
+        doc.rect(marginX, y - 3.9, 1.8, blockH - 1.2, "F");
       }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.8);
+      doc.setLineHeightFactor(1.3);
+      doc.setTextColor(
+        entry.kind === "special" ? 30 : 15,
+        entry.kind === "special" ? 58 : 23,
+        entry.kind === "special" ? 138 : 42
+      );
+      const tx = isChapter ? marginX + 4.2 : marginX;
+      doc.text(titleLines, tx, y);
+
+      const lastLineText = titleLines[titleLines.length - 1] || "";
+      const lastLineY = y + (titleLines.length - 1) * titleStep;
+      const lastTitleW = doc.getTextWidth(lastLineText);
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.6);
-      doc.setLineHeightFactor(1.28);
-      doc.setTextColor(entry.kind === "special" ? 30 : 15, entry.kind === "special" ? 58 : 23, entry.kind === "special" ? 138 : 42);
-      const tx = isChapter ? marginX + 4 : marginX;
-      doc.text(titleLines, tx, y);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.4);
       doc.setTextColor(37, 99, 235);
-      doc.text(pageStr, isChapter ? rightX - 2.5 : rightX, y, { align: "right" });
+      const pRight = isChapter ? rightX - 2.5 : rightX;
+      const pW = doc.getTextWidth(pageStr);
+      doc.text(pageStr, pRight, lastLineY, { align: "right" });
 
-      if (!isChapter) {
-        const lastTitleW = doc.getTextWidth(titleLines[0] || "");
-        const pW = doc.getTextWidth(pageStr);
-        const dStart = tx + lastTitleW + 2.5;
-        const dEnd = rightX - pW - 2.5;
-        if (dEnd - dStart > 6) {
-          doc.setDrawColor(203, 213, 225);
-          doc.setLineWidth(0.25);
-          doc.setLineDashPattern([0.7, 1.4], 0);
-          doc.line(dStart, y - 0.4, dEnd, y - 0.4);
-          doc.setLineDashPattern([], 0);
-        }
-      }
-
-      if (sumLines.length > 0) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setLineHeightFactor(1.26);
-        doc.setTextColor(100, 116, 139);
-        doc.text(sumLines, isChapter ? marginX + 4 : marginX + 2, y + titleLines.length * titleStep + 0.6);
+      const dStart = tx + lastTitleW + 2.5;
+      const dEnd = pRight - pW - 2.5;
+      if (dEnd - dStart > 6) {
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([0.7, 1.4], 0);
+        doc.line(dStart, lastLineY - 0.4, dEnd, lastLineY - 0.4);
+        doc.setLineDashPattern([], 0);
       }
     }
 
@@ -467,15 +449,18 @@ export async function exportGuideBookA4Pdf(
   );
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.5);
+  doc.setFontSize(10.2);
   doc.setLineHeightFactor(1.45);
   doc.setTextColor(71, 85, 105);
-  const coverDescWidth = mastW - 14;
+  const coverDescWidth = mastW - 18;
   const coverSynopsis =
     "Panduan komprehensif tata kelola faktur penjualan, pencatatan pembayaran dan cicilan konsumen, pemantauan laporan jatuh tempo, pusat notifikasi transaksi, serta prosedur pengamanan cadangan data.";
-  doc.text(coverSynopsis, coverCenterX, heroTopY + 69, {
-    maxWidth: coverDescWidth,
-    align: "center",
+  const coverSynLines = doc.splitTextToSize(coverSynopsis, coverDescWidth);
+  const coverSynStep = getLineStepMm(doc);
+  coverSynLines.forEach((line: string, lIdx: number) => {
+    doc.text(line, coverCenterX, heroTopY + 69 + lIdx * coverSynStep, {
+      align: "center",
+    });
   });
 
   const metaRows: [string, string][] = [
@@ -534,7 +519,7 @@ export async function exportGuideBookA4Pdf(
   doc.setFontSize(8.2);
   doc.setTextColor(100, 116, 139);
   doc.text(
-    "Dokumen referensi operasional resmi sistem manajemen faktur & piutang.",
+    "Dokumen referensi operasional resmi sistem manajemen faktur dan piutang.",
     coverCenterX,
     pageHeight - 18.5,
     { align: "center" }
@@ -570,7 +555,7 @@ export async function exportGuideBookA4Pdf(
   const prefaceParagraphs = [
     `Puji syukur ke hadirat Tuhan Yang Maha Esa atas tersusunnya Buku Panduan Penggunaan Aplikasi ${companyName}. Dokumen ini dihadirkan sebagai rujukan operasional resmi bagi pimpinan usaha, staf administrasi, tim keuangan, serta bagian penagihan dalam menjalankan seluruh alur pengelolaan faktur penjualan dan pemantauan piutang secara terstruktur, transparan, dan akurat.`,
     `Dalam dinamika operasional perdagangan modern, ketepatan pencatatan transaksi serta kecepatan pemantauan status pembayaran konsumen menjadi kunci utama menjaga kesehatan arus kas perusahaan. Aplikasi ${companyName} dirancang secara khusus untuk menjawab kebutuhan tersebut melalui fitur input faktur terintegrasi, pencatatan cicilan berkala, penyaringan laporan jatuh tempo berbasis umur piutang maupun nominal, pusat notifikasi transaksi waktu nyata, hingga pelaporan lintas format (Excel, PDF, dan TXT).`,
-    `Buku panduan ini disusun secara sistematis ke dalam ${sections.length} (sembilan) bab utama yang mencakup gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler dan kustomisasi antarmuka.`,
+    `Buku panduan ini disusun secara sistematis ke dalam ${sections.length} (sembilan) bab utama yang mencakup gambaran alur kerja terpadu, tata cara penginputan dan impor data, mekanisme pelunasan piutang, manajemen basis data konsumen beserta analisis tren bulanan, prosedur cadangan dan pemulihan data (backup dan restore), hingga optimalisasi penggunaan di perangkat seluler serta kustomisasi antarmuka.`,
     `Kami berharap buku panduan ini dapat menjadi pedoman praktis yang memudahkan setiap pengguna dalam mengoptimalkan seluruh kapabilitas sistem, meminimalkan kesalahan pencatatan administratif, serta mendukung kelancaran aktivitas bisnis harian. Masukan konstruktif senantiasa kami harapkan demi penyempurnaan sistem di masa mendatang.`,
   ].map((p) => sanitizePdfText(p));
 
@@ -593,19 +578,20 @@ export async function exportGuideBookA4Pdf(
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(203, 213, 225);
   const noteText = sanitizePdfText(
-    "Catatan Penggunaan: Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 6 mengenai prosedur pencadangan data (Backup JSON & Excel) sebelum memulai pengoperasian rutin secara penuh."
+    "Catatan Penggunaan: Untuk menjaga kesinambungan arsip pembukuan, pengelola disarankan membaca Bab 6 mengenai prosedur pencadangan data (Backup JSON dan Excel) sebelum memulai pengoperasian rutin secara penuh."
   );
   doc.setFont("helvetica", "italic");
-  doc.setFontSize(9.5);
+  doc.setFontSize(9.4);
   doc.setLineHeightFactor(1.42);
+  const noteStep = getLineStepMm(doc);
   const noteLines = doc.splitTextToSize(noteText, contentWidth - 16);
-  const noteBoxH = noteLines.length * getLineStepMm(doc) + 10;
+  const noteBoxH = noteLines.length * noteStep + 8;
 
   doc.roundedRect(marginX, preY, contentWidth, noteBoxH, 2, 2, "FD");
   doc.setFillColor(37, 99, 235);
   doc.rect(marginX, preY, 2.5, noteBoxH, "F");
   doc.setTextColor(51, 65, 85);
-  doc.text(noteText, marginX + 8, preY + 6.8, {
+  doc.text(noteText, marginX + 8, preY + 5.8, {
     maxWidth: contentWidth - 16,
     align: "justify",
   });
@@ -639,14 +625,12 @@ export async function exportGuideBookA4Pdf(
       key: "preface",
       kind: "special",
       label: "Kata Pengantar",
-      summary: "Sambutan resmi, tujuan penyusunan panduan, dan pengantar sistem.",
       page: prefaceBookPage,
     },
     {
       key: "toc",
       kind: "special",
       label: "Daftar Isi",
-      summary: "Struktur lengkap bab, sub-bahasan, FAQ, dan indeks nomor halaman.",
       page: prefaceBookPage + 1,
     },
   ];
@@ -656,7 +640,6 @@ export async function exportGuideBookA4Pdf(
       key: `chap-${sec.id}`,
       kind: "chapter",
       label: sanitizePdfText(sec.title),
-      summary: sanitizePdfText(sec.summary),
       page: 0,
     });
     sec.steps.forEach((step, stepIdx) => {
@@ -671,7 +654,9 @@ export async function exportGuideBookA4Pdf(
       tocEntries.push({
         key: `faq-${sec.id}`,
         kind: "sub",
-        label: sanitizePdfText(`${secIdx + 1}.${sec.steps.length + 1}  Pertanyaan Umum (FAQ)`),
+        label: sanitizePdfText(
+          `${secIdx + 1}.${sec.steps.length + 1}  Pertanyaan Umum (FAQ)`
+        ),
         page: 0,
       });
     }
@@ -681,7 +666,6 @@ export async function exportGuideBookA4Pdf(
     key: "closing",
     kind: "special",
     label: "Catatan Penutup & Hak Cipta",
-    summary: "Pernyataan resmi penerbitan, imbauan pemeliharaan data, dan hak cipta.",
     page: 0,
   });
 
@@ -698,7 +682,7 @@ export async function exportGuideBookA4Pdf(
     dryRun: true,
   });
 
-  const tocStartPdfPage = doc.getNumberOfPages() + 1; // 3
+  const tocStartPdfPage = doc.getNumberOfPages() + 1;
   for (let i = 0; i < reservedTocPages; i++) {
     doc.addPage();
   }
@@ -800,7 +784,13 @@ export async function exportGuideBookA4Pdf(
         doc.setLineHeightFactor(1.42);
         const stepMm = getLineStepMm(doc);
         const bodyLines = doc.splitTextToSize(bodyText, bodyW);
-        if (y + Math.min(bodyLines.length, 2) * stepMm > bottomLimit) {
+        const bodyH = bodyLines.length * stepMm;
+
+        // Ensure the prefix number and its entire paragraph stay together whenever <= 1 page
+        if (y + bodyH > bottomLimit && bodyH <= bottomLimit - topY) {
+          doc.addPage();
+          y = topY;
+        } else if (y + Math.min(bodyLines.length, 2) * stepMm > bottomLimit) {
           doc.addPage();
           y = topY;
         }
@@ -812,7 +802,7 @@ export async function exportGuideBookA4Pdf(
         doc.setFont("helvetica", "normal");
         doc.setTextColor(51, 65, 85);
         renderJustifiedBlock(bodyText, bodyX, bodyW, 9.4, 1.42);
-        y += 1.2;
+        y += 1.4;
       } else if (bulletMatch) {
         const bodyText = bulletMatch[1];
         const bodyX = baseX + 5;
@@ -822,7 +812,12 @@ export async function exportGuideBookA4Pdf(
         doc.setLineHeightFactor(1.42);
         const stepMm = getLineStepMm(doc);
         const bodyLines = doc.splitTextToSize(bodyText, bodyW);
-        if (y + Math.min(bodyLines.length, 2) * stepMm > bottomLimit) {
+        const bodyH = bodyLines.length * stepMm;
+
+        if (y + bodyH > bottomLimit && bodyH <= bottomLimit - topY) {
+          doc.addPage();
+          y = topY;
+        } else if (y + Math.min(bodyLines.length, 2) * stepMm > bottomLimit) {
           doc.addPage();
           y = topY;
         }
@@ -833,13 +828,13 @@ export async function exportGuideBookA4Pdf(
         doc.setFont("helvetica", "normal");
         doc.setTextColor(51, 65, 85);
         renderJustifiedBlock(bodyText, bodyX, bodyW, 9.4, 1.42);
-        y += 1;
+        y += 1.2;
       } else {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(51, 65, 85);
         renderJustifiedBlock(line, baseX, baseWidth, 9.4, 1.45);
         if (idx < lines.length - 1 && lines[idx + 1]?.trim()) {
-          y += 1.4;
+          y += 1.6;
         }
       }
     });
@@ -890,10 +885,15 @@ export async function exportGuideBookA4Pdf(
     doc.setFontSize(9.3);
     doc.setLineHeightFactor(1.38);
     doc.setTextColor(71, 85, 105);
-    doc.text(cleanSummary, marginX + 7, y + 8.5 + titleWrapped.length * titleStep, {
-      maxWidth: contentWidth - 14,
-      align: "justify",
-    });
+    doc.text(
+      cleanSummary,
+      marginX + 7,
+      y + 8.5 + titleWrapped.length * titleStep,
+      {
+        maxWidth: contentWidth - 14,
+        align: "justify",
+      }
+    );
 
     y += bannerHeight + 8;
 
@@ -908,7 +908,7 @@ export async function exportGuideBookA4Pdf(
       const stepTitleStep = getLineStepMm(doc);
       const stepTitleLines = doc.splitTextToSize(sTitle, contentWidth - 12);
 
-      ensureSpace(stepTitleLines.length * stepTitleStep + 18);
+      ensureSpace(stepTitleLines.length * stepTitleStep + 22);
 
       const stepBookPage = doc.getNumberOfPages() - 1;
       updateTocPage(`step-${sec.id}-${stepIdx}`, stepBookPage);
@@ -925,7 +925,7 @@ export async function exportGuideBookA4Pdf(
       doc.setLineHeightFactor(1.3);
       doc.setTextColor(15, 23, 42);
       doc.text(stepTitleLines, marginX + 9.5, y + 3.4);
-      y += stepTitleLines.length * stepTitleStep + 2.5;
+      y += stepTitleLines.length * stepTitleStep + 2.8;
 
       renderFormattedDescription(sDesc, marginX + 9.5, contentWidth - 9.5);
 
@@ -958,14 +958,22 @@ export async function exportGuideBookA4Pdf(
         doc.setFontSize(8.9);
         doc.setLineHeightFactor(1.38);
         doc.setTextColor(146, 64, 14);
-        doc.text(tipFullText, marginX + 14.5, y + 5, {
+        doc.text(tipFullText, marginX + 14.5, y + 4.8, {
           maxWidth: contentWidth - 20,
           align: "justify",
         });
         y += tipHeight + 2.5;
       }
 
-      y += 4.5;
+      if (stepIdx < sec.steps.length - 1 && y + 6 < bottomLimit) {
+        y += 2;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.25);
+        doc.line(marginX + 9.5, y, pageWidth - marginX, y);
+        y += 4.5;
+      } else {
+        y += 4.5;
+      }
     });
 
     if (sec.faq && sec.faq.length > 0) {
@@ -973,7 +981,7 @@ export async function exportGuideBookA4Pdf(
       const faqBookPage = doc.getNumberOfPages() - 1;
       updateTocPage(`faq-${sec.id}`, faqBookPage);
 
-      y += 1.5;
+      y += 2;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(5, 150, 105);
@@ -981,8 +989,8 @@ export async function exportGuideBookA4Pdf(
       y += 6;
 
       sec.faq.forEach((f) => {
-        const qText = `Q: ${sanitizePdfText(f.q)}`;
-        const aText = `A: ${sanitizePdfText(f.a)}`;
+        const qText = `Pertanyaan: ${sanitizePdfText(f.q)}`;
+        const aText = `Jawaban: ${sanitizePdfText(f.a)}`;
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
