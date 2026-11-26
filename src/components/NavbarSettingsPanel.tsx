@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { useNavbar, NAVBAR_THEMES } from "../context/NavbarContext";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  useNavbar,
+  NAVBAR_THEMES,
+  PAGE_TRANSITION_STYLES,
+} from "../context/NavbarContext";
 import {
   NavbarLayoutMode,
   NavbarButtonShape,
+  PageTransitionStyleId,
   CompanyProfile,
 } from "../types";
 import { CompanyLogo } from "./CompanyLogo";
@@ -20,6 +26,8 @@ import {
   LayoutDashboard,
   Files,
   FilePlus,
+  Sparkles,
+  Play,
 } from "lucide-react";
 
 interface NavbarSettingsPanelProps {
@@ -34,12 +42,17 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
     setLayout,
     toggleMinimized,
     setButtonShape,
+    setPageTransition,
     resetNavbarSettings,
   } = useNavbar();
 
   const [categoryFilter, setCategoryFilter] = useState<
     "ALL" | "Terang" | "Gelap" | "Warna-Warni"
   >("ALL");
+  const [previewStep, setPreviewStep] = useState(0);
+
+  const currentTransition: PageTransitionStyleId =
+    settings.pageTransition || "precision-3d";
 
   const brandName = companyProfile?.name || "AF Faktur";
   const brandSub = companyProfile?.tagline || "Manajemen";
@@ -442,6 +455,133 @@ export function NavbarSettingsPanel({ companyProfile }: NavbarSettingsPanelProps
                 </button>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Feature 4: Gaya Transisi Perpindahan Halaman */}
+      <div className="space-y-3.5 pt-5 border-t border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h4 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+              <Sparkles size={16} className="text-indigo-600" />
+              Gaya Transisi Perpindahan Halaman
+            </h4>
+            <p className="text-xs text-slate-500">
+              Pilih karakter animasi saat berpindah antar menu agar terasa halus, khas, dan tetap profesional.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPreviewStep((s) => s + 1)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition-colors self-start sm:self-auto"
+          >
+            <Play size={12} />
+            <span>Uji Transisi</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch">
+          {/* Style Options */}
+          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+            {PAGE_TRANSITION_STYLES.map((styleItem) => {
+              const isSelected = currentTransition === styleItem.id;
+              return (
+                <button
+                  key={styleItem.id}
+                  type="button"
+                  onClick={() => {
+                    setPageTransition(styleItem.id);
+                    setPreviewStep((s) => s + 1);
+                  }}
+                  className={`text-left p-3 rounded-xl border border-b-[3px] transition-all flex flex-col justify-between gap-2 ${
+                    isSelected
+                      ? "border-indigo-600 border-b-indigo-700 bg-indigo-50/50 shadow-sm ring-2 ring-indigo-500/15"
+                      : "border-slate-200 border-b-slate-300 bg-white hover:bg-slate-50 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                      {styleItem.badge}
+                    </span>
+                    {isSelected && (
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                        <Check size={11} strokeWidth={3} />
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-slate-900">
+                      {styleItem.name}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                      {styleItem.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mini Live Transition Demo Stage */}
+          <div
+            className="lg:col-span-4 rounded-xl border border-slate-200 bg-slate-100/80 p-3 flex flex-col justify-between overflow-hidden min-h-[140px]"
+            style={{ perspective: "900px" }}
+          >
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <span>Pratinjau Transisi</span>
+              <span className="text-indigo-600">
+                {PAGE_TRANSITION_STYLES.find((s) => s.id === currentTransition)?.name}
+              </span>
+            </div>
+
+            <div className="relative flex-1 flex items-center justify-center">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`${currentTransition}-${previewStep}`}
+                  initial={
+                    currentTransition === "directional-glide"
+                      ? { opacity: 0, x: 26, scale: 0.99 }
+                      : currentTransition === "desk-tilt-3d"
+                      ? { opacity: 0, y: 14, rotateX: 5, scale: 0.97 }
+                      : currentTransition === "editorial-veil"
+                      ? { opacity: 0, y: 10, clipPath: "inset(0% 0% 25% 0% round 8px)" }
+                      : currentTransition === "executive-fade"
+                      ? { opacity: 0, scale: 0.99 }
+                      : { opacity: 0, y: 12, x: 8, scale: 0.98 }
+                  }
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    rotateX: 0,
+                    scale: 1,
+                    clipPath: "inset(0% 0% 0% 0% round 8px)",
+                  }}
+                  exit={
+                    currentTransition === "directional-glide"
+                      ? { opacity: 0, x: -20 }
+                      : { opacity: 0, y: -8 }
+                  }
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full rounded-lg bg-white border border-slate-200 border-b-[3px] border-b-slate-300 p-2.5 shadow-sm"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-extrabold text-slate-800">
+                      {previewStep % 2 === 0 ? "Dashboard Ringkasan" : "Laporan Jatuh Tempo"}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-emerald-600">
+                      {previewStep % 2 === 0 ? "Rp 24.500.000" : "18 Faktur"}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 rounded bg-slate-200 w-3/4" />
+                    <div className="h-2 rounded bg-slate-100 w-full" />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import {
   NavbarThemeId,
   NavbarLayoutMode,
   NavbarButtonShape,
+  PageTransitionStyleId,
 } from "../types";
 
 export interface NavbarThemeConfig {
@@ -292,11 +293,52 @@ export const NAVBAR_THEMES: Record<NavbarThemeId, NavbarThemeConfig> = {
   },
 };
 
+export interface PageTransitionMeta {
+  id: PageTransitionStyleId;
+  name: string;
+  badge: string;
+  description: string;
+}
+
+export const PAGE_TRANSITION_STYLES: PageTransitionMeta[] = [
+  {
+    id: "precision-3d",
+    name: "Precision 3D Stage",
+    badge: "Standar Pro",
+    description: "Perpindahan halus berdimensi 3D dengan bilah cahaya eksekutif dan akselerasi presisi.",
+  },
+  {
+    id: "directional-glide",
+    name: "Directional Ledger",
+    badge: "Arah Pintar",
+    description: "Menggeser halaman otomatis ke kiri/kanan mengikuti urutan posisi menu navigasi.",
+  },
+  {
+    id: "desk-tilt-3d",
+    name: "3D Executive Tilt",
+    badge: "Kedalaman 3D",
+    description: "Perspektif meja kerja 3D berkelas saat membuka modul faktur dan laporan.",
+  },
+  {
+    id: "editorial-veil",
+    name: "Silk Editorial Veil",
+    badge: "Elegan",
+    description: "Efek buka tirai vertikal ultra-halus dengan kesan majalah finansial modern.",
+  },
+  {
+    id: "executive-fade",
+    name: "Instant Crossfade",
+    badge: "Kilat",
+    description: "Peralihan instan super ringan untuk kecepatan input data beruntun.",
+  },
+];
+
 const DEFAULT_SETTINGS: NavbarSettings = {
   theme: "modern-light",
   layout: "sidebar",
   isMinimized: false,
   buttonShape: "rounded-lg",
+  pageTransition: "precision-3d",
 };
 
 const STORAGE_KEY = "af_faktur_navbar_settings_v1";
@@ -309,6 +351,7 @@ interface NavbarContextType {
   setIsMinimized: (minimized: boolean) => void;
   toggleMinimized: () => void;
   setButtonShape: (shape: NavbarButtonShape) => void;
+  setPageTransition: (style: PageTransitionStyleId) => void;
   resetNavbarSettings: () => void;
 }
 
@@ -359,6 +402,10 @@ export function NavbarProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, buttonShape }));
   };
 
+  const setPageTransition = (pageTransition: PageTransitionStyleId) => {
+    setSettings((prev) => ({ ...prev, pageTransition }));
+  };
+
   const resetNavbarSettings = () => {
     setSettings(DEFAULT_SETTINGS);
   };
@@ -375,6 +422,7 @@ export function NavbarProvider({ children }: { children: React.ReactNode }) {
         setIsMinimized,
         toggleMinimized,
         setButtonShape,
+        setPageTransition,
         resetNavbarSettings,
       }}
     >

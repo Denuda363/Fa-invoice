@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { useAppStore } from "./store";
 import { ViewState, Invoice } from "./types";
 import { Dashboard } from "./components/Dashboard";
@@ -13,6 +14,10 @@ import { PaymentHistory } from "./components/PaymentHistory";
 import { PWAInstallButton } from "./components/PWAInstallButton";
 import { CompanyLogo } from "./components/CompanyLogo";
 import { LiveClockWidget } from "./components/LiveClockWidget";
+import {
+  PageTransitionStage,
+  RouteProgressSweep,
+} from "./components/PageTransitionStage";
 import {
   NotificationBellButton,
   NotificationToastStack,
@@ -46,10 +51,22 @@ function AppContent() {
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null);
   const [historyInvoice, setHistoryInvoice] = useState<Invoice | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const isFirstViewMount = useRef(true);
 
   const companyName = store.companyProfile?.name || "AF Faktur";
   const companyTagline = store.companyProfile?.tagline || "Manajemen Faktur";
   const companyIcon = store.companyProfile?.iconUrl || "";
+
+  // Smooth scroll back to top when switching views
+  useEffect(() => {
+    if (isFirstViewMount.current) {
+      isFirstViewMount.current = false;
+      return;
+    }
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [view]);
 
   // Dynamically sync browser title & favicon with Company Profile & uploaded icon
   useEffect(() => {
@@ -112,9 +129,18 @@ function AppContent() {
             <h1 className={cn("text-sm font-extrabold leading-snug break-words whitespace-normal", activeTheme.textLogo)}>
               {companyName}
             </h1>
-            <p className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}>
-              {currentTitle}
-            </p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={view}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                className={cn("text-[10px] font-medium leading-tight break-words whitespace-normal mt-0.5", activeTheme.textSub)}
+              >
+                {currentTitle}
+              </motion.p>
+            </AnimatePresence>
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -384,7 +410,8 @@ function AppContent() {
       )}
 
       {/* Main Content Area (Automatically Expands when Sidebar is Minimized) */}
-      <main className="flex-1 overflow-y-auto w-full min-w-0 transition-all">
+      <main ref={mainRef} className="flex-1 overflow-y-auto w-full min-w-0 transition-all relative">
+        <RouteProgressSweep view={view} />
         {/* Desktop Top Utility Header for Sidebar Mode (Brand when minimized + Top-Right Notification Bell) */}
         {!isTopbarMode && (
           <header
@@ -426,9 +453,18 @@ function AppContent() {
               </div>
             ) : (
               <div className="min-w-0 flex items-center gap-2.5">
-                <span className={cn("font-extrabold text-sm tracking-tight", activeTheme.textLogo)}>
-                  {currentTitle}
-                </span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={view}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    className={cn("font-extrabold text-sm tracking-tight inline-block", activeTheme.textLogo)}
+                  >
+                    {currentTitle}
+                  </motion.span>
+                </AnimatePresence>
                 <span aria-hidden="true" className={cn("text-xs opacity-50", activeTheme.textSub)}>
                   ·
                 </span>
@@ -449,73 +485,75 @@ function AppContent() {
             <LiveClockWidget className="mb-4 sm:mb-5" />
           )}
 
-          {view === "DASHBOARD" && (
-            <Dashboard invoices={store.invoices} />
-          )}
+          <PageTransitionStage view={view}>
+            {view === "DASHBOARD" && (
+              <Dashboard invoices={store.invoices} />
+            )}
 
-          {view === "INVOICE_HISTORY" && (
-            <InvoiceHistory
-              invoices={store.invoices}
-              customers={store.customers}
-              onDelete={store.deleteInvoice}
-              onViewHistory={(invoice) => setHistoryInvoice(invoice)}
-              onEdit={store.editInvoice}
-            />
-          )}
+            {view === "INVOICE_HISTORY" && (
+              <InvoiceHistory
+                invoices={store.invoices}
+                customers={store.customers}
+                onDelete={store.deleteInvoice}
+                onViewHistory={(invoice) => setHistoryInvoice(invoice)}
+                onEdit={store.editInvoice}
+              />
+            )}
 
-          {view === "BULK_INPUT_INVOICE" && (
-            <BulkInputFaktur
-              customers={store.customers}
-              existingInvoiceNumbers={store.invoices.map((i) => i.invoiceNumber.toLowerCase())}
-              onSave={(invoices) => {
-                store.addInvoices(invoices);
-                setView("DASHBOARD");
-              }}
-              onCancel={() => setView("DASHBOARD")}
-            />
-          )}
+            {view === "BULK_INPUT_INVOICE" && (
+              <BulkInputFaktur
+                customers={store.customers}
+                existingInvoiceNumbers={store.invoices.map((i) => i.invoiceNumber.toLowerCase())}
+                onSave={(invoices) => {
+                  store.addInvoices(invoices);
+                  setView("DASHBOARD");
+                }}
+                onCancel={() => setView("DASHBOARD")}
+              />
+            )}
 
-          {view === "CUSTOMERS" && (
-            <Customers
-              customers={store.customers}
-              invoices={store.invoices}
-              onAdd={store.addCustomer}
-              onAddBulk={store.addCustomers}
-              onUpdate={store.updateCustomer}
-              onDelete={store.deleteCustomer}
-              onSyncFromInvoices={store.syncCustomersFromInvoices}
-            />
-          )}
+            {view === "CUSTOMERS" && (
+              <Customers
+                customers={store.customers}
+                invoices={store.invoices}
+                onAdd={store.addCustomer}
+                onAddBulk={store.addCustomers}
+                onUpdate={store.updateCustomer}
+                onDelete={store.deleteCustomer}
+                onSyncFromInvoices={store.syncCustomersFromInvoices}
+              />
+            )}
 
-          {view === "PAYMENT_HISTORY" && (
-            <PaymentHistory
-              invoices={store.invoices}
-              onEditPayment={store.editPayment}
-              onDeletePayment={store.deletePayment}
-            />
-          )}
+            {view === "PAYMENT_HISTORY" && (
+              <PaymentHistory
+                invoices={store.invoices}
+                onEditPayment={store.editPayment}
+                onDeletePayment={store.deletePayment}
+              />
+            )}
 
-          {view === "REPORTS" && (
-            <Reports
-              invoices={store.invoices}
-              customers={store.customers}
-              companyProfile={store.companyProfile}
-              onPayFaktur={(invoice) => setPaymentInvoice(invoice)}
-              onBulkPay={(payments) => store.addBulkPayments(payments)}
-            />
-          )}
+            {view === "REPORTS" && (
+              <Reports
+                invoices={store.invoices}
+                customers={store.customers}
+                companyProfile={store.companyProfile}
+                onPayFaktur={(invoice) => setPaymentInvoice(invoice)}
+                onBulkPay={(payments) => store.addBulkPayments(payments)}
+              />
+            )}
 
-          {view === "SETTINGS" && (
-            <Settings
-              companyProfile={store.companyProfile}
-              onUpdateCompanyProfile={store.updateCompanyProfile}
-              onResetCompanyProfile={store.resetCompanyProfile}
-              onRestore={store.restoreData}
-              getBackupData={store.getBackupData}
-              resetData={store.resetData}
-              resetDueDates={store.resetDueDates}
-            />
-          )}
+            {view === "SETTINGS" && (
+              <Settings
+                companyProfile={store.companyProfile}
+                onUpdateCompanyProfile={store.updateCompanyProfile}
+                onResetCompanyProfile={store.resetCompanyProfile}
+                onRestore={store.restoreData}
+                getBackupData={store.getBackupData}
+                resetData={store.resetData}
+                resetDueDates={store.resetDueDates}
+              />
+            )}
+          </PageTransitionStage>
         </div>
       </main>
 
@@ -567,7 +605,9 @@ function AppContent() {
               <item.icon size={20} className={isActive ? "stroke-[2.5]" : "stroke-[1.8]"} />
               <span className="text-[10px] mt-0.5">{item.label}</span>
               {isActive && (
-                <span
+                <motion.span
+                  layoutId="mobile-nav-indicator"
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   className={cn(
                     "absolute bottom-1 w-6 h-1 rounded-full",
                     activeTheme.mobileActiveIndicator
@@ -610,12 +650,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <NavbarProvider>
-      <ClockProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </ClockProvider>
-    </NavbarProvider>
+    <MotionConfig reducedMotion="user">
+      <NavbarProvider>
+        <ClockProvider>
+          <NotificationProvider>
+            <AppContent />
+          </NotificationProvider>
+        </ClockProvider>
+      </NavbarProvider>
+    </MotionConfig>
   );
 }

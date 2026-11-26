@@ -61,12 +61,19 @@ export type NavbarThemeId =
 
 export type NavbarLayoutMode = "sidebar" | "topbar";
 export type NavbarButtonShape = "rounded-lg" | "rounded-full" | "rounded-md";
+export type PageTransitionStyleId =
+  | "precision-3d"
+  | "directional-glide"
+  | "desk-tilt-3d"
+  | "editorial-veil"
+  | "executive-fade";
 
 export interface NavbarSettings {
   theme: NavbarThemeId;
   layout: NavbarLayoutMode;
   isMinimized: boolean;
   buttonShape: NavbarButtonShape;
+  pageTransition?: PageTransitionStyleId;
 }
 
 export type ClockStyleId =
