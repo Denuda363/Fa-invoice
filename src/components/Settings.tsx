@@ -611,7 +611,7 @@ export function Settings({
           </div>
         )}
 
-        {activeTab === "panduan" && <UserGuide />}
+            {activeTab === "panduan" && <UserGuide companyProfile={companyProfile} />}
 
         {activeTab === "tentang" && <AboutApp />}
           </motion.div>

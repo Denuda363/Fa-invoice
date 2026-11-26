@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   BookOpen,
   Search,
@@ -20,7 +21,13 @@ import {
   Calendar,
   Layers,
   ArrowRight,
+  FileDown,
+  BookMarked,
 } from "lucide-react";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
+import { CompanyProfile } from "../types";
+import { exportGuideBookA4Pdf } from "../utils/guideBookPdf";
 
 interface GuideSection {
   id: string;
@@ -152,13 +159,18 @@ const GUIDE_DATA: GuideSection[] = [
         description: "Gunakan panel Filter Jatuh Tempo (warna oranye lembut). Anda bisa memilih: Semua, Belum Jatuh Tempo, Sudah Lewat Jatuh Tempo, atau berdasarkan kelompok umur piutang (misal: 1-30 hari, 31-60 hari, >60 hari).",
       },
       {
+        title: "Filter Nominal Tagihan (Per Faktur & Total per Konsumen)",
+        description: "Gunakan panel 'Filter Nominal Tagihan' (warna hijau lembut) untuk menyaring tagihan dengan kondisi Lebih dari (>), Minimal (>=), Kurang dari (<), Maksimal (<=), maupun Rentang (Min - Max). Anda dapat memilih cakupan 'Per Faktur' atau 'Total per Konsumen' untuk menyaring berdasarkan akumulasi total sisa tagihan atau total nominal faktur tiap konsumen.",
+        tip: "Tersedia tombol preset cepat (> 500rb, > 1jt, > 5jt, < 1jt) untuk penyaringan satu klik."
+      },
+      {
         title: "Tanda Warna Merah pada Export Excel",
         description: "Saat Anda menekan 'Export Excel', file spreadsheet yang dihasilkan berisi:\n- Sheet Rekap Utama.\n- Sheet per Tanggal Jatuh Tempo (data yang telah melewati tanggal jatuh tempo otomatis ditandai dengan sorotan teks dan latar merah tebal agar mudah diprioritaskan untuk penagihan).\n- Sheet khusus per Konsumen (jika opsi pisah sheet aktif).",
         tip: "Warna merah memudahkan tim penagih fokus pada faktur yang sudah terlambat."
       },
       {
-        title: "Export Pembayaran & Export PDF",
-        description: "Klik tombol 'Export Pembayaran' untuk mendapatkan file Excel rincian seluruh pembayaran per faktur. Atau klik 'Export PDF' untuk mencetak laporan ringkas siap cetak/kirim ke manajemen.",
+        title: "Export Pembayaran, Export PDF & Export TXT",
+        description: "Selain Export Excel, tersedia tiga format ekspor tambahan:\n1. Export Pembayaran: File Excel rincian seluruh pembayaran per faktur.\n2. Export PDF: Laporan ringkas siap cetak atau kirim ke manajemen lengkap dengan kop logo perusahaan.\n3. Export TXT: Ringkasan teks cepat per konsumen dengan format '- NAMA KONSUMEN Rp NOMINAL' yang praktis disalin ke pesan WhatsApp.",
       },
       {
         title: "Perhitungan Otomatis Total Sisa Tagihan yang Diceklis",
@@ -272,8 +284,12 @@ const GUIDE_DATA: GuideSection[] = [
         tip: "Sangat berguna untuk layar laptop beresolusi sedang agar tabel faktur tidak terpotong ke samping."
       },
       {
-        title: "Tata Letak Navbar & Bentuk Tombol 3D",
-        description: "Anda dapat memilih tata letak 'Sidebar Kiri 3D' atau 'Navbar Atas 3D' untuk lebar penuh 100%, serta memilih bentuk tombol 3D (Rounded 3D, Kapsul 3D, atau Kotak 3D)."
+        title: "Tata Letak Navbar, Bentuk Tombol & Gaya Transisi Halaman",
+        description: "Anda dapat memilih tata letak 'Sidebar Kiri 3D' atau 'Navbar Atas 3D', bentuk tombol 3D, serta memilih 5 gaya animasi perpindahan halaman profesional (Precision 3D Stage, Directional Ledger, 3D Executive Tilt, Silk Editorial Veil, atau Instant Crossfade).",
+      },
+      {
+        title: "Jam Realtime (8 Gaya) & Pusat Notifikasi Transaksi",
+        description: "1. Jam Realtime & Tanggal: Di menu Pengaturan tab 'Gaya Jam', pilih dari 8 tampilan jam realtime lengkap dengan nama hari dan tanggal.\n2. Pusat Notifikasi: Setiap faktur baru, pembayaran masuk, pelunasan massal, atau perubahan data otomatis tercatat di ikon lonceng kanan atas beserta slip notifikasi layar, suara lonceng, dan dukungan notifikasi sistem perangkat (HP/Desktop).",
       }
     ]
   },
@@ -310,11 +326,31 @@ const GUIDE_DATA: GuideSection[] = [
   }
 ];
 
-export function UserGuide() {
+export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [expandedSection, setExpandedSection] = useState<string | null>("alur-kerja");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBookPreviewOpen, setIsBookPreviewOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [coverLogoError, setCoverLogoError] = useState(false);
+
+  const companyName = companyProfile?.name || "AF Faktur";
+  const companyTagline = companyProfile?.tagline || "Manajemen Faktur & Piutang";
+  const logoSrc = companyProfile?.iconUrl?.trim() || "/icon.jpg";
+
+  useEffect(() => {
+    setCoverLogoError(false);
+  }, [logoSrc]);
+  const companyInitials =
+    companyName
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || "")
+      .join("") || "AF";
+  const printDateStr = format(new Date(), "dd MMMM yyyy", { locale: idLocale });
+  const currentYear = new Date().getFullYear();
 
   const categories = [
     { id: "semua", label: "Semua Panduan", icon: Layers },
@@ -349,8 +385,18 @@ export function UserGuide() {
     setExpandedSection((prev) => (prev === id ? null : id));
   };
 
-  const handlePrint = () => {
+  const handlePrintA4Book = () => {
     window.print();
+  };
+
+  const handleDownloadA4Pdf = async () => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    try {
+      await exportGuideBookA4Pdf(GUIDE_DATA, companyProfile);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const guideContent = (isModal = false) => (
@@ -507,33 +553,274 @@ export function UserGuide() {
     </div>
   );
 
+  const renderA4BookDocument = () => (
+    <div className="text-slate-900 font-sans">
+      {/* HALAMAN 1: SAMPUL BUKU RESMI */}
+      <section className="a4-book-cover border border-slate-200 rounded-lg p-8 sm:p-12 bg-white relative overflow-hidden mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 border-l-8 border-l-blue-700 px-5 py-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
+              {!coverLogoError ? (
+                <img
+                  src={logoSrc}
+                  alt={companyName}
+                  onError={() => setCoverLogoError(true)}
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-full rounded-lg bg-blue-600 text-white font-black text-lg flex items-center justify-center">
+                  {companyInitials}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-extrabold text-slate-900 tracking-tight break-words">
+                {companyName}
+              </h1>
+              <p className="text-sm font-semibold text-blue-700 mt-0.5 break-words">
+                {companyTagline}
+              </p>
+              {(companyProfile?.phone || companyProfile?.email || companyProfile?.address) && (
+                <p className="text-xs text-slate-500 mt-1 break-words leading-relaxed">
+                  {[companyProfile?.phone, companyProfile?.email, companyProfile?.address]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="my-12 sm:my-16 space-y-5">
+          <div className="inline-block px-3 py-1 rounded bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold uppercase tracking-widest">
+            Dokumentasi Resmi Perusahaan
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+            BUKU PANDUAN
+            <br />
+            PENGGUNAAN APLIKASI
+          </h2>
+          <div className="w-24 h-1.5 bg-blue-600 rounded-full" />
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl">
+            Panduan operasional lengkap pengelolaan faktur penjualan, pencatatan pembayaran &amp; cicilan konsumen, pemantauan laporan jatuh tempo, notifikasi transaksi, serta pengamanan cadangan data.
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-900 border-b border-slate-200 pb-2 mb-3">
+              Informasi Dokumen
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 text-xs">
+              <div>
+                <span className="text-slate-500">Nama Sistem:</span>{" "}
+                <strong className="text-slate-900">{companyName} (Versi 2.5 Pro)</strong>
+              </div>
+              <div>
+                <span className="text-slate-500">Cakupan Materi:</span>{" "}
+                <strong className="text-slate-900">{GUIDE_DATA.length} Bab Lengkap &amp; FAQ</strong>
+              </div>
+              <div>
+                <span className="text-slate-500">Tanggal Cetak:</span>{" "}
+                <strong className="text-slate-900">{printDateStr}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500">Pengembang:</span>{" "}
+                <strong className="text-slate-900">Denuda</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 pt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <span className="font-semibold text-slate-700">
+              Hak Cipta © {currentYear} Denuda · All Rights Reserved
+            </span>
+            <span>Dokumentasi Operasional Resmi</span>
+          </div>
+        </div>
+      </section>
+
+      {/* HALAMAN 2: KATA PENGANTAR & DAFTAR ISI */}
+      <section className="a4-book-page-break border border-slate-200 rounded-lg p-8 sm:p-10 bg-white mb-8 print:border-0 print:rounded-none print:p-0 print:mb-0">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-extrabold text-slate-900 uppercase tracking-tight">
+              Kata Pengantar
+            </h3>
+            <div className="w-16 h-1 bg-blue-600 mt-1 mb-3" />
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Selamat datang di Buku Panduan Penggunaan <strong>{companyName}</strong>. Buku panduan ini disusun agar admin, staf keuangan, maupun pemilik usaha dapat mengoperasikan seluruh fitur pencatatan faktur, pelunasan cicilan, pemantauan jatuh tempo, ekspor laporan, hingga pengamanan cadangan data secara cepat dan akurat.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-extrabold text-slate-900 uppercase tracking-tight">
+              Daftar Isi Buku Panduan
+            </h3>
+            <div className="w-16 h-1 bg-blue-600 mt-1 mb-4" />
+            <div className="divide-y divide-slate-200 border border-slate-200 rounded-xl overflow-hidden">
+              {GUIDE_DATA.map((sec, idx) => (
+                <div key={sec.id} className="px-4 py-3 flex items-start justify-between gap-4 bg-white">
+                  <div>
+                    <div className="text-xs sm:text-sm font-bold text-slate-900">
+                      {sec.title}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {sec.summary}
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-blue-700 shrink-0">
+                    Bab {idx + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* HALAMAN 3+: ISI BAB-BAB PANDUAN */}
+      <div className="space-y-8">
+        {GUIDE_DATA.map((section, secIdx) => (
+          <article
+            key={section.id}
+            className={`border border-slate-200 rounded-lg p-7 sm:p-9 bg-white print:border-0 print:rounded-none print:p-0 ${
+              secIdx < GUIDE_DATA.length - 1 ? "a4-book-page-break" : ""
+            }`}
+          >
+            <div className="flex items-center justify-between text-[11px] text-slate-400 border-b border-slate-200 pb-2 mb-5">
+              <span className="font-bold uppercase tracking-wider text-slate-600">
+                Buku Panduan · {companyName}
+              </span>
+              <span>Bab {secIdx + 1} dari {GUIDE_DATA.length}</span>
+            </div>
+
+            <div className="rounded-lg bg-blue-50 border border-blue-200 border-l-4 border-l-blue-600 p-4 mb-5">
+              <h3 className="text-base sm:text-lg font-extrabold text-blue-950">
+                {section.title}
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                {section.summary}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {section.steps.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="a4-book-avoid-break rounded-lg border border-slate-200 p-4 space-y-2 bg-white"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900">
+                      {step.title}
+                    </h4>
+                  </div>
+                  <p className="text-xs text-slate-700 pl-8 leading-relaxed whitespace-pre-line">
+                    {step.description}
+                  </p>
+                  {step.tip && (
+                    <div className="ml-8 rounded-md bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-3 py-2 text-xs text-amber-900">
+                      <strong>Tips:</strong> {step.tip}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {section.faq && section.faq.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-slate-200 space-y-2.5 a4-book-avoid-break">
+                <h5 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
+                  Pertanyaan Umum (FAQ)
+                </h5>
+                <div className="space-y-2">
+                  {section.faq.map((f, fIdx) => (
+                    <div
+                      key={fIdx}
+                      className="rounded-md bg-slate-50 border border-slate-200 p-3 text-xs"
+                    >
+                      <div className="font-bold text-slate-900">Q: {f.q}</div>
+                      <div className="text-slate-600 mt-1">A: {f.a}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="rounded-xl border border-blue-200 bg-linear-to-b from-blue-50/70 to-white p-5 md:p-6 shadow-sm">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-blue-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-blue-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
             <BookOpen size={22} />
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">Panduan Lengkap Penggunaan</h3>
             <p className="text-xs text-gray-600">
-              Pelajari cara mengelola faktur, pembayaran, ekspor Excel, hingga mode mobile.
+              Pelajari seluruh fitur aplikasi, cetak langsung menjadi buku A4, atau unduh PDF siap jilid.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+          <button
+            type="button"
+            onClick={handleDownloadA4Pdf}
+            disabled={isGeneratingPdf}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+            title="Unduh file PDF Buku Panduan ukuran kertas A4 lengkap dengan sampul dan daftar isi"
+          >
+            <FileDown size={14} />
+            <span>{isGeneratingPdf ? "Menyiapkan PDF..." : "Unduh Buku PDF (A4)"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsBookPreviewOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+            title="Lihat pratinjau format buku kertas A4 dan cetak langsung ke printer"
+          >
+            <Printer size={14} />
+            <span>Cetak Buku (A4)</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition-colors"
             title="Buka panduan dalam mode baca layar penuh"
           >
             <Maximize2 size={14} />
             <span>Layar Penuh</span>
           </button>
         </div>
+      </div>
+
+      {/* Info Banner Cetak Buku A4 */}
+      <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2.5 text-indigo-950">
+          <BookMarked size={16} className="text-indigo-600 shrink-0" />
+          <span>
+            <strong>Edisi Cetak Buku A4:</strong> Tersedia sampul resmi perusahaan, kata pengantar, daftar isi bernomor halaman otomatis, dan {GUIDE_DATA.length} bab lengkap siap cetak atau jilid.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handlePrintA4Book}
+          className="inline-flex items-center gap-1.5 text-indigo-700 hover:text-indigo-900 font-bold shrink-0 self-start sm:self-auto"
+        >
+          <Printer size={13} />
+          <span>Print Langsung A4</span>
+          <ArrowRight size={12} />
+        </button>
       </div>
 
       {/* Guide Content in Settings */}
@@ -545,7 +832,7 @@ export function UserGuide() {
       <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
         <div className="flex items-center gap-1.5">
           <CheckCircle2 size={14} className="text-emerald-500" />
-          <span>AF Faktur — Dirancang cepat untuk operasional toko & grosir.</span>
+          <span>{companyName} — Dirancang cepat untuk operasional toko &amp; grosir.</span>
         </div>
         <button
           type="button"
@@ -565,25 +852,33 @@ export function UserGuide() {
         <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-fade-in">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3 bg-gray-50">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center">
                   <BookOpen size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-lg">Buku Panduan Penggunaan AF Faktur</h3>
-                  <p className="text-xs text-gray-500">Dokumentasi operasional lengkap dan tips praktis</p>
+                  <h3 className="font-bold text-gray-900 text-lg">Buku Panduan Penggunaan {companyName}</h3>
+                  <p className="text-xs text-gray-500">Dokumentasi operasional lengkap siap cetak ukuran A4</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="hidden sm:flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100"
-                  title="Cetak panduan"
+                  onClick={handleDownloadA4Pdf}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
+                >
+                  <FileDown size={14} />
+                  <span>PDF Buku (A4)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintA4Book}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100"
+                  title="Cetak buku panduan ukuran kertas A4"
                 >
                   <Printer size={14} />
-                  <span>Cetak</span>
+                  <span>Cetak A4</span>
                 </button>
                 <button
                   type="button"
@@ -616,6 +911,73 @@ export function UserGuide() {
           </div>
         </div>
       )}
+
+      {/* A4 Book Print Preview Modal */}
+      {isBookPreviewOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-5 overflow-hidden">
+          <div className="bg-slate-200 rounded-2xl max-w-5xl w-full h-[94vh] flex flex-col shadow-2xl overflow-hidden border border-slate-300">
+            {/* Toolbar */}
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+                  <BookMarked size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold">
+                    Pratinjau Cetak Buku Panduan (Kertas A4 · 210 × 297 mm)
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Siap dicetak langsung ke printer atau disimpan sebagai buku PDF A4.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadA4Pdf}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors"
+                >
+                  <FileDown size={14} />
+                  <span>Unduh PDF A4</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintA4Book}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>Cetak Sekarang (A4)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBookPreviewOpen(false)}
+                  className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Tutup pratinjau buku"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Simulated A4 Paper Pages */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+              <div className="mx-auto w-full max-w-[210mm]">
+                {renderA4BookDocument()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden A4 Print Portal (Rendered outside .app-3d-shell for clean @media print) */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div className="a4-print-only-container" aria-hidden="true">
+            {renderA4BookDocument()}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

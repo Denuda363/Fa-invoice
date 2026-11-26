@@ -156,3 +156,57 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================================
+ * A4 BOOK PRINT LAYOUT (BUKU PANDUAN UKURAN A4)
+ * ============================================================================ */
+@page {
+  size: A4 portrait;
+  margin: 16mm 18mm;
+}
+
+.a4-print-only-container {
+  display: none;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .app-3d-shell,
+  .no-print {
+    display: none !important;
+  }
+
+  .a4-print-only-container {
+    display: block !important;
+    width: 100% !important;
+    background: #ffffff !important;
+  }
+
+  .a4-book-cover {
+    min-height: 256mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .a4-book-page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .a4-book-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
