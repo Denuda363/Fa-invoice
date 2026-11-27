@@ -155,7 +155,9 @@ function renderTocPages(
   const nextTocPage = () => {
     currentPageOffset += 1;
     y = topY + 3;
-    drawTocHeading();
+    if (!dryRun) {
+      doc.setPage(startPdfPage + currentPageOffset);
+    }
   };
 
   entries.forEach((entry, idx) => {
@@ -1216,7 +1218,7 @@ export async function exportGuideBookA4Pdf(
   closeY += 14;
 
   doc.setFillColor(15, 23, 42);
-  doc.roundedRect(marginX, closeY, contentWidth, 74, 3, 3, "F");
+  doc.roundedRect(marginX, closeY, contentWidth, 84, 3, 3, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -1240,8 +1242,18 @@ export async function exportGuideBookA4Pdf(
     align: "justify",
   });
 
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.2);
+  doc.setTextColor(251, 191, 36);
+  doc.text(
+    "Tautan Akses Resmi Aplikasi: https://fa-invoice.vercel.app",
+    pageCenterX,
+    closeY + 56,
+    { align: "center" }
+  );
+
   doc.setDrawColor(51, 65, 85);
-  doc.line(marginX + 10, closeY + 55, marginX + contentWidth - 10, closeY + 55);
+  doc.line(marginX + 10, closeY + 63, marginX + contentWidth - 10, closeY + 63);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
@@ -1249,7 +1261,7 @@ export async function exportGuideBookA4Pdf(
   doc.text(
     `Dikembangkan oleh Denuda  |  Hak Cipta (c) ${currentYear} Denuda  |  All Rights Reserved`,
     pageCenterX,
-    closeY + 64,
+    closeY + 73,
     { align: "center" }
   );
 

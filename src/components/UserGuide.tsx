@@ -55,8 +55,8 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Apa Itu Aplikasi Manajemen Faktur dan Piutang?",
-        description: "Aplikasi ini adalah sistem pembukuan digital berbasis web dan Progressive Web App (PWA) yang dirancang khusus untuk membantu pemilik usaha, distributor, toko, maupun tim keuangan dalam mengelola faktur penjualan kredit serta memantau piutang pelanggan secara terstruktur.\n\nMelalui satu antarmuka yang ringkas dan responsif, seluruh proses administrasi—mulai dari pencatatan faktur baru, pemantauan tenggat jatuh tempo, pencatatan pembayaran cicilan, hingga penyusunan laporan lintas format—dapat diselesaikan secara cepat, akurat, dan terdokumentasi rapi.",
-        tip: "Seluruh data transaksi diproses secara lokal di perangkat pengguna sehingga tetap responsif dan dapat dicadangkan kapan saja."
+        description: "Aplikasi ini adalah sistem pembukuan digital berbasis web dan Progressive Web App (PWA) yang dapat diakses langsung melalui tautan resmi https://fa-invoice.vercel.app untuk membantu pemilik usaha, distributor, toko, maupun tim keuangan dalam mengelola faktur penjualan kredit serta memantau piutang pelanggan secara terstruktur.\n\nMelalui satu antarmuka yang ringkas dan responsif, seluruh proses administrasi—mulai dari pencatatan faktur baru, pemantauan tenggat jatuh tempo, pencatatan pembayaran cicilan, hingga penyusunan laporan lintas format—dapat diselesaikan secara cepat, akurat, dan terdokumentasi rapi.",
+        tip: "Aplikasi dapat dibuka kapan saja melalui browser di komputer maupun ponsel melalui alamat resmi https://fa-invoice.vercel.app dengan penyimpanan lokal yang responsif."
       },
       {
         title: "Tujuan dan Manfaat Utama bagi Operasional Usaha",
@@ -296,7 +296,7 @@ const GUIDE_DATA: GuideSection[] = [
       },
       {
         title: "Pasang Aplikasi di Layar Utama Ponsel (Install PWA)",
-        description: "Aplikasi ini mendukung teknologi Progressive Web App (PWA) sehingga dapat dipasang langsung pada perangkat Android maupun iPhone:\n- Melalui Browser Chrome Android: Klik tombol “Install Aplikasi” di sidebar atau ketuk menu titik tiga di pojok kanan atas browser, lalu pilih “Tambahkan ke Layar Utama” (Add to Home Screen).\n- Melalui Browser Safari iPhone: Ketuk tombol Share (ikon panah ke atas), lalu pilih “Add to Home Screen”.\nSetelah terpasang, aplikasi memiliki ikon tersendiri di layar utama dan terbuka dalam mode layar penuh tanpa bilah alamat browser.",
+        description: "Aplikasi ini mendukung teknologi Progressive Web App (PWA) sehingga dapat diakses melalui https://fa-invoice.vercel.app lalu dipasang langsung pada perangkat Android maupun iPhone:\n- Melalui Browser Chrome Android: Buka https://fa-invoice.vercel.app, klik tombol “Install Aplikasi” di sidebar atau ketuk menu titik tiga di pojok kanan atas browser, lalu pilih “Tambahkan ke Layar Utama” (Add to Home Screen).\n- Melalui Browser Safari iPhone: Buka https://fa-invoice.vercel.app di Safari, ketuk tombol Share (ikon panah ke atas), lalu pilih “Add to Home Screen”.\nSetelah terpasang, aplikasi memiliki ikon tersendiri di layar utama dan terbuka dalam mode layar penuh tanpa bilah alamat browser.",
         tip: "Aplikasi beroperasi dengan sangat ringan dan responsif tanpa membebani kapasitas penyimpanan perangkat."
       }
     ]
@@ -340,7 +340,7 @@ const GUIDE_DATA: GuideSection[] = [
     steps: [
       {
         title: "Developer Aplikasi: Denuda",
-        description: "Aplikasi ini dirancang, dibangun, dan dikembangkan secara penuh oleh Denuda sebagai solusi digital pencatatan dan manajemen faktur penjualan, penagihan, serta pemantauan piutang usaha yang cepat, presisi, dan andal.",
+        description: "Aplikasi ini dirancang, dibangun, dan dikembangkan secara penuh oleh Denuda sebagai solusi digital pencatatan dan manajemen faktur penjualan, penagihan, serta pemantauan piutang usaha yang cepat, presisi, dan andal. Aplikasi dapat diakses secara online melalui tautan resmi https://fa-invoice.vercel.app di berbagai perangkat.",
         tip: "Dikembangkan dengan fokus tinggi pada kecepatan kerja serta kemudahan operasional pembukuan harian."
       },
       {
@@ -348,11 +348,15 @@ const GUIDE_DATA: GuideSection[] = [
         description: "Hak Cipta © 2026 Denuda. Seluruh hak cipta dilindungi undang-undang (All Rights Reserved). Seluruh tata letak antarmuka, arsitektur pengelolaan data, formula perhitungan, dan komponen fitur di dalam aplikasi ini dilindungi hak cipta resmi.",
       },
       {
-        title: "Teknologi dan Keamanan Data",
-        description: "Dibangun menggunakan teknologi web modern (React 19, TypeScript, Tailwind CSS, dan PWA). Seluruh catatan transaksi tersimpan secara lokal di perangkat pengguna dan dapat dicadangkan maupun dipulihkan kapan saja dalam format JSON maupun Excel multi-sheet.",
+        title: "Teknologi, Akses Resmi, dan Keamanan Data",
+        description: "Dibangun menggunakan teknologi web modern (React 19, TypeScript, Tailwind CSS, dan PWA) dan tersedia secara resmi melalui alamat https://fa-invoice.vercel.app pada browser komputer maupun smartphone. Seluruh catatan transaksi tersimpan secara lokal di perangkat pengguna dan dapat dicadangkan maupun dipulihkan kapan saja dalam format JSON maupun Excel multi-sheet.",
       }
     ],
     faq: [
+      {
+        q: "Di mana tautan resmi untuk mengakses aplikasi?",
+        a: "Anda dapat mengakses aplikasi secara langsung melalui browser di alamat https://fa-invoice.vercel.app baik dari komputer maupun ponsel."
+      },
       {
         q: "Siapa developer yang merancang dan mengembangkan aplikasi ini?",
         a: "Aplikasi ini dirancang dan dikembangkan secara resmi oleh Denuda."
@@ -364,6 +368,27 @@ const GUIDE_DATA: GuideSection[] = [
     ]
   }
 ];
+
+function renderTextWithAppLink(text: string): React.ReactNode {
+  const appUrl = "https://fa-invoice.vercel.app";
+  if (!text.includes(appUrl)) return text;
+  const parts = text.split(appUrl);
+  return parts.map((part, idx) => (
+    <React.Fragment key={idx}>
+      {part}
+      {idx < parts.length - 1 && (
+        <a
+          href={appUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-blue-700 underline decoration-blue-400 hover:text-blue-900"
+        >
+          {appUrl}
+        </a>
+      )}
+    </React.Fragment>
+  ));
+}
 
 export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -547,7 +572,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                             </h5>
                           </div>
                           <p className="text-xs text-gray-600 pl-7 leading-relaxed whitespace-pre-line">
-                            {step.description}
+                            {renderTextWithAppLink(step.description)}
                           </p>
                           <figure className="ml-7 mt-2.5 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs">
                             <img
@@ -575,7 +600,8 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                             <div className="ml-7 mt-2 flex items-start gap-1.5 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-md p-2 text-xs">
                               <Lightbulb size={14} className="shrink-0 text-amber-600 mt-0.5" />
                               <span className="leading-snug">
-                                <strong className="font-semibold">Tips:</strong> {step.tip}
+                                <strong className="font-semibold">Tips:</strong>{" "}
+                                {renderTextWithAppLink(step.tip)}
                               </span>
                             </div>
                           )}
@@ -597,7 +623,8 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                                 <span className="text-blue-600 font-bold">Q:</span> {f.q}
                               </div>
                               <div className="text-gray-600 mt-1 pl-3 leading-relaxed">
-                                <span className="text-emerald-600 font-bold">A:</span> {f.a}
+                                <span className="text-emerald-600 font-bold">A:</span>{" "}
+                                {renderTextWithAppLink(f.a)}
                               </div>
                             </div>
                           ))}
@@ -623,12 +650,12 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
         return (
           <>
             <strong className="font-semibold text-slate-900">{lead}</strong>
-            {rest}
+            {renderTextWithAppLink(rest)}
           </>
         );
       }
     }
-    return content;
+    return renderTextWithAppLink(content);
   };
 
   const renderBookFormattedText = (rawText: string) => {
@@ -745,7 +772,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
       if (tocUsedMm + rowH > 182 && currentTocChunk.length > 0) {
         tocChunks.push(currentTocChunk);
         currentTocChunk = [row];
-        tocUsedMm = 26 + rowH;
+        tocUsedMm = 2 + rowH;
       } else {
         currentTocChunk.push(row);
         tocUsedMm += rowH;
@@ -1124,18 +1151,20 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
               <div>
                 {renderPageHeaderBar()}
 
-                <div className="text-center space-y-2 mb-6">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600">
-                    Struktur Buku Panduan
-                  </p>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                    DAFTAR ISI
-                  </h3>
-                  <div className="flex items-center justify-center gap-1.5 pt-1">
-                    <div className="w-12 h-1 bg-blue-600 rounded-full" />
-                    <div className="w-4 h-1 bg-amber-500 rounded-full" />
+                {chunkIdx === 0 && (
+                  <div className="text-center space-y-2 mb-6">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600">
+                      Struktur Buku Panduan
+                    </p>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                      DAFTAR ISI
+                    </h3>
+                    <div className="flex items-center justify-center gap-1.5 pt-1">
+                      <div className="w-12 h-1 bg-blue-600 rounded-full" />
+                      <div className="w-4 h-1 bg-amber-500 rounded-full" />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="space-y-1.5">
                   {chunk.map((entry) => {
@@ -1259,7 +1288,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                       </figure>
                       {step.tip && (
                         <div className="ml-8 rounded-md bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-3 py-2 text-xs text-amber-900 text-justify">
-                          <strong>Tips Operasional:</strong> {step.tip}
+                          <strong>Tips Operasional:</strong> {renderTextWithAppLink(step.tip)}
                         </div>
                       )}
                     </div>
@@ -1281,7 +1310,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                             Pertanyaan: {f.q}
                           </div>
                           <div className="text-slate-600">
-                            Jawaban: {f.a}
+                            Jawaban: {renderTextWithAppLink(f.a)}
                           </div>
                         </div>
                       ))}
@@ -1320,6 +1349,17 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                   Buku panduan ini diterbitkan sebagai referensi operasional resmi bagi seluruh pengguna aplikasi{" "}
                   <strong className="text-white">{companyName}</strong>. Demi menjaga keamanan dan keutuhan arsip transaksi perusahaan, pengguna sangat dianjurkan melakukan pencadangan data (Backup JSON maupun Excel) secara berkala melalui menu Pengaturan.
                 </p>
+                <div className="rounded-lg bg-slate-800/80 border border-slate-700 px-4 py-2.5 text-center text-xs text-slate-200">
+                  Tautan Akses Resmi Aplikasi:{" "}
+                  <a
+                    href="https://fa-invoice.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-amber-300 underline"
+                  >
+                    https://fa-invoice.vercel.app
+                  </a>
+                </div>
                 <div className="pt-4 border-t border-slate-700 text-center text-xs font-bold text-blue-300">
                   Dikembangkan oleh Denuda  ·  Hak Cipta © {currentYear} Denuda  ·  All Rights Reserved
                 </div>

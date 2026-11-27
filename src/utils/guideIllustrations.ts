@@ -320,10 +320,10 @@ export function buildStepIllustrationSvg(
           pillBox(474, 140, 158, 16, "Siap Audit & Kirim WhatsApp", "#fef3c7", "#92400e", undefined, 8),
 
           rect(34, 174, 612, 20, "#f1f5f9", "#e2e8f0", 4),
-          txt(340, 187.5, "Penyimpanan Lokal Aman di Perangkat  ·  Cepat Tanpa Loading Server  ·  Mendukung Desktop & Smartphone", {
-            size: 8.6,
+          txt(340, 187.5, "Akses Resmi: https://fa-invoice.vercel.app  ·  Penyimpanan Lokal Aman  ·  Desktop & Smartphone", {
+            size: 8.4,
             weight: "bold",
-            fill: "#334155",
+            fill: "#1e3a8a",
             anchor: "middle",
           }),
         ].join("")
@@ -1628,9 +1628,9 @@ export function buildStepIllustrationSvg(
           rect(16, 16, 304, 183, "#ecfdf5", "#6ee7b7", 7, 1.3),
           pillBox(30, 28, 276, 24, "ANDROID (BROWSER CHROME)", "#059669", "#ffffff", undefined, 8.8),
           stepBadge(46, 74, "1", "#059669"),
-          txt(64, 78, "Klik tombol [Install Aplikasi] di sidebar", { size: 8.4, weight: "bold" }),
+          txt(64, 78, "Buka https://fa-invoice.vercel.app", { size: 8.4, weight: "bold", fill: "#065f46" }),
           stepBadge(46, 104, "2", "#059669"),
-          txt(64, 108, "Atau ketuk ikon titik tiga (:) di pojok kanan", { size: 8.4 }),
+          txt(64, 108, "Klik [Install Aplikasi] atau ikon titik tiga (:)", { size: 8.3 }),
           stepBadge(46, 134, "3", "#059669"),
           txt(64, 138, "Pilih [Tambahkan ke Layar Utama]", { size: 8.4, weight: "bold", fill: "#065f46" }),
           pillBox(32, 160, 272, 24, "Ikon Aplikasi Terpasang di Home Screen", "#ffffff", "#065f46", "#6ee7b7", 8),
@@ -1639,7 +1639,7 @@ export function buildStepIllustrationSvg(
           rect(340, 16, 324, 183, "#eff6ff", "#93c5fd", 7, 1.3),
           pillBox(354, 28, 296, 24, "IPHONE / IPAD (BROWSER SAFARI)", "#1d4ed8", "#ffffff", undefined, 8.8),
           stepBadge(372, 74, "1", "#1d4ed8"),
-          txt(390, 78, "Buka aplikasi menggunakan Safari", { size: 8.4, weight: "bold" }),
+          txt(390, 78, "Buka https://fa-invoice.vercel.app di Safari", { size: 8.4, weight: "bold", fill: "#1e3a8a" }),
           stepBadge(372, 104, "2", "#1d4ed8"),
           txt(390, 108, "Ketuk tombol Share (ikon panah ke atas)", { size: 8.4 }),
           stepBadge(372, 134, "3", "#1d4ed8"),
@@ -1822,15 +1822,21 @@ export function buildStepIllustrationSvg(
           txt(340, 80, "DENUDA", { size: 28, weight: "bold", fill: "#ffffff", anchor: "middle" }),
           rect(280, 88, 86, 3, "#2563eb"),
           rect(370, 88, 30, 3, "#f59e0b"),
-          txt(340, 112, "Perancang & Pengembang Solusi Digital Manajemen Faktur dan Piutang", {
-            size: 9.5,
+          txt(340, 108, "Perancang & Pengembang Solusi Digital Manajemen Faktur dan Piutang", {
+            size: 9.2,
             weight: "bold",
             fill: "#cbd5e1",
             anchor: "middle",
           }),
-          pillBox(62, 136, 174, 38, "Kecepatan Kerja Tinggi", "#1e293b", "#38bdf8", "#334155", 8.6),
-          pillBox(254, 136, 174, 38, "Presisi Perhitungan 100%", "#1e293b", "#34d399", "#334155", 8.6),
-          pillBox(446, 136, 174, 38, "Pembukuan Harian Praktis", "#1e293b", "#fbbf24", "#334155", 8.6),
+          txt(340, 124, "Tautan Akses Resmi: https://fa-invoice.vercel.app", {
+            size: 9,
+            weight: "bold",
+            fill: "#fbbf24",
+            anchor: "middle",
+          }),
+          pillBox(62, 138, 174, 38, "Kecepatan Kerja Tinggi", "#1e293b", "#38bdf8", "#334155", 8.6),
+          pillBox(254, 138, 174, 38, "Presisi Perhitungan 100%", "#1e293b", "#34d399", "#334155", 8.6),
+          pillBox(446, 138, 174, 38, "Pembukuan Harian Praktis", "#1e293b", "#fbbf24", "#334155", 8.6),
         ].join("")
       );
     }
