@@ -2,6 +2,11 @@ import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { CompanyProfile } from "../types";
+import {
+  STEP_ILLUSTRATION_ASPECT,
+  getStepIllustrationMeta,
+  renderStepIllustrationPngDataUrl,
+} from "./guideIllustrations";
 
 export interface PrintableGuideStep {
   title: string;
@@ -296,7 +301,21 @@ export async function exportGuideBookA4Pdf(
   const currentYear = new Date().getFullYear();
 
   const logoSrc = companyProfile?.iconUrl?.trim() || "/icon.jpg";
-  const processedLogoPng = await loadRasterLogoDataUrl(logoSrc);
+  const [processedLogoPng, ...illusEntries] = await Promise.all([
+    loadRasterLogoDataUrl(logoSrc),
+    ...sections.flatMap((sec) =>
+      sec.steps.map(async (_, stepIdx) => {
+        const key = `${sec.id}:${stepIdx}`;
+        const png = await renderStepIllustrationPngDataUrl(
+          sec.id,
+          stepIdx,
+          rawCompanyName
+        );
+        return [key, png] as const;
+      })
+    ),
+  ]);
+  const illusPngMap = new Map<string, string | null>(illusEntries);
 
   // ============================================================================
   // SAMPUL BUKU RESMI FULL KERTAS A4 (TIDAK DIHITUNG HALAMAN / TANPA NOMOR HALAMAN)
@@ -1024,6 +1043,50 @@ export async function exportGuideBookA4Pdf(
       y += stepTitleLines.length * stepTitleStep + 2.8;
 
       renderFormattedDescription(sDesc, marginX + 9.5, contentWidth - 9.5);
+
+      const illusW = contentWidth - 9.5;
+      const illusImgH = illusW * STEP_ILLUSTRATION_ASPECT;
+      const captionH = 5.8;
+      const illusBoxH = illusImgH + captionH;
+      const illusPng = illusPngMap.get(`${sec.id}:${stepIdx}`);
+      const illusCaption = sanitizePdfText(
+        `Gambar ${secIdx + 1}.${stepIdx + 1}: ${getStepIllustrationMeta(sec.id, stepIdx).caption}`
+      );
+
+      if (illusPng) {
+        y += 2.2;
+        ensureSpace(illusBoxH + 3);
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(marginX + 9.5, y, illusW, illusBoxH, 1.5, 1.5, "F");
+        try {
+          doc.addImage(
+            illusPng,
+            "PNG",
+            marginX + 9.8,
+            y + 0.3,
+            illusW - 0.6,
+            illusImgH - 0.6
+          );
+        } catch {
+          // ignore if image insertion fails
+        }
+        doc.setFillColor(248, 250, 252);
+        doc.rect(marginX + 9.5, y + illusImgH, illusW, captionH, "F");
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.25);
+        doc.line(marginX + 9.5, y + illusImgH, marginX + 9.5 + illusW, y + illusImgH);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(marginX + 9.5, y, illusW, illusBoxH, 1.5, 1.5, "D");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.6);
+        doc.setTextColor(71, 85, 105);
+        doc.text(illusCaption, marginX + 9.5 + illusW / 2, y + illusImgH + 4, {
+          align: "center",
+        });
+        y += illusBoxH + 2.5;
+      }
 
       if (sTip) {
         y += 2;

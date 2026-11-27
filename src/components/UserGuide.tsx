@@ -28,6 +28,10 @@ import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { CompanyProfile } from "../types";
 import { exportGuideBookA4Pdf } from "../utils/guideBookPdf";
+import {
+  getStepIllustrationDataUrl,
+  getStepIllustrationMeta,
+} from "../utils/guideIllustrations";
 
 interface GuideSection {
   id: string;
@@ -545,6 +549,28 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                           <p className="text-xs text-gray-600 pl-7 leading-relaxed whitespace-pre-line">
                             {step.description}
                           </p>
+                          <figure className="ml-7 mt-2.5 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                            <img
+                              src={getStepIllustrationDataUrl(
+                                section.id,
+                                idx,
+                                companyName
+                              )}
+                              alt={
+                                getStepIllustrationMeta(section.id, idx).caption
+                              }
+                              className="w-full h-auto block"
+                            />
+                            <figcaption className="border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 text-center">
+                              Gambar{" "}
+                              {Math.max(
+                                1,
+                                GUIDE_DATA.findIndex((g) => g.id === section.id) + 1
+                              )}
+                              .{idx + 1}:{" "}
+                              {getStepIllustrationMeta(section.id, idx).caption}
+                            </figcaption>
+                          </figure>
                           {step.tip && (
                             <div className="ml-7 mt-2 flex items-start gap-1.5 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-md p-2 text-xs">
                               <Lightbulb size={14} className="shrink-0 text-amber-600 mt-0.5" />
@@ -739,7 +765,8 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
       const tipMm = step.tip
         ? Math.max(1, Math.ceil(step.tip.length / 72)) * 4.6 + 10
         : 0;
-      return 18 + descMm + tipMm;
+      const illusMm = 54; // ~48mm diagram + 6mm figure caption
+      return 18 + descMm + illusMm + tipMm;
     };
 
     const estimateFaqMm = (faq: { q: string; a: string }[]) => {
@@ -764,7 +791,7 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
 
     let nextPage = 2 + tocChunks.length; // Page 1 = Kata Pengantar, Page 2.. = Daftar Isi
     const chapterSheets: BookChapterSheet[] = [];
-    const SHEET_BODY_BUDGET_MM = 172;
+    const SHEET_BODY_BUDGET_MM = 182;
 
     GUIDE_DATA.forEach((section, sectionIndex) => {
       let currentSteps: { step: GuideSection["steps"][number]; stepIndex: number }[] = [];
@@ -1209,6 +1236,27 @@ export function UserGuide({ companyProfile }: { companyProfile?: CompanyProfile 
                       <div className="pl-8">
                         {renderBookFormattedText(step.description)}
                       </div>
+                      <figure className="ml-8 mt-2.5 rounded-md border border-slate-200 overflow-hidden bg-white">
+                        <img
+                          src={getStepIllustrationDataUrl(
+                            sheet.section.id,
+                            stepIndex,
+                            companyName
+                          )}
+                          alt={
+                            getStepIllustrationMeta(sheet.section.id, stepIndex)
+                              .caption
+                          }
+                          className="w-full h-auto block"
+                        />
+                        <figcaption className="border-t border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 text-center">
+                          Gambar {sheet.sectionIndex + 1}.{stepIndex + 1}:{" "}
+                          {
+                            getStepIllustrationMeta(sheet.section.id, stepIndex)
+                              .caption
+                          }
+                        </figcaption>
+                      </figure>
                       {step.tip && (
                         <div className="ml-8 rounded-md bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-3 py-2 text-xs text-amber-900 text-justify">
                           <strong>Tips Operasional:</strong> {step.tip}
